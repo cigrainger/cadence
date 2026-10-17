@@ -336,7 +336,7 @@ struct PickingPathwayView: View {
                 PitchObservationStrip(take: take)
                 Text(take.summary).font(.callout).textSelection(.enabled)
                 Text(
-                    "Target MIDI \(take.target) · first sample \(take.frames.first?.sampleTime.map(String.init) ?? "unavailable") · \(take.frames.count) windows stored locally · no audio uploaded"
+                    "Target \(EditorPitch(take.target).label) · \(take.frames.count) pitch readings saved on this Mac · no audio uploaded"
                 ).font(.caption).foregroundStyle(.secondary)
                 Button("Discuss these observations with coach", systemImage: "sparkles") { state.openContextCoach() }
             }
