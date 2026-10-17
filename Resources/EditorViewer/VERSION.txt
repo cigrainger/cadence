@@ -1,0 +1,2 @@
+Cadence native editor bridge. Engraving uses the bundled OpenSheetMusicDisplay described in ../ScoreViewer/VERSION.txt.
+The former Smoosic comparison was removed for the first public release.

@@ -1,0 +1,73 @@
+CADENCE — FOLLOW THE CHANGES
+
+START WITH THREE CHORDS
+Chord lab → Follow the changes opens Dm7 → G7 → Cmaj7, a ii–V–I in C major.
+Select a chord to see all its spelled tones, their degrees, a piano voicing,
+and compact guitar suggestions in your chosen tuning and capo position.
+Expand the fretboard for every chord tone. The piano suggestions prefer small
+movements from the previous chord; common tones and moving voices are shown.
+Hear voicing plays the selected piano suggestion; click a guitar diagram to
+hear that shape. Hear the change plays this chord and the next.
+
+CHOOSE A FOCUS
+Roots: just the root in any octave. This exercise ignores slash bass.
+Thirds & sevenths: just those two guide tones, in either order/register.
+Shell voicings: root, third and seventh, plus any printed slash bass.
+Complete chords: every structured tone, including alterations and extensions,
+plus any printed slash bass. This intentionally does not accept omitted fifths
+or extensions; use shell mode to practise a smaller voicing.
+
+Guide/shell modes require a third and seventh in every sounding chord. A triad,
+suspended chord, sixth chord or omitted third/seventh produces an explanation
+and asks you to choose roots/complete chords. It does not invent a seventh.
+Some extended chords have too many tones for a compact guitar shape. The app
+says so instead of dropping tones. Suggested shapes still need your judgment
+about reach, comfort and fingering. Guitar diagrams show low string at left;
+the expanded fretboard supports left-handed display.
+
+PRACTISE WITH MIDI
+Choose Practise these changes, select your keyboard and Listen to keyboard.
+Play the requested tones, then release all physical keys to submit an answer.
+Octave doublings and inversions are accepted, except that a printed slash bass
+must be lowest in shell/complete modes. Wrong or incomplete answers stay on the
+same chord and identify missing/extra tones. Correct answers move to the next.
+
+The exercise gathers the notes played before every key is released. A rolled
+chord is accepted; simultaneity, rhythm, note length, dynamics, pedal technique
+and physical fingering are not assessed. Sustain does not combine separate
+answers. Release held keys when starting/resuming. Focus loss, playback,
+navigation and device changes pause input. Use Clear held notes if needed.
+
+Show tones & voicings and Hear example mark that chord as assisted. Exploring
+again during a pass also marks the current chord assisted. Each committed
+answer saves its notes, target, mode, ordinal, hint flag and source revision.
+Misses remain in history after a successful retry. Failed saves retain the
+exact pending answer and do not advance; choose Save answer again after fixing
+storage, or explicitly discard it. Pending answers are held in memory only.
+These exercises do not yet schedule their own spaced reviews or grade fluency.
+
+YOUR OWN MUSIC
+In Compose, choose a passage and Follow changes beside Chord symbols.
+In Library, choose a passage in Overview (or another notebook tab), then Follow
+changes. Studies also offers Follow changes for its selected part and bars.
+Choose 1–16 bars, up to 64 changes. If symbols occur on multiple staves, select
+which staff to follow. A prior symbol carries into a selection until the next
+change. Positions refer to the original bar indices and meter beats.
+
+Only printed/entered structured chord symbols are used. There is no inference
+from melody, reharmonization, key guessing or automatic Roman-numeral analysis
+of your piece. PDF chord recognition is an AI draft: review the symbols first.
+N.C. remains visible and breaks voice-leading suggestions. MIDI practice skips
+N.C. and moves between sounding chords, without grading the duration of rests.
+Notation and score playback are unchanged. Voicings are separate suggestions.
+
+Changing the source music invalidates the open exercise; reopen from the piece.
+Renaming it does not invalidate saved evidence. Recent matching results can
+inform a piece's learning pathway when you choose to include practice evidence;
+nothing is sent to a model automatically. No AI key or paid call is needed.
+
+TESTING
+Core tests cover chord meanings, voicings and progression behavior; native tests
+exercise persistence and MIDI interruptions. Desktop fixtures run complete MIDI
+passes for the example and an editable piece. The physical Roland FP-10 is
+still to be checked over USB; virtual MIDI checks do not certify that hardware.

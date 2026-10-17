@@ -1,0 +1,118 @@
+CADENCE · LEARN THROUGH YOUR MUSIC
+
+START FROM A PIECE
+Open Library (Command-8), select a piece, and choose Learn. Select a part and
+up to 16 bars. Add a personal goal in Overview, then set your experience,
+session time and starting point in the pathway brief.
+
+Create local plan works offline. It creates a sequence of reading, small
+passage work and bringing the phrase together, with exercises drawn from the
+selected notation. Tailor with AI requests passage guidance using your goal,
+notes and starting point, with an optional summary of this piece's recorded
+practice. The resulting plan is saved separately; existing progress stays put.
+To adapt a plan after more practice, choose New plan and Tailor with AI.
+
+Both kinds of plan appear here and in AI coach → Learning pathways. These
+are passage pathways, not automatic analyses of an entire book or song.
+The stage checkboxes are your own readiness marks. They never unlock or lock
+material, and they do not replace recorded exercise results.
+
+EXERCISES FROM THE SCORE
+The first version can create:
+• Key signature recall from the opening selected bar.
+• Recall of the first written pitch, with its source spelling.
+• An ear question using two notes from one staff and voice. Playback simplifies
+  their rhythm; the answer is their sounding distance in semitones.
+• Recall of a written note duration, expressed in quarter-note beats.
+• A MIDI chord exercise where the source contains a suitable simultaneous chord.
+• Small passage practice, followed by playing the selected phrase together.
+
+Only supported examples are offered. Not every piece produces every exercise.
+These are short, fixed recall exercises from this version of the score, not a
+comprehensive sight-reading test or generated variations of the whole piece.
+Imported AI drafts should be reviewed against their originals first.
+
+MIDI checks compare chord pitch classes and the lowest pitch class. Octave
+shifts and doublings are welcome. Timing, fingering, voicing comfort, sustain
+pedal use and physical technique are not assessed. Enable Listen to keyboard,
+play all the tones, then release. The Roland FP-10 can use the existing USB
+MIDI connection in Settings; this update was checked with virtual input.
+
+Use Show answer, Open notation or two choices when helpful. Those are recorded
+as supported practice. Listening to an interval question is part of the task;
+hearing a chord example is a hint. Skipping does not count as a miss.
+
+PASSAGE PRACTICE
+Open passage takes you to its exact part and bars in Studies. Use its existing
+loop, tempo, notation and singing tools. Afterwards choose Felt difficult,
+Needed support or Comfortable in the pathway panel. These are your reports,
+not an automatic judgement of your performance.
+
+Start with one bar offers a smaller step. A comfortable report there counts
+as supported practice for the original full passage. Changing the selected
+part, staves or bars disables the report buttons until you return to the linked
+passage. A result cannot be silently attached to a different selection.
+
+REVIEWS AT YOUR PACE
+Practice now starts with From your music when piece pathways exist. Continue
+in a pathway mixes due reviews with new work. You can also open any exercise
+at any time, even in a later stage. Pause reviews hides that pathway from the
+suggested queue while leaving all its exercises available.
+
+The schedule is a simple local rule, not a calibrated mastery estimate:
+• A miss returns after roughly 10 minutes.
+• An answer using support returns after roughly 20 minutes.
+• A comfortable due review grows to 1, 3, 7, 14, 30 and 60 days.
+• An encounter counts once. A later miss can shorten its review, but repeated
+  guesses cannot turn it into a clean first recall.
+• Early practice does not push a review away or increase its interval. Interval
+  growth needs a due review and at least 20 hours since the last growth.
+
+There are no streak penalties, quotas or locked lessons. The reason for a
+suggested review is shown alongside it. Checked questions, MIDI results and
+self-reports are kept distinct. This first integration adapts the order and
+review spacing of piece exercises, with smaller steps available when needed.
+The existing free-practice games keep their separate concept history; their
+results do not silently change a piece's review schedule.
+
+SCORE CHANGES AND SAVING
+A plan belongs to a particular score version. If you edit its music or replace
+imported pages, the old plan remains readable, with its history, but its tasks
+cannot grade the changed score. Create a new plan for the current music.
+Moving a piece between library collections does not reset its plan.
+
+Pathways, review schedules, totals and detailed attempts save together in
+practice-state.json in the Cadence application-support folder. Attempts include
+the piece, pathway and task identities. A failed save changes neither the
+schedule nor the journal, and leaves the question open. Damaged or future-version
+files are preserved. Earlier practice.json, attempts.json and learning.json
+files are read at migration and retained unchanged as backups; they are no
+longer the active data files. Back up the whole Cadence data folder.
+Removing a pathway removes its schedule; the score and detailed attempts stay.
+
+Renaming a piece no longer makes its pathway stale. Musical changes and changed
+source-page mapping still do. Current legacy fingerprints migrate on load;
+older plans that were already stale retain their history and stale status.
+
+AI AND PRIVACY
+AI tailoring uses your Settings model and Keychain OpenRouter key, with ZDR
+required. It sends selected symbolic notes, piece goal and notes, starting
+point, and optionally recorded practice for this piece and score version.
+The underlying score reference is limited to 160 note/rest events; dense
+passages disclose truncation. Choose fewer bars for fuller coverage.
+Original PDFs and microphone audio are not sent by this feature. Requests
+start only when chosen, have a four-minute limit, and never retry automatically.
+Work already sent may still be charged after cancellation.
+
+If a received plan cannot be saved, keep the brief open and use Save received
+plan again. This retries only the local save and makes no new model request.
+AI suggestions remain interpretations to review against your music and needs.
+
+VERIFICATION
+Core tests cover source-derived exercises, exact chord checks, review timing,
+hints and retries, older saved data, malformed plans and AI request context.
+Native checks cover persistence, exact passage navigation, result isolation,
+failed-save recovery and preservation of damaged pathway data. Virtual MIDI
+runs through the same exercise input handler. This update used simulated model
+responses and spent no OpenRouter credits; hardware playing and live AI quality
+still need your own trial.

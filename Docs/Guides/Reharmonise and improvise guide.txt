@@ -1,0 +1,101 @@
+CADENCE · REHARMONISE AND IMPROVISE
+
+START
+Practice → Explore jazz → Piano or Guitar → Begin the original example.
+Two routes home is an original four-bar Dm7 → G7 → Cmaj7 melody. Hear the
+original and a D♭7 substitute. Each comparison must play through before it
+counts as heard. Interrupted playback does not count. Guess which bass moves
+a semitone down into the destination; imagine or sing its arrival first.
+
+YOUR LIBRARY
+Library → a piece → Score analysis → choose bars and local major key →
+Reharmonise · Piano/Guitar. The first module accepts 1–8 reviewed bars, no more
+than 48 quarter-note beats and 2–16 written seventh chords, with clear thirds
+and sevenths and a dominant seventh resolving a fifth down. It selects the
+first eligible pair; narrow the selection to study another one. Unreviewed
+PDF pages, including a carried-in chord’s page, cannot supply an exercise.
+A full editable copy must fit Compose’s existing limits: one part, one meter
+and key, supported rhythms/clefs and up to 128 complete bars. Unsupported
+MusicXML is preserved and reported before the lesson starts.
+
+HEAR AND EXPLAIN
+The comparisons are teaching reductions: root bass plus thirds and sevenths,
+with the same upper voicings, timing and dynamics in both versions. Only the
+selected bass pitch changes. Written extensions and slash basses are omitted;
+the original structured chord symbols are preserved in the source link.
+Isolate Bass, Guide tones, Bass & guide tones, or add the Written melody.
+The melody layer uses the first voice of the selected staff, including its
+written simultaneous notes. It is not automatic melody extraction.
+The original and substitute share the sounding third/seventh pair, exchanging
+roles: G7 has B and F; D♭7 has F and C♭. The score notebook remains editable,
+with alternative interpretations. Melody compatibility is explored by ear,
+not decided by a universal substitution rule.
+
+PLAY
+Piano: select a MIDI keyboard, choose Listen to my keyboard, play the third
+and seventh of each chord in the substitute progression, and release the
+whole pair between changes. Inversions and octave doublings count; extra
+pitch classes do not. The check measures pitch classes and chord order, not
+smoothness, fingering, rhythm or expressive quality.
+Guitar: follow the suggested guide-tone shapes in your tuning/capo, hear them,
+then play the route. Your report is stored as self-reported practice. This
+module does not use microphone chord recognition or record guitar audio.
+
+SAVE A REHARMONISATION
+Save my reharmonisation creates a full editable copy in My compositions,
+linked to the original. It preserves written notes and original PDF references.
+Only the selected chord symbol changes to a plain tritone substitute. For a
+carried chord, the new symbol starts at the selected passage boundary.
+Written accompaniment is not automatically rewritten: edit it in Compose.
+Compose plays its written notes; the pathway’s audition generates bass and
+guide tones. The displayed alternative in the pathway is the teaching version;
+your saved edited score opens separately. Reopening reuses your composition.
+
+RECORD AN IMPROVISATION — PIANO / MIDI
+Choose Original or Tritone substitute and a tempo from 60–160 bpm. Release
+all keys and sustain pedal. Record one pass, after four quarter-note count-in
+pulses. Use your keyboard’s own sound while playing. The take keeps velocity,
+physical releases and sustain messages. Recording uses native MIDI timestamps
+relative to the estimated audible accompaniment start, with an optional
+-300…300 ms offset for the current keyboard/output setup. It does not grade
+latency or timing. Physical hardware calibration still needs testing.
+
+A take spans the selected passage, up to 48 seconds at the slowest tempo.
+Changing app focus, MIDI connection or source, pressing panic, playing before
+the count-in, or cancelling stops that incomplete take. A completed unsaved
+take survives navigation and failed saves in memory: explicitly save or discard
+it before starting another. Unsaved takes do not survive quitting the app.
+Save the take, then replay it over either harmony. The same recorded notes
+are used; this does not transpose or rewrite your phrase. Playback must finish
+before the take counts as listened. A saved take retains its original study’s
+harmony and tempo even if you later edit the separate reharmonised composition.
+Up to 100 takes / 100,000 MIDI events are retained; delete older takes to make
+room. Neither deletion nor recording creates a performance score.
+
+Reflect on one choice. Piano completion needs a saved reharmonisation and a
+new, saved, listened take from this session. Guitar completion needs the saved
+reharmonisation and your reflection on the phrase you played. Skipping is
+always available. Observations about reaching a chord third describe notes;
+they are not judgements of musical quality.
+
+RETURN INDEPENDENTLY
+Hearing, explaining, playing and creating each have a separate review schedule,
+also separate between piano and guitar. Clean first answers on independent
+returns can extend that skill’s interval. Hints, missed answers and retries
+remain supported. Guitar reports and creative reflections prompt a revisit
+without measured mastery. A creative return asks for a new piano take, rather
+than reusing a previous one as new evidence. Due reviews appear on Practice home.
+This is a transparent practice policy, not a validated model of learning.
+
+Changes to the original score invalidate new evidence against the old study.
+Previous takes, analyses and compositions remain stored; reopen the current
+source to begin a fresh study. The current module reviews the same passage;
+automatic transfer to a new key is future work.
+
+READING
+Open Music Theory: Jazz Voicings; Jazz section; Chord-Scale Theory.
+https://viva.pressbooks.pub/openmusictheory/chapter/jazz-voicings/
+https://viva.pressbooks.pub/openmusictheory/part/jazz/
+https://viva.pressbooks.pub/openmusictheory/chapter/chord-scale-theory/
+These are linked teaching references. All shipped exercises are original.
+No private book extracts, model requests or OpenRouter credits are used.

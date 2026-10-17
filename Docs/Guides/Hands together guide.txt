@@ -1,0 +1,63 @@
+CADENCE — HANDS TOGETHER
+
+Library → a piano piece → Practise this piece.
+Choose Play: Hands together, 1–8 reviewed bars and a comfortable 40–160 bpm.
+If a saved one-staff session opens, use Choose another phrase first.
+
+1. An opening pass
+Play both staves once. There is one bar of count-in, then no guiding click or
+partner. Keep going through mistakes; this is a starting point, not a gate.
+Cadence chooses a smaller focus from the pitch/entrance results and keeps ties
+whole. The full piece stays visible around the highlighted bars.
+
+2. Either hand with a partner
+In Focus choose Right hand or Left hand. Right means the upper written staff;
+left means the lower. Cadence plays the other staff through its sampled piano.
+The partner, click, count-in and score cursor share one timeline. It keeps going
+through mistakes. Choose a slower tempo or restart if that helps. Use your
+keyboard's own sound for the part you play; this release adds no live piano monitor.
+
+Turn off Cadence plays the other hand for a solo pass. One or three loops are
+available, each with a new count-in and its own saved result. Tapping the combined
+rhythm remains available. The three small checks indicate saved attempts only.
+They do not measure mastery or lock either hand behind the other.
+
+3. Bring them together
+Choose Both hands at a comfortable focus tempo. Cadence's partner is off; the
+click remains. After a saved together pass, Back into the phrase returns to the
+original bars and opening tempo. Both hands play with only a count-in.
+
+4. Let it settle
+The phrase joins Practice → Bring it back. The first delayed return uses both
+hands, partner off and no guiding click. Listening, restarts and supported
+retries remain separate from independent evidence. The existing spaced-review
+policy is unchanged. Practice outside Cadence cannot be detected.
+
+TAKES AND FEEDBACK
+Every completed piano pass records your own MIDI presses, releases, touch and
+sustain. Cadence's partner audio is not included. Shape the phrase offers replay
+and comparison; compare takes of the same bars, staves and partner setting.
+Two-staff takes have no connected-melody measurements. Timing and pitch feedback
+can show the written staff, but MIDI cannot prove which hand played a key.
+A written unison in both staves counts as one physical press.
+
+SCOPE
+Two notation staves in a piano/keyboard part; 2/4, 3/4 or 4/4; at most 60 seconds,
+256 attacks and ten simultaneous keys. Both staves must contain notes in the
+selected passage. Very fast combined entrances (under 120 ms), incomplete ties,
+unreviewed PDF pages and overlapping same-key holds/re-strikes across hands
+need a different passage or single-staff practice. Repeats use written order.
+Cross-staff notation and hand crossings need your judgement; there is no inferred
+keyboard split, fingering or hand-technique grade.
+
+Keyboard & timing offers the existing eight-tap calibration. Stops, navigation,
+sleep and input/output changes cancel the entire pass; unfinished takes remain
+ungraded. Save failures retain the completed take in memory for retry while the
+app stays open. Changing either source staff blocks applying old results to the
+new notes. Practice format 12 migrates older snapshots; older apps cannot write it.
+
+No model calls or AI credits are needed. Virtual MIDI, native audio and desktop
+checks cover this release; physical USB testing with the Roland FP-10 remains.
+
+Make it flow now adds barline joins, optional tempo suggestions and thinning
+click support inside focused practice. See Make it flow guide.txt.

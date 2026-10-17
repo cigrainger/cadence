@@ -1,0 +1,19 @@
+PLAY ALONG · CADENCE
+
+Open a library piece, choose a reviewed passage of 1–4 complete 4/4 bars with written chord symbols, and select Play along in “Carry this music with you”. You can also enter from the band section of a score-linked ear-training session. Choose a single melody voice with at most 12 attacks; ties stay connected.
+
+Connect the Roland FP-10 by USB and choose its MIDI input. Check MIDI timing opens an optional calibration: listen to four count-in clicks, then press and release any piano key on each of eight more clicks. Apply the suggested offset only when the taps are consistent. Calibration includes your tapping tendency, is kept for this app session, and resets when the keyboard connection, audio output or sleep state changes. Use the same output for calibration and practice.
+
+Choose a tempo, backing feel and instruments. Mute the guide melody to take its place. Press Count in & play with all keys released. A line moves across the notation while note markers appear: checkmark on time, left/right arrows early/late, cross different pitch, dash missed. Light marks are provisional until their timing window closes. Continue after a miss: the next entrance is matched independently.
+
+Pitch and Pulse are separate. Every note expands the full account of pitches, timing deviations, misses and extra presses. The default onset tolerance is at most ±80 ms and narrows for close entrances. Source MIDI timestamps share the audible audio clock. Callback-arrival fallback is explicitly treated as supported evidence. Calibration is never graded.
+
+Challenges are optional:
+• Find the notes: at least 90% of the pitches, no extra presses.
+• Keep the pulse: at least 80% of entrances on time, no extra presses. Pitch is still reported independently.
+• Clean pass: every pitch and entrance matched, no extra presses.
+All practice remains available. There are no lives, streak penalties or locked lessons. A supported challenge completion is labelled as such.
+
+Each complete pass saves its exact source revision, tempo, offset, backing, guide setting and MIDI evidence. Review uses the shared spacing schedule; immediate repetitions do not inflate it. Guide melody and fallback timestamps cannot count as independent success. Completed saves appear in practice history and due reviews return you to the same passage and setup. A failed save retains the pass in memory, including if you leave the screen; Practice home links back to it. Save or explicitly discard it before another pass. Unfinished/canceled passes never receive a grade.
+
+This release assesses the written melody's pitches and entrances in one pass. It does not assess comping, note length, pedal, dynamics, fingering or musical expression. The free band still supports repeated rounds. Swing changes the backing only, not the written melody. The physical FP-10 remains to be tried; virtual MIDI, deterministic timing and native audio checks are included in the verification workflow.

@@ -1,0 +1,76 @@
+CADENCE — PLAY THE CHANGES
+
+Chord lab → Follow the changes → Play in time.
+Start with Dm7 → G7 → Cmaj7: one bar, one bar, two bars in 4/4.
+Choose roots, thirds and sevenths, shells, or complete chords; 40–160 bpm;
+1–4 passes. The default is two passes of guide tones at 80 bpm.
+
+Connect and select a USB MIDI keyboard, release the keys, then Count in & play.
+Keep going after a mistake. The current chord and next change stay visible.
+Common tones can remain held while the other voices move. Inversions and octave
+doublings are accepted. Shell and complete modes honor a printed slash bass.
+The bass accompaniment is optional. Turning off Keep the click still leaves
+the count-in. Audio comes from the Mac; it is not sent back as MIDI input.
+
+Hear an example plays a suggested voicing sequence without grading or saving.
+It also turns on tone hints. Turn hints off when you want to try independent
+recall; your result records whether hints and bass were enabled.
+
+RESULTS
+Harmony matched means the correct physical key set settled for at least 60 ms
+near the change. It does not require all notes to arrive in the same packet.
+On time means that settled shape first arrived within ±100 ms of the beat.
+An unchanged chord can stay held across a repeated symbol. N.C. asks for release
+at the entrance. The pedal does not substitute for held keys in this check.
+
+The result separates matched harmony, timing, missing/extra notes and recoveries.
+Extra presses near the change still count even if you also found the shape.
+Assessment windows are at most 600 ms each side of a change, reduced for closely
+spaced changes; they do not overlap. Playing well outside a window can appear
+as an unmatched chord. A shape already held from the count-in is early.
+
+Focus on this transition offers the difficult change with the preceding one,
+10 bpm slower. It retains complete source bars, including any other changes
+inside those bars, to keep the click aligned with the original meter. Return
+to full progression restores the full selection. This suggestion is based on
+the first transition that did not arrive cleanly, not a diagnosis of technique.
+
+REVIEW AND SAVING
+Completed passes save a detailed result, journal summary and review schedule in
+one local operation. If saving fails, the result remains in memory: try saving
+again, or explicitly discard it. Leaving the view stops an unfinished pass;
+it does not count as a failure. Pending results survive navigation, not quitting.
+
+Practice → Return to the changes shows due reviews. A difficult pass returns
+after 10 minutes; a clean supported pass after 20 minutes. A clean independent
+pass starts at one day, with later successful, due reviews increasing spacing.
+Immediate retries cannot stretch the interval. Each score revision, selection,
+harmony staff, mode, tempo, loop count, focused passage and support/offset setup
+has its own review. A slower focused success does not erase the full-pass miss.
+These are simple scheduling rules, not a calibrated measure of mastery.
+
+YOUR OWN PIECES
+Use Follow changes from Compose, Library or Studies, then Play in time. The
+exercise uses the written chord symbols; it does not infer harmony from notes.
+The first version accepts 1–8 complete bars in steady 2/4, 3/4 or 4/4, at least
+half a second per change, and up to 90 seconds per pass session. Guide and shell
+modes require a third and seventh. Choose another mode for triads or sus chords.
+
+A preceding symbol carries into the selection. Before the first written symbol,
+the exercise treats the passage as N.C. Part and harmony staff selection remain
+attached to the result. Current piece results can inform coaching when you choose
+to include practice history; renaming retains evidence, musical edits invalidate
+its use for the new score. Practice copies resolve to their parent composition.
+
+TIMING LIMITS
+Use built-in or wired audio. Optional input offsets compensate for a consistent
+arrival delay; the eight-tap check in Practice can estimate a value for your
+setup, including your own tapping tendency. Offsets reset on device changes or
+reopening a view. Native MIDI source timestamps are preferred; arrival-time
+fallback is explicitly supported evidence, not independent timing recall.
+
+Keyboard changes, reset/panic, app focus loss, sleep and audio changes stop the
+pass without grading it. This checks entrances and physical key collections.
+It does not grade note length, sustained pedal sound, dynamics, technique, swing
+or expressive rubato, nor everything played between changes. Native virtual MIDI
+and scheduled audio checks pass; the physical Roland FP-10 remains to be tested.

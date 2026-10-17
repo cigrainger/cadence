@@ -1,0 +1,83 @@
+CADENCE · MIDI KEYBOARD AND PRACTICE HISTORY
+
+CONNECT A KEYBOARD
+Connect your keyboard by USB, then open Cadence → Settings → MIDI. Select
+its input. The same chooser appears in Compose and Play chords. No input is
+selected automatically. Cadence remembers your choice and reconnects when
+that input returns; writing and exercise listening must be enabled again.
+
+Your Roland FP-10 will use this CoreMIDI input path. Its physical USB connection
+has not yet been tested here. The native test uses an actual virtual CoreMIDI
+source, including note-on, release and disconnection. Cadence does not send
+MIDI back to the piano, so it cannot create a MIDI feedback loop. Use the
+piano's own sound; Cadence's optional audition happens after key release.
+
+If no input appears, check the USB connection, turn the piano on, and choose
+Refresh. Check that macOS sees it in Audio MIDI Setup. Clear held notes resets
+Cadence's input display after an interrupted or unusual MIDI stream.
+
+WRITE NOTES AND CHORDS
+Open Compose, select a score and the hand/voice you want to write, and choose
+MIDI keyboard. Select your input, choose a duration, then turn on Write MIDI.
+Play one note or a chord and release every key. Cadence enters the complete
+gesture and advances within that hand and voice. The sustain pedal is tracked
+separately and never joins successive entries. Leave a gap between gestures;
+overlapping legato playing becomes one chord. This is step entry, not timed
+performance recording or automatic rhythm detection.
+
+The gesture replaces the selected event's complete chord. Lengthening a note
+only consumes following rests; occupied music is never silently overwritten.
+Impossible rhythms or guitar fingerings reject the whole gesture and pause
+writing. Undo/Redo treat the entire gesture as one edit. At the end, Cadence
+adds a bar up to the existing 128-bar limit. At the limit, select another event
+before continuing. Piano entry supports up to eight simultaneous notes, guitar
+up to six, in sounding range A0–C8. Guitar notation remains an octave above
+sound and proposed tab positions should be reviewed for comfort.
+
+If keys are already held when you arm writing or select a different event,
+release them before beginning. Closing the input panel, changing input,
+disconnecting the keyboard or leaving Cadence pauses writing. The audition
+toggle is off initially and uses Cadence's simple synth on release.
+
+PLAY THE CHORD
+In Practice choose Play chords. Set the root in the main header, choose a
+quality and inversion, then select Listen to keyboard. Play your answer and
+release the keys. Feedback distinguishes missing tones, extra tones and the
+wrong bass. Any register and octave doublings are accepted. The lowest note
+must match the requested inversion. Triads and major, minor and dominant
+seventh chords are included.
+
+Show tones or Hear example marks the answer as assisted. Incorrect gestures,
+retries, correct answers, revealed answers and skips remain separate in the
+history. Practise another moves to the next chord quality. You can also choose
+your own quality or inversion. Timing, fingering and technique are not graded.
+This first exercise is deliberately user-directed; adaptive chord selection
+and a complete structured curriculum are future work.
+
+PRACTICE HISTORY
+Your recent practice shows the latest ten events. Export history saves the
+complete retained journal as JSON. Up to 10,000 recent events are kept locally.
+Unreadable or newer history files are preserved rather than overwritten; the
+history panel explains how to export new attempts from that session.
+The record includes the activity, session, input method, result, assistance,
+attempt number and available target/played notes or selected answer.
+Response time, tempo and score links are optional fields, recorded only when
+the activity actually supplies them. No timing or proficiency is invented.
+
+Singing, multiple-choice and MIDI answers stay distinct. First-try correct
+counts exclude retries and assisted answers. Opening Practice starts a new
+session. Existing points, spaced-review schedules and earlier totals remain;
+this detailed journal begins with version 0.10. It provides evidence for a
+future adaptive practice system rather than claiming mastery from a few taps.
+
+PRIVACY AND CURRENT BOUNDARIES
+MIDI and practice history stay on this Mac. They are not automatically sent to
+the AI coach. Coach and pathway calls now explicitly require ZDR routing as
+well as the account-level setting. A separate development-only PDF comparison
+uses original known-answer scores, native PDF-capable models and an initial
+US$5 ceiling. A control uses locally rendered page images without external
+OCR. The app now also imports a selected PDF page as an editable draft with
+its original beside it. See PDF import guide.txt.
+
+Real-time recording, velocity-sensitive MIDI audition, pedal notation,
+automatic fingering assessment and timed rhythm grading remain future work.

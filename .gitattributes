@@ -1,0 +1,20 @@
+* text=auto
+*.swift text eol=lf
+*.py text eol=lf
+*.sh text eol=lf
+*.js text eol=lf
+*.css text eol=lf
+*.html text eol=lf
+*.md text eol=lf
+*.png binary
+*.icns binary
+*.pdf binary
+*.epub binary
+*.sf2 binary
+Resources/ScoreViewer/opensheetmusicdisplay.min.js -text
+Resources/ScoreViewer/OSMD-LICENSE.txt -text
+Resources/ScoreViewer/opensheetmusicdisplay.min.js.LICENSE.txt -text
+Resources/SoundBanks/TimGM6mb.sf2 -text
+Resources/SoundBanks/GPL-2.0.txt -text
+Resources/SoundBanks/Copyright.txt -text
+Resources/Third-party notices.txt -text

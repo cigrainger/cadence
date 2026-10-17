@@ -1,0 +1,64 @@
+TRIADS ACROSS THE NECK · CADENCE
+
+Practice → Explore on guitar. Choose a piece, part, chord-symbol staff, up to
+eight bars and one of four adjacent three-string sets. Set tuning and capo before
+starting. Library → a piece → Learn also opens this pathway for the selected bars.
+The source must have written chord symbols; PDF pages must have been reviewed.
+
+1. FIND
+Read and play a three-string shape. Identify root position, first inversion or
+second inversion from its lowest sounding note. Hear the shape and reveal its
+note names if useful. A wrong choice stays on the same shape. This checks the
+screen answer, not whether the physical chord was played.
+
+2. CONNECT
+Try the suggested route through your changes. The route minimises total fret
+movement on each string, over all the changes. It is one useful suggestion,
+not an ergonomic diagnosis. Browse another inversion on the interactive neck.
+Choose a neighbouring string set from Choose music / string set to explore again.
+The route demonstration gives each chord four beats; it is a slow practice
+arrangement, not a performance of the source rhythm.
+
+3. EAR TO FRETBOARD
+Hear the root and third, imagine the interval, optionally sing it, then find
+those two notes on guitar. Choose Listen to my guitar to enable the microphone.
+Use headphones, mute unused strings, pluck separately and let each note ring
+for at least half a second. Capture stops after two stable pitches. Check them,
+retry or skip. The displayed example octave and A = 440 Hz are used.
+
+This is local single-note pitch matching. Audio is not saved or uploaded.
+It does not identify strings, judge fingering/timing or recognise strummed chords.
+Physical guitar/microphone testing is still needed; automated tests cover pitch
+signals with harmonics/decay, silence, simulated capture and playback exclusion.
+
+4. CREATE
+Improvise a two-bar answer, aiming for the third of your second chord. Leave
+space and vary the ending. Or choose Write a two-bar answer: Compose opens a
+blank guitar score with linked tab, the first two chord symbols and a permanent
+reference to the original piece. It starts in 4/4 at 72 bpm as a new arrangement.
+Write and play it back with Compose, then return using its pathway banner.
+The same answer reopens on later visits; your saved work is not overwritten.
+
+PROGRESS
+Every action commits together with its practice record. Failed saves retain the
+pending answer for retry. Relaunching preserves your place, string set, tuning
+and capo. Source edits require a new pathway; the old work remains available.
+Completed sessions get a supported-practice reminder in Practice → Bring it back.
+This is not a calibrated mastery model. Reading choices, local microphone pitches
+and self-reported chord playing/improvising are separate evidence types.
+
+CURRENT SCOPE
+Up to 16 written changes across eight bars. Frets 0–12 relative to the capo, with
+at most four frets between fretted notes. Root, third and fifth must each be
+unambiguous; suspended, omitted-tone, multiply altered and N.C. sections ask for
+another passage. Extensions and slash bass remain in the original; the pathway
+explicitly practises the underlying triads. Up to 100 saved guitar pathways.
+
+CONTROL DESIGN
+Shared primary and secondary buttons now use Cadence’s colours, compact spacing,
+rounded borders and hover/pressed/disabled states. Common menus in the header,
+chord lab, editor and new pathway use the shared menu control. Native menu
+behaviour, button semantics and existing shortcuts remain in place.
+
+Practice format 13 and score format 6 protect this new data from older writers.
+Earlier formats migrate when opened. Keep the previous app and data backups.

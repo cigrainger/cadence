@@ -1,0 +1,100 @@
+CADENCE — PRACTISE THIS PASSAGE
+
+Quit an older running copy before opening this build. Existing scores,
+studies, pathways, preferences and progress remain on this Mac.
+
+START FROM YOUR MUSIC
+1. Open Compose (Command-7) and choose a guitar or piano score.
+2. Set From / Through to a passage of up to 16 bars.
+3. Choose Practise passage. The saved copy opens in Studies (Command-5).
+4. Loop it slowly with a count-in and optional metronome. Choose guitar or
+   piano under Under your fingers. Piano copies start on the piano view.
+5. Use Back to Compose to continue writing at the selected bars. An unchanged score reuses its
+   existing practice copy, including playback settings, notes and tempo goals.
+   Source edits create another saved copy; earlier copies keep their own music.
+   The study selector keeps all copies available.
+
+BUILD A COMFORTABLE TEMPO
+Set a target and a step of 2, 5 or 10 bpm. Mark comfortable records the current
+speed with a date. Try the next tempo sets a faster speed for the next playback,
+up to the target and the 150% playback limit. Nothing speeds up automatically.
+The goal, best recorded speed and latest history belong to this part, playback
+staff selection and bar range. Changing bars or staves opens a different goal;
+return to the old selection to see its progress. Up to 200 recent marks per
+selection and 256 selections per study are retained. These are self-reports,
+not microphone assessments of timing, accuracy or technique.
+
+SING WITH SOLFÈGE
+Choose Sing with solfège, then select a staff and voice. The guide takes the
+top note at each chord onset, rather than inventing an arrangement. Ties stay
+joined, including notes held into the selected bars. The guide is divided into
+groups of eight notes; use its arrows to move through a longer passage.
+Click a syllable to hear that pitch and locate it in the notation. Hear phrase
+plays the selected line with its written durations, rests and practice speed.
+Changing reference register shifts the whole group by octaves.
+
+Hear the phrase or first note, wait for playback to end, then choose Listen
+to my voice. Grant microphone access if macOS asks. Hold each pitch steadily
+for about a second. Leave a short gap between repeated notes. The check moves
+through the pitch sequence; it does not grade rhythm, syllables, lyrics or
+instrument technique. Restart lets you retry without replaying the reference.
+
+Any comfortable starting pitch is accepted by default, provided the rest of
+the group keeps the same intervals. Match reference key requires the source
+key, accepting a shared whole-octave shift. Shifting only a later note by an
+octave is treated as a different interval. Optional pitch guidance shows higher,
+lower or steady for the next target. The reference is A4 = 440 Hz. The tuner’s
+separate calibration setting does not change this singing reference.
+
+Movable Do follows the score’s major/minor key. Do-based minor uses Me, Le and
+Te; chromatic syllables follow the written spelling. Missing key mode defaults
+to major; choose minor when appropriate. Explicit other modes and non-octave
+transposing parts show an explanation instead of an unreliable automatic guide.
+Concert-pitch piano and guitar octave notation are supported. Normal Studies
+playback remains available for other scores. Earlier saved studies recover key
+mode from their retained MusicXML while preserving saved note identities.
+
+Voice input is analysed locally and is never uploaded. Playback pauses voice
+listening. Leaving the workspace or changing its passage stops listening.
+This is an experimental pitch aid; synthetic pitch tests do not establish
+accuracy for every voice, microphone or room. Headphones and a quiet room help.
+
+MAKE IT PART OF YOUR LEARNING
+Discuss passage opens a coach question with the selected notes, key mode,
+meter, voices, practice notes and reported comfortable tempos. Create a pathway
+uses the same source passage. Ask about this phrase also names the chosen
+singing line and solfège. No recording is sent and no performance quality is
+inferred from tempo marks. Nothing is sent automatically; send the question or
+request the pathway when ready. Configure your own model/key in Settings.
+
+SAVE AND RETURN
+Studies, practice copies, tempo goals and notes are stored in studies.json
+under ~/Library/Application Support/Cadence/. Back up that folder for a copy
+of your work. The model key stays separately in Keychain. Removing a study
+also removes that copy’s tempo history and notes; source scores in Compose
+remain available. You can keep up to 100 studies when creating practice copies.
+
+VERIFICATION
+Core regression tests cover snapshot fidelity, scope-specific tempo
+history, old-save migration, minor/chromatic syllables, separate piano hands,
+chord reduction, ties, rests, octave shifts, repeated-note releases and
+synthetic pitch detection through a complete melody. Native checks cover the
+Compose bridge, duplicate reuse, independent edited copies, local persistence,
+return navigation, source-grounded coach drafts, singing-guide controls,
+notation cursor movement and silent audio output. Tests do not open the mic,
+call a paid AI model or change user data. Live human singing remains a manual
+check on your own microphone.
+
+Cadence’s source is AGPL-3.0-or-later. Bundled dependencies retain their notices.
+
+COMPOSE EXPRESSION
+Practice copies now retain two voices per staff, slurs, accents, staccato and
+ppp–fff dynamics. Singing lets you choose the upper or lower line separately;
+duplicate guitar tab is excluded from voice choices. Normal playback performs
+both lines with simple synth expression. See Compose guide.txt for details.
+
+PDF DRAFTS
+Review an imported page beside the original in Compose, then choose Practise
+these bars or use Full editor → Practise passage. The practice copy retains
+the current corrected music. Back to Compose returns to the source score,
+where its saved PDF remains available.

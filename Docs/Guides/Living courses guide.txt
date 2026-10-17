@@ -1,0 +1,99 @@
+Version 0.22 also supports EPUB and cross-book goal pathways. See EPUB and
+pathways guide.txt; the PDF chapter workflow below remains available under
+Library → Courses → Book chapters.
+
+CADENCE — A BOOK YOU CAN PLAY
+
+Open Library → Courses → Try original chapter. The included three-page piano
+chapter works offline and includes two editable scores made from the same note
+data as the original printed exercises. It begins unreviewed so you can try the
+whole workflow. The example PDF is in Resources/ImportExamples/chapter.pdf.
+
+YOUR FIRST CHAPTER
+
+1. Choose Add a chapter, select a method-book PDF, and enter the book, author,
+   edition and chapter title. Select 1–8 consecutive PDF pages. These numbers are
+   physical PDF positions, not printed page numbers. Add a large chapter in parts.
+   The book PDF is copied locally; the original is never rewritten.
+2. Build lessons manually, or choose Propose outline. AI sends only the selected
+   chapter excerpt, not the whole book. The default is GPT-6.1 Sol with high
+   reasoning. Other existing transcription models are available. The request
+   uses your OpenRouter key in Settings and requires ZDR routing. It cannot
+   silently fall back to a provider that does not meet that requirement.
+3. Check the lesson order, page links, paraphrases, exercise boundaries and
+   uncertainties against the original. Edit or add lessons as needed. Each
+   lesson separates a book paraphrase from learning goals and practice guidance.
+   Mark the chapter outline reviewed when you have checked it.
+4. For a playable lesson, choose Prepare editable notation. This opens the
+   existing page queue for just that lesson's 1–4 consecutive pages. Explicitly
+   start its page requests there. Review failures, retry individual pages, and
+   apply any staged replacement through the existing PDF workflow. Alternatively
+   attach an existing editable score for the same instrument, including one you
+   transcribed by hand. Attaching a score never approves it automatically.
+5. Choose Review notation & source. Correct pitches, rhythms, rests, voices and
+   page joins in Compose beside the original. Mark every imported page reviewed.
+   Back to lesson returns you to the course. Choose up to 16 bars and a piano
+   staff, confirm that this selection matches the source exercise, and choose
+   Use these reviewed bars. An incomplete import or pending replacement cannot
+   become a course answer key.
+6. Listen, Follow the notes with MIDI, Play in time where supported, open recall
+   exercises, or ask the coach about this lesson and its recorded evidence.
+   Ask my coach opens a prepared question for you to send; it makes no automatic
+   paid request. The original book is not sent with that coaching question.
+7. Save a reflection about what you noticed. “I've explored this lesson” is your
+   own report, distinct from measured practice. All lessons remain accessible.
+
+A SMALL NEXT SESSION
+
+The course suggests one due review, a small new lesson, and a musical application
+when suitable evidence exists. It explains why each item is suggested. It reads
+existing practice results and their spaced-review schedules; there is no second
+course schedule and no automatic mastery percentage. Timing difficulties with
+matched pitches can lead to a rhythm-focused suggestion. This first planner
+uses chapter order, prerequisite recommendations, reflections and exact-source
+practice evidence. It does not yet estimate general skill mastery or optimise
+sessions across multiple courses, goals, time budgets or transfer assessments.
+
+Guided MIDI is supported note reading, not a fluency or timing grade. Timed
+results describe the actual tempo, selected staff and input conditions. Recall
+and self-reported passage work remain separately labelled. Suggestions based
+on these observations are transparent heuristics, not validated learning claims.
+
+CHANGES, SAVING AND RECOVERY
+
+Editing the outline keeps up to 20 prior revisions and requires outline review
+again. Revisions lets you read and copy earlier lesson text. Source or exercise
+selection changes cannot silently reuse an earlier transcription. Changing the
+music invalidates its course approval; earlier results remain attached to the
+earlier music. A cosmetic score title change retains matching evidence.
+
+Books, courses and reflections live in courses.json; PDFs are in PDF Sources.
+Scores, library notes and the existing practice history retain their independent
+stores. Back up the complete Cadence data folder, available in Settings. The new
+course store is format 2 (format 1 migrates); practice and scores stay format 4.
+
+An outline job is saved before sending. A restart leaves an interrupted request
+stopped, with no automatic retry. If only saving the received reply fails, Save
+received reply again saves the in-memory reply without another model call. Keep
+Cadence running until it saves: that unsaved reply does not survive quitting.
+Paid requests may still be charged after cancellation or network failure.
+Reported costs are shown when supplied; requests without a reported cost are
+counted explicitly. There is no guaranteed per-request dollar ceiling or price
+estimate. Your provider/account spending limit remains the spending control.
+
+LIMITS OF THIS FIRST SLICE
+
+Up to 50 books, 100 chapters and 12 lessons per chapter. Each chapter excerpt is
+up to 8 consecutive pages / 12 MB for an outline request. Original books can be
+up to 100 MB / 1,000 pages. Each music lesson identifies one continuous exercise
+on up to 4 consecutive pages. Notation import retains its existing page/score
+limits and supported subset. Play in time requires one staff and 1–8 complete
+bars in 2/4, 3/4 or 4/4 at 40–160 bpm. Other music remains editable and playable;
+unsupported assessments explain their limits.
+
+This version does not automatically transcribe a whole book, infer reliable
+physical technique, or claim that one successful pass means mastery. Source
+reviews are the learner's checks, not guarantees of transcription accuracy.
+
+Verification used the original chapter, synthetic model replies and virtual
+MIDI. No paid model requests or physical keyboard tests were made for this update.

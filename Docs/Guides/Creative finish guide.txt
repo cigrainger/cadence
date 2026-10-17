@@ -1,0 +1,56 @@
+CADENCE — A MUSICAL ANSWER OF YOUR OWN
+
+Start from Library → a piece → Learn. Choose a reviewed 1–4 bar melodic passage
+and work through Hear → imagine → sing → play. On the review screen, choose
+Write my answer. The same option stays available after the session is finished.
+
+YOUR ANSWER
+Cadence opens a separate composition, in the passage's key and meter, with the
+same number of bars. It starts with rests. Written chord changes are copied as
+suggestions; the melody is yours to write. Guitar keeps its tuning and capo.
+A source in an unsupported or changing meter needs a simpler passage first.
+
+Use Compose's note buttons, piano/fretboard, rhythm controls or MIDI step entry.
+Hear original replays the saved melodic voice at its original tempo. Hear my
+answer plays your complete composition once. After it finishes naturally, Save
+finished answer marks that version finished. Stopping early does not count as a
+full listen. Changed music needs another listen; renaming alone does not.
+Drafts save as you work, so you can leave and return without finishing.
+
+The composition appears under My compositions. Its source title, exact bars,
+part, voice, PDF pages where applicable, and score revision travel with it.
+Open original opens the whole source piece. Back to practice resumes the saved
+session. The source remains separate: editing the answer never edits it.
+If the original changes or is removed, your composition and saved reference
+remain. The link does not claim that the updated source is the same passage.
+Creative work is not assigned a correctness grade or used as proof of mastery.
+No AI request is involved.
+
+OPENING MUSIC
+Open notation / Open study in Library opens the full piece (selected part for
+MusicXML). Scroll within the score. Choose Focus on a passage in Compose, or
+Passage in Studies, after opening it. Explicit bar links from lessons and analyses
+still focus those bars. Focused practice keeps its existing size limits.
+Whole-piece playback keeps the five-minute audio limit; choose a passage for
+longer music. Written repeats/endings and tempo changes are still not performed.
+
+PLAY INSIDE THE MUSIC
+The reviewed passage's accompaniment now displays notation with a continuously
+moving line, count-in, beat lights and round progress. The cursor follows the
+same audio clock as the band and returns to the beginning on each round.
+MIDI pitch badges show physically held keys; the current melody pitch lights
+green when held. Muting the guide melody lets you take its part.
+
+These are live cues, not a timed-game score. There are no combo streaks or
+penalties, and comping is not judged against the melody. Existing Play in time
+in Studies provides separate timing checks and an input-offset exercise.
+For FP-10, connect USB, choose it in MIDI input, and use its own sound. A physical
+keyboard, live-microphone and learner trial remain to be done.
+
+TECHNICAL NOTES
+Editable score format 5 adds the optional creative-response link and completion
+revision. Formats 1–4 migrate on read; older app versions refuse newer scores.
+Practice stays format 7, courses format 2. Creation and completion save atomically
+in the score store before reporting success. A failed save can be retried without
+creating another response. Exported MusicXML carries the music; the source link
+is part of Cadence's local score file, not a portable MusicXML annotation.

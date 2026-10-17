@@ -1,0 +1,83 @@
+CADENCE — SHAPE THE PHRASE
+
+Library → choose a piano piece → Practise this piece.
+Choose one or both piano notation staves and 1–8 reviewed bars. Complete your opening pass,
+then choose Shape the phrase in the practice panel. The full score stays open.
+
+YOUR PIANO TAKES
+New piano passes automatically save a recording alongside their practice result:
+opening, focused notes, connected melody, surrounding phrase and independent
+return. Space/rhythm exercises do not create piano recordings. Older Cadence
+passes contain entrance summaries only and cannot be reconstructed as takes.
+
+Each take keeps MIDI presses, releases, key velocity and sustain controls.
+Release the keys and pedal before the count-in. Count-in-time playing is kept
+if captured; no click or demonstration is mixed into the replay. A take ends
+0.4 seconds after the written phrase; still-held notes are marked as clipped.
+Stopped or interrupted passes remain ungraded and do not create a saved take.
+
+LISTEN AND COMPARE
+Choose a take, then Listen to A. The sampled piano plays your timing and touch.
+The full-score cursor follows confidently matched entrances and interpolates
+between them. Wrong or extra notes remain audible; they do not invent score
+anchors. A take with no reliable matches plays without a cursor.
+
+The performance trace shows keys held as solid strokes and pedal sustain as
+paler tails. This is a MIDI replay using Cadence’s bundled piano, not an audio
+recording of your FP-10 or its exact tone. No microphone or AI service is used.
+
+Choose another take of the same source revision, staves, bars and partner setting to Listen to B.
+Both use original timing and the same fixed playback gain. Different practice
+tempos are labelled. Switch between A and B to compare how the phrase sounds.
+
+Listen through A, then save a reflection and an optional listening note. The
+join observations open after that reflection. There is no expression grade.
+
+CONNECT THE MELODY
+In a single-staff session, choose Connect the melody in focused practice, or
+Record a connected melody in Shape the phrase. Hear the next note inwardly,
+then let the line pass between keys. Try without pedal first if comfortable.
+The click supports this focused attempt. The completed take opens for listening.
+
+Observations are available for adjacent, distinct pitches in a single melodic
+line. Written rests, repeated pitches, chords, overlapping voices and detached
+notes are excluded. Missing/ambiguous pitches, extra intervening notes and
+missing releases withhold the affected measurements. Arrival-time MIDI fallback
+withholds precise join measurements for the take. These gaps are not failures.
+
+A positive gap is time between releasing one key and pressing the next.
+An overlap means both keys were physically down. A separate label says when
+sustain pedal bridged a physical gap. The sustain interpretation is binary
+(CC64 >= 64); half-pedal, acoustic decay, fingering and physical technique are
+not evaluated. A gap or overlap is an observation to listen to, not a judgement.
+
+PRACTICE AND RETURN
+The connected-melody intention stays with the phrase when you return to its
+surrounding bars and later review. The existing schedule still uses independent
+pitch and entrance evidence; expression observations never lengthen it.
+Opening old takes/observations during a review counts as support. Listening to
+a take records exposure before playback; the next fresh review needs at least
+20 hours without recorded exposure. This persists across relaunches.
+
+SAVING AND SPACE
+Recordings, practice results and stage changes save atomically. If saving fails,
+the completed take stays in memory across navigation for retry; keep the app
+open until it is saved. Changed/deleted/unreviewed source music cannot receive
+old results or play a take against different notes.
+
+Manage saved takes lists recordings across pieces. Delete a recording to free
+space; its practice result and review schedule remain. Cadence keeps up to 256
+takes with a bounded total event budget, and never silently deletes old takes.
+
+Practice data becomes format 12; formats 1–11 migrate, and older app writers
+reject the newer format. Your scores are unchanged. The current release was
+checked with virtual MIDI and native audio; physical FP-10 and VoiceOver trials
+remain to be done. Use your piano’s own sound while playing as before.
+
+Hands-together sessions also save takes. Their one-hand recordings remember
+whether Cadence played the other part; the partner is not in your recorded MIDI.
+A/B comparison requires the same staves, bars and partner setting. Two-staff takes
+have no connected-melody measurements: listen to how the parts fit together.
+
+Make it flow now adds barline joins, optional tempo suggestions and thinning
+click support inside focused practice. See Make it flow guide.txt.

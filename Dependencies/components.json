@@ -1,0 +1,227 @@
+{
+  "schemaVersion": 1,
+  "scope": "Shipped runtime libraries and independent sound bank; Apple system frameworks and build tools excluded.",
+  "limitations": "OSMD publishes a prebuilt bundle without a resolved transitive lockfile. Known bundled components are listed, with unknown versions explicit. This is not a complete resolved dependency graph.",
+  "components": [
+    {
+      "id": "zipfoundation",
+      "name": "ZIPFoundation",
+      "version": "0.9.20",
+      "license": "MIT",
+      "kind": "library",
+      "source": "https://github.com/weichsel/ZIPFoundation",
+      "revision": "22787ffb59de99e5dc1fbfe80b19c97a904ad48d",
+      "notice": "Resources/Third-party notices.txt",
+      "archive": {
+        "url": "https://codeload.github.com/weichsel/ZIPFoundation/tar.gz/22787ffb59de99e5dc1fbfe80b19c97a904ad48d",
+        "sha256": "ba757a26a7a7cdad2729e0f19b24aace24f7a06264fed0ba69afb6bb1e1091c3"
+      }
+    },
+    {
+      "id": "osmd",
+      "name": "opensheetmusicdisplay",
+      "version": "2.2.1",
+      "license": "BSD-3-Clause",
+      "kind": "library",
+      "purl": "pkg:npm/opensheetmusicdisplay@2.2.1",
+      "source": "https://github.com/opensheetmusicdisplay/opensheetmusicdisplay",
+      "revision": "6e3cbd412274a0cc56ffac87e268d44e9b11ebb0",
+      "notice": "Resources/ScoreViewer/OSMD-LICENSE.txt",
+      "archive": {
+        "url": "https://codeload.github.com/opensheetmusicdisplay/opensheetmusicdisplay/tar.gz/6e3cbd412274a0cc56ffac87e268d44e9b11ebb0",
+        "sha256": "b354389cd27b75acb39b1a1847a9b6a117f04f92f68cd91fb32c868f0f226d2d"
+      }
+    },
+    {
+      "id": "timgm6mb",
+      "name": "TimGM6mb",
+      "version": "1.3",
+      "license": "GPL-2.0-only",
+      "kind": "data",
+      "source": "https://sources.debian.org/src/timgm6mb-soundfont/1.3-5/",
+      "notice": "Resources/SoundBanks/Copyright.txt"
+    },
+    {
+      "id": "vexflow",
+      "name": "vexflow",
+      "license": "MIT",
+      "kind": "library",
+      "bundledIn": "osmd",
+      "notice": "Resources/ScoreViewer/opensheetmusicdisplay.min.js.LICENSE.txt",
+      "source": "https://www.npmjs.com/package/vexflow",
+      "version": "1.2.93",
+      "purl": "pkg:npm/vexflow@1.2.93"
+    },
+    {
+      "id": "jszip",
+      "name": "jszip",
+      "license": "MIT",
+      "kind": "library",
+      "bundledIn": "osmd",
+      "notice": "Resources/ScoreViewer/opensheetmusicdisplay.min.js.LICENSE.txt",
+      "source": "https://www.npmjs.com/package/jszip",
+      "version": "3.10.1",
+      "purl": "pkg:npm/jszip@3.10.1"
+    },
+    {
+      "id": "loglevel",
+      "name": "loglevel",
+      "license": "MIT",
+      "kind": "library",
+      "bundledIn": "osmd",
+      "notice": "Resources/ScoreViewer/opensheetmusicdisplay.min.js.LICENSE.txt",
+      "source": "https://www.npmjs.com/package/loglevel",
+      "versionEvidence": "Present in bundled license notices; exact resolved version absent from upstream distribution. Do not infer from a semver range."
+    },
+    {
+      "id": "typescript-collections",
+      "name": "typescript-collections",
+      "license": "MIT",
+      "kind": "library",
+      "bundledIn": "osmd",
+      "notice": "Resources/ScoreViewer/opensheetmusicdisplay.min.js.LICENSE.txt",
+      "source": "https://www.npmjs.com/package/typescript-collections",
+      "versionEvidence": "Present in bundled license notices; exact resolved version absent from upstream distribution. Do not infer from a semver range."
+    },
+    {
+      "id": "pako",
+      "name": "pako",
+      "license": "MIT AND Zlib",
+      "kind": "library",
+      "bundledIn": "osmd",
+      "notice": "Resources/ScoreViewer/opensheetmusicdisplay.min.js.LICENSE.txt",
+      "source": "https://www.npmjs.com/package/pako",
+      "versionEvidence": "Present in bundled license notices; exact resolved version absent from upstream distribution. Do not infer from a semver range."
+    },
+    {
+      "id": "lie",
+      "name": "lie",
+      "license": "MIT",
+      "kind": "library",
+      "bundledIn": "osmd",
+      "notice": "Resources/ScoreViewer/opensheetmusicdisplay.min.js.LICENSE.txt",
+      "source": "https://www.npmjs.com/package/lie",
+      "versionEvidence": "Present in bundled license notices; exact resolved version absent from upstream distribution. Do not infer from a semver range."
+    },
+    {
+      "id": "immediate",
+      "name": "immediate",
+      "license": "MIT",
+      "kind": "library",
+      "bundledIn": "osmd",
+      "notice": "Resources/ScoreViewer/opensheetmusicdisplay.min.js.LICENSE.txt",
+      "source": "https://www.npmjs.com/package/immediate",
+      "versionEvidence": "Present in bundled license notices; exact resolved version absent from upstream distribution. Do not infer from a semver range."
+    },
+    {
+      "id": "setimmediate",
+      "name": "setimmediate",
+      "license": "MIT",
+      "kind": "library",
+      "bundledIn": "osmd",
+      "notice": "Resources/ScoreViewer/opensheetmusicdisplay.min.js.LICENSE.txt",
+      "source": "https://www.npmjs.com/package/setimmediate",
+      "versionEvidence": "Present in bundled license notices; exact resolved version absent from upstream distribution. Do not infer from a semver range."
+    },
+    {
+      "id": "readable-stream",
+      "name": "readable-stream",
+      "license": "MIT",
+      "kind": "library",
+      "bundledIn": "osmd",
+      "notice": "Resources/ScoreViewer/opensheetmusicdisplay.min.js.LICENSE.txt",
+      "source": "https://www.npmjs.com/package/readable-stream",
+      "versionEvidence": "Present in bundled license notices; exact resolved version absent from upstream distribution. Do not infer from a semver range."
+    },
+    {
+      "id": "core-util-is",
+      "name": "core-util-is",
+      "license": "MIT",
+      "kind": "library",
+      "bundledIn": "osmd",
+      "notice": "Resources/ScoreViewer/opensheetmusicdisplay.min.js.LICENSE.txt",
+      "source": "https://www.npmjs.com/package/core-util-is",
+      "versionEvidence": "Present in bundled license notices; exact resolved version absent from upstream distribution. Do not infer from a semver range."
+    },
+    {
+      "id": "inherits",
+      "name": "inherits",
+      "license": "ISC",
+      "kind": "library",
+      "bundledIn": "osmd",
+      "notice": "Resources/ScoreViewer/opensheetmusicdisplay.min.js.LICENSE.txt",
+      "source": "https://www.npmjs.com/package/inherits",
+      "versionEvidence": "Present in bundled license notices; exact resolved version absent from upstream distribution. Do not infer from a semver range."
+    },
+    {
+      "id": "process-nextick-args",
+      "name": "process-nextick-args",
+      "license": "MIT",
+      "kind": "library",
+      "bundledIn": "osmd",
+      "notice": "Resources/ScoreViewer/opensheetmusicdisplay.min.js.LICENSE.txt",
+      "source": "https://www.npmjs.com/package/process-nextick-args",
+      "versionEvidence": "Present in bundled license notices; exact resolved version absent from upstream distribution. Do not infer from a semver range."
+    },
+    {
+      "id": "safe-buffer",
+      "name": "safe-buffer",
+      "license": "MIT",
+      "kind": "library",
+      "bundledIn": "osmd",
+      "notice": "Resources/ScoreViewer/opensheetmusicdisplay.min.js.LICENSE.txt",
+      "source": "https://www.npmjs.com/package/safe-buffer",
+      "versionEvidence": "Present in bundled license notices; exact resolved version absent from upstream distribution. Do not infer from a semver range."
+    },
+    {
+      "id": "string_decoder",
+      "name": "string_decoder",
+      "license": "MIT",
+      "kind": "library",
+      "bundledIn": "osmd",
+      "notice": "Resources/ScoreViewer/opensheetmusicdisplay.min.js.LICENSE.txt",
+      "source": "https://www.npmjs.com/package/string_decoder",
+      "versionEvidence": "Present in bundled license notices; exact resolved version absent from upstream distribution. Do not infer from a semver range."
+    },
+    {
+      "id": "util-deprecate",
+      "name": "util-deprecate",
+      "license": "MIT",
+      "kind": "library",
+      "bundledIn": "osmd",
+      "notice": "Resources/ScoreViewer/opensheetmusicdisplay.min.js.LICENSE.txt",
+      "source": "https://www.npmjs.com/package/util-deprecate",
+      "versionEvidence": "Present in bundled license notices; exact resolved version absent from upstream distribution. Do not infer from a semver range."
+    }
+  ],
+  "assets": [
+    {
+      "path": "Resources/ScoreViewer/opensheetmusicdisplay.min.js",
+      "sha256": "224ee5bee61d31ff3d07ade025f931a6cecd394cb54d2e39b1e7af2f0c7f1f5d"
+    },
+    {
+      "path": "Resources/ScoreViewer/OSMD-LICENSE.txt",
+      "sha256": "261655f10cf6b90bd062fbe3c7fa4dd03e0324fdfc4b53a3c7d626e3aec694a8"
+    },
+    {
+      "path": "Resources/ScoreViewer/opensheetmusicdisplay.min.js.LICENSE.txt",
+      "sha256": "f7397d1a8014d9c35b4446b24545c50c1a37bbb49a829e7607a67af82caee10e"
+    },
+    {
+      "path": "Resources/SoundBanks/TimGM6mb.sf2",
+      "sha256": "c5378b62028c920cb11e4803327983fee2f2cdff5dc89c708e39da417e51c854"
+    },
+    {
+      "path": "Resources/SoundBanks/GPL-2.0.txt",
+      "sha256": "edaef632cbb643e4e7a221717a6c441a4c1a7c918e6e4d56debc3d8739b233f6"
+    },
+    {
+      "path": "Resources/SoundBanks/Copyright.txt",
+      "sha256": "6ef01652619cf29b289a9403cd2ab59550fa3e2c30844c67292eea5421f993e9"
+    },
+    {
+      "path": "Resources/Third-party notices.txt",
+      "sha256": "69df66fc442042f279a501c077ac3b6975c8b545013821016b4473d309f4bec7"
+    }
+  ]
+}

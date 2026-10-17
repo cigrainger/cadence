@@ -1,0 +1,175 @@
+OPEN MUSIC TEACHING RESOURCES FOR CADENCE
+Verified 16 October 2026 · focused research note
+
+Scope: English-language resources for advanced Western tonal theory, jazz,
+composition and the design of music practice. This is a practical shortlist for
+Cadence, not a comprehensive review of music education. The recommendations and
+proposed pathways below are design judgments. The linked sources establish
+what the resources contain and the terms their publishers state.
+
+RECOMMENDATION
+
+Start with Open Music Theory for an openly adaptable curriculum. Use Hutchinson
+as a complementary explanation and exercise source. Learn from the structure
+of MIT's courses, and from the Texas emphasis on musical intention and
+self-assessment. Keep the source, licence, authorship and adaptation history
+visible for each lesson. No third-party textbook content has been bundled in
+this release; its adaptive exercises are original Cadence material.
+
+The significant opportunity is to make an advanced concept usable: hear a
+contrast, identify what changed, try it at the keyboard, then make a phrase
+with it. Each topic should end in a musical choice the learner can explain.
+Short constrained tasks can check particular relationships. The composition
+that follows them needs listening, reflection and room for different aims.
+
+A curriculum also needs to name the style it is teaching. A restriction useful
+for classical counterpoint is not automatically appropriate for jazz voicing.
+Likewise, our current five-semitone movement limit is an exercise constraint,
+not a universal definition of good music. Future lessons should state their
+musical context, accept alternative solutions within it, and explain exceptions
+when those exceptions serve the learner's intention.
+
+We should use later, unprompted attempts and new examples to examine learning.
+Immediate success after an answer is shown is useful practice, but weak evidence
+of independent recall. Repetition, keyboard execution, listening, analysis and
+composition are different observations. The current transparent review schedule
+is a useful implementation policy, not a scientifically calibrated mastery model.
+
+VERIFIED SHORTLIST
+
+1. Open Music Theory, Version 2. Mark Gotham, Kyle Gullings, Chelsey Hamm,
+Bryn Hughes, Brian Jarvis, Megan Lavengood and John Peterson; edited by Erin K.
+Maher. VIVA/Pressbooks. Copyright 2023 as stated on the current book page. [V]
+https://viva.pressbooks.pub/openmusictheory/
+
+Broadest first candidate: chromatic harmony, counterpoint, jazz, popular music,
+form and twentieth-century techniques, with a workbook. Jazz chapters include
+voicings, ii–V–I, substitutions and chord-scale theory; the chromatic material
+includes Neo-Riemannian progressions. The site states CC BY-SA 4.0 except where
+otherwise noted. It currently offers web reading, Digital PDF and Pressbooks XML;
+an EPUB download was not listed on the checked landing page.
+
+Cadence use: start with a reviewed voice-leading or substitutions module,
+then build original playable variations. Check individual examples and media
+for exceptions before redistributing them. This is our first recommendation
+based on coverage and stated reuse terms, not a claim about comparative
+learning outcomes. No independent reception review was conducted.
+
+Licence: https://creativecommons.org/licenses/by-sa/4.0/
+
+2. Robert Hutchinson. Music Theory for the 21st-Century Classroom.
+University of Puget Sound, copyright 2017 on the colophon. [V]
+https://musictheory.pugetsound.edu/mt21c/MusicTheory.html
+https://musictheory.pugetsound.edu/mt21c/frontmatter-3.html
+
+A complementary progression with practice exercises and answers. Later material
+covers jazz theory, extended tonality, quartal/quintal harmony, polychords,
+pitch-class set theory, serialism and minimalism. Its colophon permits copying,
+distribution and modification under GFDL 1.2 or later, with no invariant
+sections or cover texts. This is a different content licence from OMT's.
+
+Cadence use: especially useful for an advanced theory reference and small
+worked examples linked to composition. Keep GFDL adaptations and required
+notices explicit. Web chapters preserve structure more directly than OCR.
+No independent reception review was conducted.
+
+3. Harmony and Counterpoint II, 21M.302. MIT OpenCourseWare, Spring 2005. [V]
+https://ocw.mit.edu/courses/21m-302-harmony-and-counterpoint-ii-spring-2005/pages/syllabus/
+https://ocw.mit.edu/courses/21m-302-harmony-and-counterpoint-ii-spring-2005/download/
+
+The syllabus connects harmonic analysis and voice leading with piano,
+sight-singing and a theme-and-variations project. Chromatic harmony and modulation
+are explicit topics. Assignments can be downloaded. Its value here is the
+connection between theory work and making/performing music; availability of the
+course does not mean every assigned textbook or external recording is open.
+
+Cadence use: guide the shape of a substantial course with listening, keyboard
+work and revision across several weeks. MIT's stated site licence is
+CC BY-NC-SA 4.0, with attribution, noncommercial and share-alike conditions.
+Treat this as a separate content category rather than mixing it invisibly with
+freely redistributable software. No independent reception review was conducted.
+https://ocw.mit.edu/pages/privacy-and-terms-of-use/
+
+4. Peter Child. Writing in Tonal Forms I, 21M.303.
+MIT OpenCourseWare, Spring 2009. [V]
+https://ocw.mit.edu/courses/21m-303-writing-in-tonal-forms-i-spring-2009/pages/syllabus/
+
+Two composition projects are central: a classical minuet and trio and a
+romantic-style Lied. Analysis supports writing, and hearing compositions in
+performance is part of the course. The syllabus explicitly treats musical
+choices as contextual, with revision central to the compositional process.
+
+Cadence use: a model for a longer “write something worth keeping” pathway.
+Offer staged drafts, audible comparisons and reflection on intention. Automated
+constraint checks should support that process without pretending to assess
+artistic quality. MIT's licence and external-material exceptions apply here too.
+No independent reception review was conducted.
+
+5. Robert A. Duke and James L. Byo. The Habits of Musicianship: A Radical
+Approach to Beginning Band. University of Texas Center for Music Learning.
+The current resource page identifies the authors and purpose; the Center's
+Intelligent Music Practice bibliography dates the book to 2008. [V]
+https://cml.music.utexas.edu/online-resources/habits-of-musicianship
+
+This is beginning instrumental pedagogy, not an advanced theory text. It argues
+for musical thinking from the earliest lessons. The authors retain copyright;
+the stated blanket copying permission is for teachers and their own students.
+That statement is not a general open-content licence for redistribution in an
+app. Use it as a linked pedagogical reference unless broader permission is
+established. No independent reception review was conducted.
+
+6. Intelligent Music Practice. University of Texas Center for Music Learning.
+Current web resource; publication date not stated. [V]
+https://cml.music.utexas.edu/online-resources/intelligent-music-practice
+
+Research-informed guidance and recorded examples of practice, emphasising
+self-assessment, problem-solving and matching musical intentions to outcomes.
+It also explicitly includes expressive inflection in music production.
+
+Cadence use: ask what the learner wants to hear, let them listen back, help them
+isolate a tractable problem and return to the musical phrase. Treat these as
+principles informing our design; they do not establish that Cadence's particular
+adaptation rules are effective. No general adaptation licence was verified for
+this page. Link to it. No independent reception review was conducted.
+
+PROPOSED ADVANCED PATHWAYS — OUR DESIGN, NOT IMPORTED COURSES
+
+After smooth triad changes, the most coherent next route would be “Create and
+resolve tension”: hear dominant function, try secondary dominants, compare a
+tritone substitution, then reharmonise a short phrase. Its first release should
+stay small enough to review carefully and accept several valid answers.
+
+Next, “Make two voices sing” could connect contrary/oblique motion, suspensions
+and an independently singable counterline. Use style-specific constraints and
+have the learner sing or play each line, not just inspect vertical intervals.
+
+“Change colour without losing the phrase” could connect modal mixture,
+chromatic mediants and a choice of return to the original key. “Shape an idea
+into a piece” could explore phrase structure, motif development and variation.
+
+Finally, “Compose beyond functional harmony” could introduce quartal voicings,
+pitch-class transformations and a small minimalist process. Hearing and making
+examples would keep the formal vocabulary attached to sound.
+
+For each module, retain an edition/URL, source section, licence and exceptions,
+authors, adaptation note, original or licensed score assets, and the scope of
+any automated check. EPUB remains a useful portable package for reviewed
+material; structured web chapters and XML also deserve an import route. We
+should not discard reliable structure by turning HTML into screenshots for OCR.
+
+VERIFICATION AND GAPS
+
+Six resources verified against their own institutional/publisher pages [V];
+zero attested-only citations [A]. Relevant licence pages and the Hutchinson
+colophon were retrieved. This note uses no unverified ISBNs or invented DOIs.
+The precise OMT jazz-voicings chapter failed to open in the research tool, so
+its description here relies on the current publisher's table of contents,
+not a claim to have reviewed all chapter examples. The checked OMT landing
+page does not establish EPUB availability elsewhere.
+
+Coverage is deliberately Western tonal/jazz and English-language. It does not
+yet provide adequate paths for other musical traditions, culturally specific
+rhythm systems, microtonality, or a broad account of contemporary pedagogy.
+No comparative teaching-effectiveness review, asset-by-asset rights audit, or
+human learner trial was completed. The next content pilot should involve a
+musician reviewing the lesson and a learner trying the complete sequence.

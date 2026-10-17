@@ -1,0 +1,4 @@
+[
+ {"title":"Small steps, steady pulse","bars":[[{"midi":60,"ticks":480},{"midi":62,"ticks":480},{"midi":64,"ticks":480},{"midi":67,"ticks":480}],[{"midi":67,"ticks":480},{"midi":65,"ticks":480},{"midi":64,"ticks":480},{"midi":62,"ticks":480}],[{"midi":60,"ticks":480},{"midi":64,"ticks":480},{"midi":62,"ticks":480},{"midi":67,"ticks":480}],[{"midi":64,"ticks":480},{"midi":62,"ticks":480},{"midi":60,"ticks":480},{"midi":60,"ticks":480}]]},
+ {"title":"Make room for the spaces","bars":[[{"midi":60,"ticks":960},{"midi":64,"ticks":480},{"midi":67,"ticks":480}],[{"midi":65,"ticks":480},{"midi":64,"ticks":480},{"midi":62,"ticks":960}],[{"midi":60,"ticks":480},{"midi":-1,"ticks":480},{"midi":64,"ticks":480},{"midi":62,"ticks":480}],[{"midi":60,"ticks":960},{"midi":-1,"ticks":960}]]}
+]

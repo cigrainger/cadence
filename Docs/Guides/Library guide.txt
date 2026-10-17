@@ -1,0 +1,106 @@
+CADENCE · YOUR MUSIC LIBRARY
+
+A HOME FOR YOUR PIECES
+Open Library in the sidebar, or press Command-8. Existing editable scores and
+standalone MusicXML studies appear automatically. The collections separate
+Sheet music, My compositions and the included Examples. Search by title,
+composer, instrument or tag; filter favorites and sort by title or last opened.
+
+PDF imports keep their original source links and page-review controls. New
+MusicXML imports go into Sheet music, including files opened in Compose.
+Older editable scores without provenance are treated as compositions unless
+they exactly match an included example. Use the Collection menu on a piece to
+correct or change that classification. Moving collection does not move files,
+change notes or remove an original PDF link.
+
+New composition creates a guitar or piano score. Editable examples and
+imported scores offer Make my own composition copy: a new score with the same
+music, its own identity and no original-PDF link or inherited AI notebook.
+The source remains untouched. Native .cadence-score imports retain their source
+reference when present; library metadata remains local to each library entry.
+
+YOUR PIECE NOTEBOOK
+Each piece has an optional composer/artist credit, tags, a learning goal,
+notes, a favorite and a stage: To explore, Learning or Comfortable. Stages are
+your own reflections, not a claim that Cadence assessed your playing.
+Changes save locally as you make them. The Overview shows the opening notation
+for editable scores, original-PDF review status and linked practice copies.
+
+Open notation returns to Compose; Open study opens a standalone MusicXML score
+in Studies. Practise creates or reuses a saved practice copy with the selected
+bars. Copies are listed under their parent piece rather than becoming duplicate
+library entries. They retain the music and practice progress from when saved.
+If the parent score is absent, its saved practice copy remains discoverable as
+its own library entry. Removing a study is still available in Studies.
+
+LEARN
+The Learn tab connects this piece to saved practice pathways and a review
+schedule. Create a local plan or request AI-tailored passage work. Exercises
+use the selected notes; passage reports stay separate from checked answers.
+See Piece pathways guide.txt for the complete workflow and limits.
+
+ANALYSIS
+Choose Analysis, then select a part (for multi-part MusicXML) and up to 16 bars.
+Bar numbers are positions in the score, which may differ from printed labels.
+Analyse these bars requests a summary, supported musical observations and small
+practice steps tailored to this piece's goal and notes. Each observation or step
+has a validated bar range that opens the passage for editing or practice.
+
+Analysis is of the selected passage, not a claim to have analysed the entire
+piece. Dense selections include only the first 160 note/rest events, clearly
+identified in the UI and request; choose a smaller passage for complete coverage.
+Unfinished PDF imports are identified as incomplete and unreviewed drafts.
+
+New analysis preserves earlier results; the latest 12 are retained per piece.
+Each records its scope, date, model and goal at the time. If the score changes,
+older results stay readable with an earlier-version notice and disabled bar
+links. Generate a new analysis to get links for the current music. A page's
+review mark alone does not change the music version.
+
+COACH
+The Coach tab has a saved conversation dedicated to this piece. Ask about
+technique, harmony, style or your goal. Your selected bars, piece goal and notes
+provide context. Include my learner profile is optional and initially off.
+The coach can refer to the latest analysis of the same score and exact passage,
+while treating it as an unverified interpretation.
+
+The last 24 completed question/answer exchanges are retained. Only the four most
+recent exchanges matching the current score version and exact passage are sent
+with a follow-up. Older conversations remain readable with their scope and an
+earlier-version label where appropriate; material from another piece is never
+silently mixed in. Failed requests leave the question and saved conversation
+intact. Stopping or navigating away cancels an active request; late results
+cannot attach themselves to another piece.
+
+MODEL, PRIVACY AND SAVING
+Library analysis and coaching use the model selected in Settings → AI coach and
+your Keychain-stored OpenRouter key. PDF transcription separately keeps Sol high
+as its default. Requests occur only when you choose Analyse or Ask coach. They
+require ZDR and stop after four minutes total, including provider keepalives.
+There is no automatic paid retry. Already-sent work may still be charged.
+
+Requests include symbolic notation, piece metadata/goal/notes, applicable recent
+conversation and, if enabled, your learner profile. The original PDF and audio
+are not uploaded by library coaching. It cannot verify transcription accuracy,
+listen to your performance, or infer an unseen arrangement from a title.
+Suggestions are interpretations for your review, not assessments of mastery.
+
+The notebook is saved in ~/Library/Application Support/Cadence/library.json,
+alongside existing editor, study and PDF-source files. Back up the entire Cadence
+data folder; keys remain separately in Keychain. Library notes and AI exchanges
+are not embedded in MusicXML, MIDI or .cadence-score exports. If a notebook is
+damaged or from an unsupported future version, Cadence preserves it and disables
+changes to those notes while your existing scores remain available.
+
+A failed local save preserves the previous notebook. If an AI reply arrives but
+cannot be saved, keep the piece open and use Save received reply again; this
+retries the local save without making another model call.
+
+VERIFICATION
+The core regression suite covers library grouping, identity-stable music versions,
+notebook round trips, analysis structure and bar bounds, request context,
+exclusion of old conversations, ZDR and deadline cancellation. Native checks
+cover persistence, per-piece response isolation, cancellation, saved practice
+links, failed-save recovery and preservation of a damaged notebook.
+New coaching requests are tested with injected responses. Preview analysis and
+conversation examples are authored local fixtures, not live model evaluations.

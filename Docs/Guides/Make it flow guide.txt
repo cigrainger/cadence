@@ -1,0 +1,60 @@
+CADENCE — MAKE IT FLOW
+
+START
+Open a piece in Library → Practise this piece. Choose a reviewed 1–8-bar
+phrase and an opening tempo you would like to reach comfortably. Play the
+opening pass, then choose Make it flow in the practice panel. Existing saved
+sessions can use it during their Focus step or after More supported practice.
+The full score stays visible; only the loop is highlighted.
+
+JOINS
+Cadence offers a loop containing the bars on both sides of a barline. It ranks
+a join when the opening showed a late, early, missing or different first
+entrance. Why this join? explains the observation. It does not infer fingering,
+hand position or physical technique. Complete ties may expand a loop beyond
+two bars. The Passage selector also offers the whole opening phrase. A one-bar
+opening can still use tempo and support practice, but has no internal barline.
+This version uses complete regular bars; choose a phrase after any pickup.
+Arbitrary beat-length loops are not added.
+
+TEMPO AND SUPPORT
+Choose the exercise, tempo, click and one or three passes. Either-hand piano
+practice can retain Cadence’s partner part or turn it off. Both-hand and rhythm
+practice have no partner. Each loop has a fresh full-bar count-in and saves
+separately. Settings stay fixed during a pass and throughout requested loops.
+
+After two consecutive comparable completed attempts within 24 hours, Cadence
+may offer five bpm more, five bpm less, or less support. It counts entrances
+rather than chord size. At least 80% on-time entrances in each pass, with at
+most one extra press, can suggest an increase. Repeated results below 60%, or
+more than two extra presses, can suggest slowing down. These are transparent
+practice rules, not calibrated proficiency estimates. Mixed results invite
+another pass or a different join. Callback-arrival MIDI timing and changed
+calibration offsets cannot justify a tempo recommendation.
+
+Tempo ranges from 40 bpm to your chosen opening tempo. At the opening tempo,
+steady one-hand attempts may suggest removing the partner. The click then
+moves through every beat, each bar’s first beat, alternate bar starts, and
+count-in only. With alternate bar starts, the intervening bar has no click.
+The original full-bar count-in always remains. You can choose any setting
+without earning it, and every suggested change needs your action.
+
+RETURN AND LISTEN
+Choose Back into the phrase when ready. For two-staff piano, make at least one
+both-hand focus attempt first. The return restores the surrounding phrase and
+opening tempo, with partner and click off. Your piano take is saved for Shape
+the phrase. Listen, compare takes with the same source and support conditions,
+and leave an optional reflection about how it felt. This reflection does not
+alter the review schedule. The independent delayed return remains separate.
+
+SAVING AND SCOPE
+Join selection, tempo and support survive relaunch. Results retain the exact
+source and support used; changing a join does not rewrite an older take. Failed
+saves keep a pending pass in memory for retry, and source edits block applying
+it to different music. Practice format 12 migrates older data and protects it
+from older writers. Quit an older Cadence before opening this release.
+
+Uses the existing MIDI pitch/entrance assessment in 2/4, 3/4 and 4/4, for one
+staff or a supported two-staff piano part. This release does not add guitar
+microphone assessment, compound metre, technique grading or a live software
+piano monitor. Use your piano’s own tone. Physical FP-10 testing remains pending.

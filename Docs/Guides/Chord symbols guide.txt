@@ -1,0 +1,73 @@
+CADENCE — CHORD SYMBOLS AND LEAD SHEETS
+
+In Compose, choose Chord symbols above the score. Enter a symbol, its bar and
+beat, then Add symbol. Choose an existing symbol in the list to edit or remove
+it. New symbol starts another entry; Done returns to the score. The small
+buttons beside Chord symbols reopen entries in the currently selected bar.
+The same controls are available beside the original in Source & draft view.
+New → Lead sheet with chord symbols provides an original four-bar example.
+
+Examples: C, Dm7, G7(b9), Bb13, F#dim7, Bm7b5, Cmaj7/E, G7sus4, C6/9 and N.C.
+ASCII #/b or musical accidentals work. Common minor, major, diminished,
+augmented, suspended and extended spellings are accepted. Alterations and
+added/omitted degrees are structured data. An unrecognised suffix gets a
+visible error; Cadence does not guess what it means.
+
+Beat numbers follow the displayed meter: in 6/8, beat 2 is the second eighth;
+in 4/4, beat 2 is the second quarter. Fractions such as 1.5 are allowed. A
+symbol may occur between written note attacks. Several changes can share a
+bar, with one symbol at each position on each notation staff. Piano may place
+symbols above either staff. Guitar symbols appear above notation, once,
+rather than duplicating above TAB. Guitar chord roots are concert pitch.
+
+The symbols are independent of written voicings. Editing a label does not
+change the written notes or their playback/MIDI export. Follow changes opens
+separate guitar/piano voicing suggestions and untimed MIDI drills from the
+selected symbols. It does not insert accompaniment into the score. See Follow
+the changes guide.txt. Roman-numeral analysis for arbitrary pieces and timed
+accompaniment remain follow-ups.
+
+Undo/redo, bar insertion/deletion, duplication, passage copy/paste, clearing
+and transposition include the chord symbols. Transpose changes both root and
+slash bass; octave-only shifts preserve spelling. Transposition uses the
+score's sharp/flat preference and preserves flat roots where practical.
+Changing the key signature alone still changes the signature, not the music.
+A shorter meter is rejected if it would remove a late chord symbol.
+
+MusicXML exchange preserves the supported root/kind/bass/degree structure,
+beat positions, staff and kind-text suffix. Styles and engraving are regenerated.
+Stacked polychords, Nashville/Roman-numeral functions, inversion-only markings,
+chord frames, microtonal roots and unsupported harmony structures are rejected
+for editable import; retain the original and read it in Studies. Cadence does
+not claim lossless exchange with every notation editor.
+
+PDF import now requests printed chord labels with bar, beat and staff. It does
+not infer unwritten harmony or invent accompaniment. Unsupported labels remain
+in the page review notes with their position for manual entry; the original
+page remains beside the draft. A retry can replace that page's symbols after
+review. Symbols and corrections on other pages retain their identities.
+Editing a symbol clears its page's review mark and invalidates musical analyses
+made for the previous score. Old analyses and practice history are retained.
+Explicit piece analysis and passage coaching receive the selected chord changes
+labelled as supplied symbols, with a reminder to distinguish inferred harmony.
+Previously imported PDFs are not sent again automatically.
+
+Version 0.17 uses editable score format 4. Older scores migrate when opened;
+the next save retains the previous file generation. Older versions reject
+format 4, preventing them from silently discarding the chord symbols. Quit the
+older app before opening this release and continue with the new version.
+
+Validation covers chord syntax, unsafe/malformed input, MusicXML cursor offsets,
+non-480 divisions, guitar/piano round trips, undo, revision identity, bar edits,
+transposition, PDF page replacement and legacy score migration. Native desktop
+checks verify rendered labels and note selection on guitar and piano. The
+renderer uses an engraving-only adapter for chord offsets and printed suffixes;
+saved/exported MusicXML keeps the structured harmony entries.
+
+No paid model request is required for these checks. New PDF chord-recognition
+accuracy still needs review against real imported pages; local schema and
+conversion tests do not establish vision-model accuracy.
+
+MusicXML references:
+https://www.w3.org/2021/06/musicxml40/musicxml-reference/elements/harmony/
+https://www.w3.org/2021/06/musicxml40/musicxml-reference/elements/degree/

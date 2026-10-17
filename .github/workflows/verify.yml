@@ -1,0 +1,52 @@
+name: Verify Cadence
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  repository:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.13'
+      - run: python3 Scripts/check_repository.py
+      - run: python3 -m unittest discover -s Scripts -p 'test_*.py'
+      - name: Check first-party JavaScript syntax
+        run: |
+          node --check site/assets/site.js
+          node --check Resources/ScoreViewer/score.js
+          node --check Resources/EditorViewer/editor.js
+      - name: Scan public source and history for secrets
+        run: Scripts/scan_secrets.sh
+      - name: Check known dependency advisories
+        run: python3 Scripts/check_advisories.py
+  tests:
+    runs-on: macos-15
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Check Swift formatting
+        run: xcrun swift-format lint --strict --configuration .swift-format --recursive Sources Tests
+      - name: Test core and native state with coverage
+        run: ./verify.sh --tests-only
+      - name: Keep verification evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: cadence-verification
+          path: |
+            .verification/*.json
+            .verification/*.log
+          if-no-files-found: warn
+          retention-days: 14

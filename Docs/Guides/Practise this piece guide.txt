@@ -1,0 +1,87 @@
+CADENCE — PRACTISE THIS PIECE
+
+Library → choose a piece → Practise this piece.
+Also available from Compose → Practise and from Studies. A saved study copy
+links back to its original composition when that composition is in the library.
+
+1. OPEN
+The full selected part remains in view. Choose one notation staff or Hands together for a two-staff piano part, a comfortable
+40–160 bpm and 1–8 bars. Use the passage map or bar controls. Each assessed pass
+is at most 60 seconds / 256 attacks in 2/4, 3/4 or 4/4. Include complete ties.
+Imported PDF pages must be reviewed against the originals first. No chord
+symbols or AI model are needed for this feature.
+
+Connect your MIDI keyboard, release its keys, then Count in & play. After one
+bar of count-in, the guiding click stops. Continue through mistakes. Cadence
+compares written sounding pitches and entrances; it does not infer why a note
+was difficult. The full score remains visible and scrollable.
+
+2. FOCUS
+The opening pass chooses a small area from observed errors, preserving complete
+ties. Play the notes slower with a click, or tap the rhythm on Space or any
+piano key. A chord uses one rhythm tap, a tie needs no second tap, and rests keep
+their time. Choose one pass or three loops, each with a fresh count-in and a
+separate saved result. Listen or Loop & listen plays the selected staff.
+Stop whenever you need; unfinished passes receive no grade. After a focused
+pass, choose Back into the phrase. You decide when to move on.
+
+3. CONNECT
+Play the original opening phrase again at its opening tempo, without a guiding
+click. A one-bar opening expands to neighbours when supported. This is still
+supported same-session practice, even if it is accurate. The result and your
+place are saved atomically.
+
+4. RETURN LATER
+Practice → Bring it back offers the phrase tomorrow. Read from the full score
+and play before listening or warming up the phrase. A first delayed pass with
+native MIDI timestamps is independent evidence. A cancelled/restarted pass,
+assistance or timestamp fallback is supported evidence, including after relaunch.
+Use More supported practice whenever helpful; all exercises remain open.
+
+The local review policy spaces successful independent returns at 1, 3, 7, 14,
+30 and 60 days. Failed/supported returns wait at least a day for the next fresh
+check. Listening/practice in this workspace needs a further 20-hour gap. This is
+a transparent scheduling rule, not a measurement of mastery. Practice elsewhere
+cannot be detected automatically. Review results remain distinct from retries.
+
+PRACTICAL DETAILS
+Keyboard & timing provides the same optional eight-tap calibration as Play along.
+Use built-in or wired audio for timing. The offset includes your own tapping
+tendency and resets after changing keyboard/audio or sleeping the Mac. A Space
+exercise uses no MIDI offset. Assessment covers entrances and pitches only;
+note duration, pedal, dynamics, phrasing and technique remain ungraded. Repeat
+signs follow written order. MIDI monitoring is not a new live software piano;
+use your keyboard's own sound as before.
+
+The score wash shows the active bars. Below the staves: ✓ on time, ← early,
+→ late, × different pitch, – missed. Chord entrances show notes on time / total;
+Every entrance lists individual pitches, errors and extra presses. Rhythm feedback maps to the same original
+bar positions. The right panel records pitch and timing separately. Printed
+score tempo stays original; practice uses the panel's tempo.
+
+Your sessions resume from Practice → Your music, in progress. Failed saves keep
+the completed pass there for retry. A changed/deleted score or revoked PDF review
+cannot receive old results. Choose another phrase to select a different range;
+an existing range resumes its saved session and original tempo.
+
+Practice data is format 12. This release preserves scores and existing practice,
+but older apps cannot write the newer practice file. No model calls or AI credits
+are used. The FP-10 still needs a physical USB test; automated checks use virtual
+MIDI, native audio and isolated app previews.
+
+SHAPE THE PHRASE
+New piano passes also save MIDI takes. Open Shape the phrase to listen, compare
+and reflect; choose Connect the melody for focused articulation observations.
+The musical intention carries into context and review, without an expression
+grade. See Shape the phrase guide.txt for scope, pedal handling and storage.
+
+HANDS TOGETHER
+Choose Hands together before beginning a new phrase. Focus offers Right hand,
+Left hand and Both hands. The partner switch plays the other written staff on
+the shared count-in/timing clock; turn it off for a solo attempt. You can take
+either hand as often as useful, then save a focused Both hands pass to reconnect
+the whole phrase. Context and later review always use both hands with partner
+off. Saved takes contain only your MIDI playing. See Hands together guide.txt.
+
+Make it flow now adds barline joins, optional tempo suggestions and thinning
+click support inside focused practice. See Make it flow guide.txt.

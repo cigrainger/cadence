@@ -1,0 +1,70 @@
+CADENCE — HEAR IT. CARRY IT. FIND IT.
+
+Practice → Hear & sing starts or resumes a short ear-first session.
+No account, AI credits or source book is needed. These are original exercises.
+
+1. Hear: a home note, a breath, then a three- or four-note phrase. Let playback
+   finish. Stopping it does not move the session forward.
+2. Imagine: leave a few seconds of silence and hear the phrase internally.
+   Cadence does not claim to measure your imagination.
+3. Sing: explicitly enable the microphone, then sing each note for about half
+   a second. Any comfortable octave is accepted, provided the whole phrase
+   keeps its key and intervals. A repeated note needs a brief breath. Check the
+   captured phrase when ready. No recording is saved or uploaded.
+4. Play: connect the Roland FP-10 by USB, select it under Keyboard, and capture
+   one note at a time. Release each key; pedal does not join successive notes.
+   Use the piano's own sound. The reference octave is shown. Check the whole
+   phrase when ready. A chord gesture invalidates that take; restart capture.
+5. Review: compare the pitches, their order and movable-Do syllables. Singing
+   and keyboard answers have distinct evidence and review schedules.
+
+Solfège is available as deliberate support. Opening it or replaying a phrase
+marks the remaining answers in that round supported, even if a replay is stopped.
+The global solfège setting for other exercises never reveals these answers.
+You can skip singing or keyboard without an inferred grade or a review penalty.
+
+A difficult, supported or skipped opening leads to the same phrase again.
+A clean opening leads to another shape. The final round uses a different key
+with hints tucked away. It is a fresh attempt within this session; the fixed
+transfer is not guaranteed to be unfamiliar across repeated sessions.
+
+The shared review policy brings misses back in about ten minutes, supported
+matches in about twenty minutes, and independent matches initially tomorrow.
+Repeating a phrase in the same session does not extend its review twice.
+Due ear phrases take priority when the next session begins. Unseen phrases
+follow. This initial deck has six major-key shapes in C, D, F and G, in two
+reference octaves. It checks pitch and note order, not rhythm or vocal technique.
+
+Committed stages and results survive restart. One active session and the most
+recent twenty completed sessions are retained. Failed saves keep a pending
+action in memory with Retry saving / Discard; save before quitting to retain it.
+Microphone and MIDI capture must be re-armed after returning to the screen.
+Headphones help prevent reference playback being picked up by the microphone.
+
+FIND YOUR PLACE IN THE BAND
+Practice → Find the groove opens the accompaniment lab.
+Start with Dm7 → G7 → Cmaj7 → Cmaj7, a one-bar count-in and 1–4 rounds.
+Choose On the beat, Offbeat comping or Swing eighths; adjust 50–160 bpm.
+Swing here uses a fixed 2:1 eighth-note ratio, not a universal swing model.
+
+Listen once. Then choose Take the piano part to mute the piano and play along.
+Piano, bass and drums can be muted separately. Acoustic and electric piano
+sounds are available. Changes stop playback and take effect on the next take.
+All parts share one audio clock. The chord strip follows the estimated audible
+position. A connected keyboard lights the keys; its own sound is used live.
+These are unscored listening/play-along takes. Use Practise rhythm taps for
+existing assessed tapping exercises, or Follow the changes for chord practice.
+
+The app now bundles TimGM6mb sampled instruments: acoustic/electric piano,
+acoustic bass and standard drums. Normal note, chord, score and study playback
+uses sampled piano. Metronome clicks and existing timed exercise reference
+tracks retain their established synthesis. This is a compact first sound bank,
+not a concert-piano library. See Resources/SoundBanks for source and GPL-2 terms.
+
+VALIDATION AND LIMITS
+Virtual MIDI and generated tones exercise the production capture path; audio
+rendering, save recovery, target hiding and adaptive review have regressions.
+No physical FP-10 or live microphone trial was available for this release.
+Use the bundled verification report for exact results. Room noise and breathy
+or rapidly changing singing can need a second take. This transparent authored
+practice policy is not a calibrated mastery estimate or an efficacy study.

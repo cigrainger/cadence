@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleName</key>
+	<string>Cadence</string>
+	<key>CFBundleDisplayName</key>
+	<string>Cadence</string>
+	<key>CFBundleExecutable</key>
+	<string>Cadence</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.cadence.music</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>0.36.0</string>
+	<key>CFBundleVersion</key>
+	<string>39</string>
+	<key>CFBundleIconFile</key>
+	<string>AppIcon</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>14.0</string>
+	<key>NSHighResolutionCapable</key>
+	<true/>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Cadence listens to sung or played notes for the tuner and to check pitch and intervals during ear training. Audio is analysed on this Mac and is not uploaded.</string>
+	<key>NSPrincipalClass</key>
+	<string>NSApplication</string>
+	<key>NSHumanReadableCopyright</key>
+	<string>Copyright © 2026 Cadence contributors · AGPL-3.0-or-later</string>
+</dict>
+</plist>

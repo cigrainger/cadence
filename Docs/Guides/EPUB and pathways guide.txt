@@ -1,0 +1,132 @@
+CADENCE — BOOKS INTO MUSICAL PATHWAYS
+
+START WITH YOUR TWO BOOKS
+
+Open Library → Courses → Pathways → Use my books to begin. This pathway was
+designed around How to write songs on keyboards and The Jazz Piano Book by
+Mark Levine. Choose your own lawfully held files in the file chooser.
+The app does not search your Downloads folder automatically.
+Check the displayed sources, then choose Create my pathway. Creating the
+pathway makes local copies of the two originals; it makes no AI request.
+
+The Rooksby edition opens at THREE CHORDS FROM ONE (INVERSIONS), reading section
+21 in the inspected file. Its SECTION 3 opening supplies the composition link.
+The Levine edition opens at PDF pages 26–27, printed pages 17–18, Three-Note
+Voicings. Choose the equivalent sections/pages if your edition differs. EPUB
+section numbers identify reading-order files, not printed page numbers.
+
+MAKE CHORD CHANGES SOUND SMOOTH
+
+Five steps connect the two sources:
+  1. One chord, three shapes — C major inversions.
+  2. Connect C, F and G — nearby shapes and comfortable transitions.
+  3. Follow the guide tones — thirds and sevenths through Dm7–G7–Cmaj7.
+  4. Find it again in F — try the relationship in another key.
+  5. Write four bars of your own — voicings, rhythm and a musical choice.
+
+The four playable studies are original Cadence arrangements. Their rhythm,
+register and layout are not claimed as exact transcriptions of the books.
+Paraphrases of the source and added practice instructions are labelled
+separately. Your books are not included in the distributed app or source.
+
+The overview offers 10-, 15- or 25-minute suggested sessions. Choose a focus:
+a little of everything, smoother playing, or writing your own music. It brings
+back an eligible due review, suggests a small next step, and reserves time for
+composition. Every step stays open. The times are guidance, without a countdown.
+
+Each lesson places playable notation beside the book. Hear the study first.
+Read the source and check the chapter guidance, then review its linked notation
+in Compose before assessed practice. These are separate approvals. You can edit
+the guidance and notes; changes that affect the answer key require a new review.
+The EPUB panel offers contents, section search, adjustable text size, Read and
+Illustrations modes, and a larger reading window. PDF originals remain available
+with their existing page controls.
+
+PRACTICE, REVIEW AND EVIDENCE
+
+Reviewed studies reuse Wait for me, Play in time and local recall activities.
+Guided MIDI checks pitches; timed MIDI checks the supported staff's pitches and
+entrances. The guide-tone studies assess the upper staff in timed practice;
+listen to or add the bass without claiming a two-hand timing assessment.
+
+Saved practice results use the existing spaced-review schedule. Misses and
+supported attempts return sooner; later comfortable recalls can increase the
+interval. Immediate repeats do not push reviews far into the future. The
+pathway reads these schedules rather than keeping a second progress ledger.
+
+Recommendations name their reason. A due result with matched pitches but weak
+timing suggests steadying the transition. Practice evidence belongs to the exact
+score revision, passage, staff and assessment conditions. Playing the C example
+does not complete the F example. Changed or unreviewed studies return for review.
+Reflections and supported attempts remain distinct from timed performance.
+
+This is a transparent first session policy, not a calibrated mastery measure.
+It does not yet diagnose physical technique, measure every skill across all
+courses, or prove transfer to arbitrary unfamiliar music.
+
+KEEP A COMPOSITION
+
+Start my composition creates four empty piano bars with editable C–F–G–C chord
+symbols. Change the progression, add nearby voicings, and choose a rhythm or
+top-note melody. It appears in My compositions; the four studies appear under
+Sheet music. Continue my composition reopens the same score rather than creating
+a duplicate. Use the return-to-lesson link after editing.
+
+Play the phrase and save a reflection about a choice you made. The reflection
+can record that you listened back; it is self-report, not an automatic creativity
+or performance grade. A later musical edit marks the previous reflection as
+belonging to an earlier version. Empty scores cannot receive a saved reflection.
+
+If a study save fails, the overview offers Restore missing studies, including
+after restarting. This repairs the original study IDs from the saved pathway
+without reimporting the books or making another model request.
+
+OTHER EPUB AND PDF CHAPTERS
+
+Library → Courses → Book chapters → Add a chapter accepts EPUB or PDF. EPUB is
+the preferred reading source when its text and illustrations are available:
+contents, searchable sections and readable text survive without OCR. PDF is
+useful when exact printed layout is essential. Neither format makes printed
+notation automatically editable.
+
+Choose up to eight EPUB reading sections or PDF pages and add your own lessons,
+or explicitly request an AI outline. EPUB outline requests send only the selected
+text and supported illustrations, up to 60,000 UTF-8 text bytes, 12 illustrations
+and 8 MB of image data. The whole EPUB is never attached to that request. PDF
+outlines continue to send only the selected pages. OpenRouter requires ZDR and
+uses the chosen model; Sol with high reasoning remains the recommendation.
+
+For an EPUB music lesson, select one to four illustrations. Cadence creates a
+small local PDF from those images and opens the existing notation-import queue.
+Preparing it does not call a model. Importing a page is an explicit paid action.
+Review and retry work as with other imports; the lesson still links to the
+original EPUB. Keyboard diagrams may omit rhythm or octave, so expect to make
+musical decisions and corrections. Plain text alone is not a notation source.
+
+SUPPORTED EDITIONS AND LIMITS
+
+EPUB 2 and 3 with XHTML reading sections and JPEG, PNG, GIF or WebP illustrations
+are supported, up to 50 MB. This reader uses its own typography. Publisher CSS,
+scripts, remote resources, embedded audio/video and SVG artwork are omitted.
+Fixed-layout EPUBs are shown in the reading layout, so a PDF may be preferable
+for those editions. Encrypted book content is rejected; Cadence does not remove
+DRM. Optional obfuscated fonts can be ignored because the reader uses local fonts.
+
+The exact book bytes and reading-order links are retained locally. Unsafe
+archive paths, duplicate entries, excessive expansion, malformed XML and custom
+entities are rejected. Source text cannot execute scripts or fetch remote pages.
+
+Course storage upgrades from format 1 to format 2 on save, preserving the previous
+bytes through the normal recovery mechanism. Practice and editable score formats
+remain 4. Use this app version after upgrading; older versions do not understand
+EPUB sources and goal pathways.
+
+VERIFICATION
+
+Core tests cover parsing, hostile archives/markup, selected-excerpt requests,
+source identity, migration, session selection and original score correctness.
+Native tests cover local storage, review gates, virtual MIDI, spaced review,
+composition revisions, failed saves and repeat-safe repair. Desktop scenarios
+cover the overview, smaller window, EPUB text/illustrations, PDF and composition.
+The actual Rooksby EPUB and Levine PDF were inspected locally. No paid model
+request or physical FP-10 test was performed for this update.

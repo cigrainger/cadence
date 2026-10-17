@@ -1,0 +1,167 @@
+CHORD SYMBOLS — NEW IN 0.17
+Use Chord symbols to place and edit the changes above a bar. See Chord symbols
+guide.txt for spelling, slash chords, MusicXML, PDF review and preservation.
+
+CADENCE — COMPOSE
+
+Open Compose (Command-7). Quit an older running copy before opening this build.
+Existing scores and progress remain in ~/Library/Application Support/Cadence/.
+
+TRY THE TWO NEW STUDIES
+New → Fingerstyle guitar study opens “Quiet strings”: an original four-bar
+melody over sustained bass. Click a melody note or a bass note in either the
+notation or tab. The Voice picker follows the selected note. Voice 1 is the
+upper line; voice 2 is the bass. Play the passage to hear both together.
+
+New → Piano inner-voice study opens “Between the hands”: a long-note melody,
+a moving inner line in the same right-hand staff, and a left-hand bass.
+The third bar gives the inner line staccato; the fourth begins with an accent.
+Use Hand and Voice to work on each line. These examples are included in the
+CC-BY-SA-4.0 original examples and can be changed, exported or used for practice.
+
+TWO VOICES PER STAFF
+Add second voice creates a complete layer of rests on the selected staff,
+then selects its first event in the current bar. Each voice has its own
+rhythms, rests, ties, dynamics and slurs. A–G, R, arrows, Write mode and
+instrument entry work in the selected voice. Automatic stems point up for
+voice 1 and down for voice 2 when both exist. Stem can override that direction.
+Voice tools can remove the second voice; Undo restores it.
+
+Every active voice fills every bar. Shortening a note makes rests in that
+voice. Lengthening consumes following rests in that voice; it refuses to
+erase notes or dynamic markings. The other voice stays at the same positions.
+Guitar edits reserve strings for sustained notes in the other voice. Choose a
+different string or a shorter duration when two lines need the same string.
+Suggested fingerings still need to be comfortable for your hand.
+
+EXPRESSION
+Select a note and use the inspector:
+• Staccato shortens its audible length; Accent increases its attack level.
+• Dynamic offers ppp, pp, p, mp, mf, f, ff and fff. Continue removes a marking
+  at this event, inheriting the preceding dynamic in this voice (default mf).
+• Slur to joins a phrase to a later note in the same voice. The menu names
+  its bar, beat and pitch. Slurs cannot cross rests, cross voices or overlap.
+  Choose None on the starting note to remove a slur. A tie still requires the
+  same notes immediately afterwards; it joins their sound into one attack.
+• Stem offers Automatic, Up or Down.
+
+Playback uses a simple synthesiser: staccato has a 45% gate, ordinary marked
+notes 90%, and notes leading through a slur 103% for a small legato overlap.
+Accents add velocity; dynamics set the continuing level. These are practical
+audio approximations, not instrument-specific performance or guitar hammer-ons.
+Expression is applied to the entire chord. Tied notes sustain as one sound.
+MusicXML retains the symbols; MIDI carries velocity, audible note lengths and
+separate voice channels. Both work at the chosen practice speed.
+
+WRITE AND EDIT
+New → Guitar score or Piano score. Choose a key and meter, then turn on Write.
+Choose a note value and sounding octave. Enter A–G, click exact guitar frets,
+or use the piano. Each entry advances in that voice; R writes a rest. Reaching
+the end adds a bar. Turn Write off to edit without advancing. Letter shortcuts
+pause while editing the score title. Click a note to restore note entry.
+The inspector changes pitch spelling, octave, rhythm, chord tones and ties.
+
+SCORES AND PASSAGES
+Scores contain 1–128 bars, viewed in four-bar pages. Bar tools insert, duplicate
+or delete; Add four bars extends the score. From / Through selects up to 16
+bars. Copy and paste include every voice and both piano hands. Copies get
+independent identities, and slur endpoints follow their copied notes. Slurs
+and ties crossing a copied boundary are clipped. The current dynamic is
+carried into the start of a copied passage. Paste can insert or replace;
+replace extends the score if needed. Scores must share instrument and meter.
+Guitar pitches are retained while positions adapt to destination tuning/capo.
+Transform transposes, clears or deletes the selected bars. Clearing preserves
+the active voices. The clipboard stays in Compose for this session.
+Undo/Redo cover score changes. Switching scores resets that score's undo stack.
+
+Common meters: 2/4, 3/4, 4/4, 5/4, 6/8, 9/8, 12/8 and 2/2. Whole through
+sixteenth values, dotted values and complete triplet-ratio groups are supported.
+Meter changes keep existing note positions, adjusting trailing rests. A shorter
+bar is refused if notes would be lost; the editor does not automatically rebar.
+Eighths and sixteenths beam within beats, with dotted-quarter groups in compound
+time. BPM uses quarter notes; the beat inspector follows the written unit.
+
+PLAY AND PRACTISE
+Play the passage or one bar, with speed 25–150%, loop, count-in and metronome.
+The visible page follows playback. Editing or changing playback controls stops
+playback. Practise passage saves a copy in Studies, retaining all voices and
+expression. Set a tempo target, record comfortable speeds, use the instruments,
+sing a chosen voice with solfège or ask the coach about the actual notes.
+Back to Compose returns to the same bars in the original. An unchanged score
+reuses its practice copy; changed music creates a separate copy. See Passage
+practice guide.txt for the full practice workflow.
+
+GUITAR
+Notation is written one octave above sounding pitch. Tab, piano, inspector,
+audio and MIDI use sounding pitch. Changing a string retains pitch when
+possible; changing a fret changes pitch in both views. Tuning and capo belong
+to the score. Retuning preserves pitches and proposes positions across the
+whole timeline so held notes retain a string. Both staves select the same event.
+
+MIDI STEP ENTRY
+Choose MIDI keyboard above the score, select an input, choose a duration and
+turn on Write MIDI. Play a note or chord and release every key to enter the
+whole gesture. Selection advances within the current hand/voice. Sustain does
+not join entries. Input is paused on disconnect, leaving the app or closing
+the panel. Undo/Redo treats a gesture as one edit. See MIDI and practice
+guide.txt for details and current limits. This is not real-time recording.
+
+PDF IMPORT AND REVIEW
+Import PDF accepts page ranges such as 29–32, 35. Sol high is the default.
+Each selected page is sent separately; progress saves after every page.
+Completed pages form one score, with per-page source links and review marks.
+Pages & retries resumes waiting pages or retries failed pages individually.
+Retrying an existing page stages a replacement for review before it can replace
+corrections. See PDF import guide.txt for details and current limits.
+
+LIBRARY
+Library opens this score’s notebook: collection, goal, notes, saved analysis and
+coaching. MusicXML opened here is classified as sheet music. Practice copies stay
+linked to their parent piece. See Library guide.txt for analysis scope and saving.
+
+SAVE AND EXCHANGE
+Scores save locally. Export .cadence-score for exact editable state, MusicXML
+for linked notation/tab, or MIDI for playback. Original input files remain
+untouched. Earlier version 1 and 2 scores migrate to schema 3, preserving IDs;
+older single-voice events become voice 1 with automatic stems and no markings.
+Keep exact backups if you also use an older Cadence release.
+
+Compose imports one part, 1–128 complete bars, one major/minor key, one supported
+meter, a constant integer quarter-note tempo and up to two voices per standard
+staff. Each imported voice needs explicit rests in every bar. Guitar needs
+standard notation written one octave above sound, with matching linked tab
+when supplied. Piano uses treble/bass staves; a treble-only part gains an empty
+left hand. Missing guitar positions can be proposed; supplied positions stay.
+Supported expression: simple slurs within a voice, staccato, accents, ppp–fff
+dynamics at note/rest onsets and up/down stems. Advanced marks that are
+recognised but unsupported are rejected with an explanation; read these in
+Studies. Layout/beaming are regenerated. This is not a general lossless
+converter. MusicXML round-trips were checked inside Cadence, not certified
+against every external notation editor.
+
+MIDI contains sounding notes, tempo, meter, key, guitar/piano program, voice
+channels, expression velocity/gates and the complete duration, including empty
+ending bars. Use MusicXML or .cadence-score for editable notation and fingering.
+
+RENDERING
+OpenSheetMusicDisplay is the offline renderer. Cadence owns editing, audio and
+export. The renderer and its license notices are bundled locally. Earlier
+experimental renderer selections migrate to the supported renderer without
+changing the score.
+
+VERIFICATION AND CURRENT BOUNDARIES
+Core regression tests cover old-save migration, independent voices/rhythms/ties,
+guitar string occupancy, slur copying/clipping, dynamics/articulation playback,
+MusicXML round-trips, voice channels, chord expression, beaming and the existing
+theory/practice tools. Native checks cover voice selection, note/tab mapping,
+expression editing and undo/redo, persistence, source-grounded practice copies,
+notation cursors and silent audio output. Synthesised sample checks verify
+relative dynamics and the shortened staccato envelope. Preview/selfchecks do
+not call AI models, open a microphone or alter your saved work.
+
+Pedal, more than two voices per staff, overlapping/nested or cross-staff slurs,
+mixed meters/keys, engraving/page-layout tools, automatic whole-book import
+and audio transcription remain future work. The simple synth
+approximates expression; it is not a sampled piano or guitar performance.
+
+Cadence’s source is AGPL-3.0-or-later. Bundled dependencies retain their notices.

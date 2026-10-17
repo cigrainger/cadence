@@ -1,0 +1,14 @@
+TimGM6mb.sf2 (unmodified), version 1.3
+Copyright 2004 Tim Brechbill; 2010 David Bolton. GPL version 2.
+This independently licensed sound-bank asset is included alongside Cadence's AGPL-3.0-or-later application source.
+See Copyright.txt and GPL-2.0.txt in this folder.
+
+Source distribution: https://deb.debian.org/debian/pool/main/t/timgm6mb-soundfont/timgm6mb-soundfont_1.3.orig.tar.gz
+SHA-256: af8f3a00e416dfb262bcaa904a1c84df04a51b72bbc1313aed012bc754bdf99b
+The source distribution contains precisely the editable SF2 bank shipped here.
+Metadata: https://deb.debian.org/debian/pool/main/t/timgm6mb-soundfont/timgm6mb-soundfont_1.3-5.dsc
+Copyright provenance: https://sources.debian.org/src/timgm6mb-soundfont/1.3-5/debian/copyright/
+
+Playback uses Apple's built-in AVAudioUnitSampler and offline AVAudioEngine rendering.
+Instrument programs (zero based): acoustic piano 0, electric piano 4, acoustic bass 32;
+percussion bank 128 / standard kit program 0. No instrument download or account required.

@@ -1,0 +1,40 @@
+CADENCE — YOUR PRACTICE ROOM
+
+Cadence now opens in Practice. The sidebar groups your music separately from
+reference and tools; the existing Command-1 through Command-8 shortcuts keep
+their meanings. Command-3 returns to Practice home.
+
+If you have the smooth-changes pathway, its next session is one click away.
+An unfinished session resumes the same prompt, feedback and attempts. A pending
+answer after a failed save is retained in memory; Continue session takes you
+back to save or discard it. It is not marked saved until the write succeeds.
+Without a pathway, the home offers an interval exercise and a route to courses.
+
+Bring it back combines passage reviews from your music, guided MIDI reading,
+rhythm/timed practice and chord changes. It uses the existing review schedule,
+keeps new activities distinct, and excludes changed or paused piece pathways.
+The exercises themselves continue to schedule concept and singing questions;
+the home is not an exhaustive count of every due question. Adaptive voicing
+reviews return through the opening check of your suggested session.
+
+Hear & sing, Find the groove and Follow the changes open existing activities.
+All exercises opens the full practice workspace. Make it yours opens your
+pathway composition or a recent composition, or starts a piano phrase.
+
+Inside a smooth-changes session, the stage strip shows where you are, not a
+mastery score. The score and input/feedback stay beside each other. After a
+checked answer, or when you deliberately reveal a solution, a diagram connects
+the low, middle and high voices. Labels include octaves; a dashed line marks a
+voice that stays put. Independent prompts keep the destination hidden in both
+the notation and the diagram. The home illustrates a separate seventh-chord
+change rather than an answer from the opening triad check.
+
+The reading and notation workflows remain available in Library. These changes
+use no AI credits and require no data-format migration. The visual system still
+uses the light appearance. Physical FP-10, microphone and full VoiceOver testing
+remain to be done; the automated checks use virtual MIDI and isolated fixtures.
+
+Hear & sing now opens the resumable hear → imagine → sing → play pathway.
+Find the groove opens the sampled band. The legacy interval and rhythm games
+remain in All exercises. Ear phrase reviews are selected on opening a new
+ear-first session; the Bring it back list remains passage reviews.

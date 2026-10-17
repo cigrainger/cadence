@@ -1,0 +1,15 @@
+<!-- title: Help shape Cadence -->
+<!-- description: Music teaching, code, accessibility and documentation all belong in the project. -->
+<h1>Help shape Cadence</h1>
+
+<p class="intro">A useful contribution can be a clearer explanation, a reproducible bug, a better exercise or a small, tested change.</p>
+<h2>Start with a task</h2><p>Use the <a href="https://github.com/cigrainger/cadence/issues">issue tracker</a> to describe a problem or propose a bounded improvement. For an exercise, explain the musical goal, what the learner does and what evidence the app can honestly collect.</p><p>Do not include copyrighted book scans, private compositions, keys or application data in a public report. Reproduce problems with an original example when possible.</p>
+<h2>Build and check</h2><p>The repository contains the native SwiftUI app, pure music/learning logic, tests and this static site. Xcode and macOS are required for the app.</p><pre>git clone https://github.com/cigrainger/cadence.git
+cd cadence
+./build.sh
+./verify.sh --tests-only
+python3 Scripts/check_repository.py
+python3 Scripts/build_site.py</pre><p>Read <a href="https://github.com/cigrainger/cadence/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a> for the full workflow, formatting, fixtures and review expectations.</p>
+<h2>Keep the boundaries clear</h2><p>Musical rules and learning evidence belong in MusicCore. Native views handle presentation and explicit actions. Hardware, network requests and durable storage stay behind testable adapters. Reuse the existing score, review and audio models before creating new ones.</p><p>Document decisions and invariants, especially when a result counts as supported or independent. Add regression tests for behaviour changes, failed saves and untrusted imports where they matter.</p>
+<h2>Share improvements on the same terms</h2><p>Code contributions use AGPL-3.0-or-later. Documentation and original artwork use CC BY-SA 4.0. Sign off commits under the Developer Certificate of Origin; there is no copyright-assignment CLA. Third-party additions need provenance, a license and a dependency-inventory update.</p>
+<h2>Areas where human testing matters</h2><p>Different MIDI keyboards, guitar and singing conditions, VoiceOver, keyboard-only navigation and longer learning sessions need real users. Automated screenshots and virtual MIDI checks are useful, but they cannot establish musical feel or accessibility by themselves.</p>

@@ -1,0 +1,111 @@
+CADENCE — PLAY IN TIME AND TAP THE RHYTHM
+
+PLAY A PASSAGE
+
+Open a piece in Library or Compose, choose Practise passage, then Play in time
+in Studies. Select one notation staff (right or left hand for piano) and 1–8
+bars. This first version supports a steady 2/4, 3/4 or 4/4 meter, 40–160 bpm,
+up to one minute, and at least 120 ms between distinct entrances. Choose a
+slower tempo for fast subdivisions. Both-hand timed grading is still planned.
+
+Connect and choose your MIDI keyboard. Release the keys, choose the tempo,
+and press Count in & play. The count-in uses one bar. Keep the click enabled
+for support, or switch it off after the count-in. Keep going through mistakes;
+each entrance is compared to its own place on the timeline.
+
+Wait for me remains available beside Play in time. Use it to learn the notes
+before trying a steady tempo. Its results remain separate and do not establish
+rhythmic accuracy.
+
+TAP A RHYTHM
+
+Practice → Rhythm → Tap it out offers four two-bar patterns: steady pulse,
+eighth-note subdivisions, rests, and offbeats. Every pattern stays available.
+Hear the pattern plays a count-in followed by the target taps over a quiet
+beat. The grid labels 1 & 2 & 3 & 4 &: a dot means tap and a dash means no new
+tap. Each pair of boxes is one quarter-note beat.
+
+Choose Spacebar or MIDI keyboard, then Count in & tap. Press and release Space
+or any single piano key on each dot. Rhythm mode ignores pitch. Playing several
+keys adds extra presses; held keys and computer key repeat do not create taps.
+Space is captured only in the active practice window during a running pass.
+Typing in text fields, shortcuts with modifiers, and other windows keep their
+normal behavior. This requires no Accessibility permission or global keyboard
+monitor. Audio, MIDI and taps stay on the Mac.
+
+WHAT THE FEEDBACK MEANS
+
+Pitch and entrance timing are separate. A correct pitch can be early or late.
+Chords allow their constituent presses to arrive in either order. Tied notes
+do not require an extra attack; a tie held into the first bar is played once.
+Repeated notes require a new press. Pedal sound does not produce a new attack.
+Rests retain their time, so presses in silent gaps can count as extras.
+
+On time means within ±80 ms, narrowed to 20% of the shortest entrance spacing
+for faster subdivisions. Matching windows are limited to 400 ms and less than
+half the spacing to the neighboring entrances. A press beyond a window appears
+as an extra press plus a missed note. This deliberately prevents one mistake
+from shifting the rest of the phrase's matches.
+
+The result separates on-time, early, late, wrong-pitch, missed and extra presses.
+It shows the offsets and bars to revisit. Practise that smaller passage selects
+the first difficult bar with its preceding bar and reduces the tempo by 10 bpm
+(minimum 40). Rhythm patterns can also be retried at a slower tempo.
+
+Note duration, pedal technique, dynamics, fingering, expressive rubato, swing,
+repeats and tempo changes are not graded. This is a fixed-tempo entrance check,
+not a measure of musical proficiency. An unfinished or interrupted pass is not
+saved as a failure. Stopping, changing selection, losing app focus, sleeping,
+disconnecting/resetting MIDI, or changing the audio engine stops the run.
+
+TIMING SETUP
+
+Clicks are pre-rendered at sample offsets and scheduled on the audio host
+clock. Native MIDI packet times are retained before delivery to the interface;
+Space uses the native keyboard event time. Display refresh does not time taps.
+The audio engine's reported output presentation latency is included. Device
+latency is still an estimate; physical FP-10 and acoustic loopback measurements
+have not been performed. Built-in or wired audio is preferable to Bluetooth.
+
+Timing setup → Check with eight taps is optional. After the count-in, follow
+eight clicks using the currently selected input. At least six reasonably
+consistent taps are needed before an offset is offered. Applying it is your
+choice. This combines device delay and your tapping tendency; it cannot
+separate them or certify absolute accuracy. It is not saved as practice.
+
+Offsets can be adjusted from -250 to +250 ms in 5 ms steps. Positive offsets
+compensate for consistently late input. They last for this view visit; changing
+input or MIDI connection resets them. Recheck after changing audio devices.
+Saved reviews show the previous offset, but reopen with zero so an old setup
+does not silently calibrate a different device.
+
+MIDI with absent or future timestamps falls back to the callback arrival time
+and is identified in the result. A clean pass containing such input gets a
+supported review, not a longer confident interval.
+
+SAVING, REVIEW AND COACHING
+
+Completed results, their journal entry and spaced review save in one atomic
+transaction. A failed save retains the result in AppState, including when you
+leave the screen; try saving again or explicitly discard it. Pending results
+are memory-only, so save before quitting. Beginning another pass cannot replace
+an unsaved completion. Retry saves are idempotent.
+
+Results are scoped to the score's musical revision, passage, hand, tempo,
+input method, click setting and offset. Renaming a piece preserves its evidence;
+musical changes require a fresh pass. Saved results are revalidated against the
+source before committing. There are at most 256 detailed current review records
+and 10,000 journal entries, matching the bounded local practice design.
+
+Practice → Return to the pulse shows due timed passages and rhythm patterns.
+Misses return after 10 minutes; supported input after 20 minutes; clean due
+reviews progress through 1/3/7/14/30/60 days. Immediate repeats do not extend
+spacing. A review reopens its passage, hand, tempo, input and click setting.
+
+Explicit passage and piece coaching requests can include these observations
+with their conditions and limitations. Results never auto-complete a pathway
+or claim mastery. Nothing is sent to AI until you request coaching or a pathway.
+
+The practice snapshot upgrades from formats 1 or 2 to format 3 on successful
+save, preserving the preceding bytes in practice-state.json.previous. Older
+apps reject format 3 rather than silently dropping the new timing results.

@@ -1,0 +1,126 @@
+CADENCE · MULTI-PAGE PDF TO AN EDITABLE SCORE
+
+PRINTED CHORD SYMBOLS
+New requests also read chord labels with bar, beat and staff. Supported labels
+become editable symbols above the notation. Source & draft → Chord symbols
+lets you correct them alongside the original. Unsupported labels are listed
+with their position in the page's review notes; check these before marking
+the page reviewed. The model is instructed to copy printed harmony, not infer
+it from the notes. Previously imported pages are not automatically resubmitted.
+Recognition accuracy still needs your review. See Chord symbols guide.txt.
+
+CHOOSE PAGES
+Choose Import PDF in Compose or Studies. Choose your PDF, then enter Pages
+such as 29–32, 35. Individual numbers and ranges can be mixed; duplicates are
+removed and pages are processed in file order. PDF file numbers can differ
+from printed book numbers. The viewer's page box only navigates the original;
+Use viewed page selects it for import. Choose up to 16 pages per score.
+
+Choose Guitar or Piano. GPT-6.1 Sol with high reasoning is the default.
+Argon high, Astra and Flash high remain available. This choice does not change
+your AI coach model. Add your OpenRouter key in Settings → AI coach first.
+
+Passage on each page is optional: use it for an exercise, a system, or the
+first 4–8 complete bars. Blank requests the visible written music, up to 32
+complete bars on each selected page. Pages become one score with up to 128
+bars, one key and one meter. A page that cannot fit reports its own error;
+choose a shorter passage or import it separately.
+
+Guitar imports expect treble notation written an octave above sound. Cadence
+converts it to sounding pitches and proposes linked tab in standard tuning
+with no capo. Change these in Full editor if needed. Piano retains treble and
+bass staves with up to two independent voices per staff. This does not arrange
+arbitrary piano music for guitar or reproduce printed tab fingerings.
+
+PROGRESS, STOP AND RESUME
+Import sends one selected page per request, sequentially, through OpenRouter.
+The entire PDF is copied locally and is never sent as a whole by this importer.
+ZDR is required, provider fallbacks are disabled and PDF parsing must be native.
+No external OCR fallback or automatic paid retry is used.
+
+Each page shows Waiting, Reading, Ready to review, Reviewed, Needs retry,
+Stopped, or Removed from score, plus its combined-score bar range when ready.
+Elapsed time is shown for the active request, with a four-minute total limit.
+Completed pages and attempts save immediately. A failed page does not discard
+other results; the queue continues with the next selected page.
+
+Stop import cancels the current request and keeps completed pages. Close the
+window, then reopen Pages & retries from the imported score. Resume waiting
+pages processes only waiting/stopped pages; Retry failed pages processes only
+failed pages. Each row also has its own Retry button. There is no automatic
+resume after an app restart. Work already sent may still be charged; reported
+costs and attempts with unreported costs are shown separately for each page.
+
+The score explicitly identifies missing pages. Missing pages contribute no
+bars: completed pages play consecutively until the missing music is imported.
+When a retry succeeds, its bars are inserted in book order and later bar
+numbers shift. Other pages retain their notes and corrections.
+
+RETRY A CORRECTED PAGE
+Select a page in the list, change its passage or model if desired, then Retry.
+Retrying a page that already has music creates a replacement to review. It
+never silently overwrites corrections. Review replacement shows its notation
+and tab beside the original; Apply replacement replaces only that page's bars.
+Keep current page discards the proposal. A pending replacement is saved across
+restarts. Applying a replacement clears affected review marks and the editor's
+older undo history; it cannot be undone back through an import operation.
+
+REVIEW AND CORRECT
+Open combined score, or Review on a page row. Source page selects that page's
+bars and the matching original. Moving between bars also follows the source.
+The editable panel shows up to two bars from the same source page at a time.
+The original supports zoom, Fit, arbitrary page navigation and Open PDF.
+Your corrections affect the editable score; the original stays unchanged.
+
+Click a note or tab number, or use event arrows. Correct letter, accidental,
+octave, duration, ties, chord tones and guitar string/fret. Piano Hand and Voice
+select independent lines. Up/down arrows change pitch by semitone; A–G replace
+a note and R makes a rest. Longer durations consume following rests, refusing
+to erase notes. Full editor opens all passage, expression, MIDI and export tools.
+Play these bars auditions the result. Practise these bars creates a practice copy.
+
+Page reviewed is your own checkpoint. Corrections clear the affected page's
+mark; global changes such as key, meter, tempo or tuning clear every mark.
+Inserting/deleting bars updates the source ranges. New bars belong to the
+page containing the insertion point, or the last page when appended. A fully
+deleted page remains in the page list and can be imported again.
+
+Check pitches, accidentals, octaves, rhythms, voices and page joins. Ties and
+slurs across pages need particular attention: independent page requests do not
+infer connections to unseen pages. Import notes includes the model's warnings,
+flagged gap rests and proposed-tab guidance. Review marks are not an automatic
+accuracy grade. Repeat signs are read as written bars once, not expanded.
+
+SAVE AND BACK UP
+The source PDF is copied into ~/Library/Application Support/Cadence/PDF Sources/.
+The score, page queue, source ranges, model, attempts, reported costs, warnings,
+review marks and pending replacements are stored together in editor.json.
+Identical originals with the same filename reuse one saved PDF. Older single-
+page imports still open and gain page controls when Pages & retries is opened.
+
+Export MusicXML for notation/tab, MIDI for playback, or .cadence-score for an
+exact editable copy. MusicXML and MIDI do not include source PDFs, review state
+or API keys. Cadence score exports retain local references; back up the entire
+Cadence data folder to keep the original PDFs. The key stays in Keychain.
+If an original is missing, the score is still editable; restore PDF Sources
+from your backup to review it or retry.
+
+CURRENT BOUNDARIES
+Unlocked PDFs up to 100 MB and 1,000 pages; each extracted page under 8 MB.
+Up to 16 selected pages, 32 complete bars per request, 128 bars in the combined
+score, 100 editable scores. One key/meter per score; up to two voices per staff.
+Supported: common/dotted rhythms, complete triplet groups, chords, rests,
+full-chord ties, dynamics, staccato and accents. Unsupported structures are
+reported: pickups/incomplete bars, changing key/meter, more voices, cross-staff
+voices and other tuplet ratios. Slurs, ornaments, repeats and layout need manual
+review. General lossless notation exchange is not established.
+
+VERIFICATION
+Core regression tests cover page range parsing, merge order, source mapping,
+bar edits, isolated review marks, size/key/meter rejection, staged replacements
+and restart recovery. Native checks exercise a three-page queue with a failure,
+individual retry, persistence, explicit replacement, stopping and late results.
+These multi-page checks use local fixtures and simulated responses; no model
+credits were used for this update. Earlier real-provider comparisons are in
+Transcription research.txt; their small examples do not establish scanned-book
+accuracy or guarantee another page's latency.

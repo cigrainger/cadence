@@ -1,0 +1,86 @@
+CADENCE · CREATE AND RESOLVE TENSION
+
+START WITH AN EXAMPLE
+Practice → Explore harmony → choose Piano or Guitar → Begin the original example.
+The four-bar A7 → Dm7 → G7 → Cmaj7 example is original Cadence material. Compare
+minor-third and major-third versions of the first chord pair, imagine or sing
+the resolution, then choose which version contains the dominant seventh.
+Comparisons give each chord four equal beats at 76 bpm. They reduce the first
+chord to root, third, fifth and seventh, without the source's slash bass or extra
+extensions. The destination is identically voiced in both versions.
+
+Explain the applied dominant, play its rising-semitone third-to-root line, then
+write another ending. Each step can be skipped explicitly. Wrong answers stay
+on the same activity, with the retry labelled as supported practice.
+
+EDITABLE SCORE ANALYSIS
+Open Library → a piece → Score analysis. Select reviewed bars and a local major
+key. Choose the harmony staff if the part has more than one. Click a chord card
+to write Roman numerals or another analysis label, choose a function, state the
+style/convention and explain what you hear. Keep up to six alternative readings.
+The first reading appears above the staff; all alternatives remain in the editor.
+The full score is visible and scrollable. Compose also has a Score analysis button
+for the four-bar area around the selected event. The pathway's Score notebook
+opens the same notebook; opening it during a return counts as support.
+
+Suggestions use written chord symbols and your chosen major key, not automatic
+note-to-chord inference. They are starting interpretations. They do not prove
+modulation, inversions, phrasing or a single stylistically correct analysis.
+Imported PDF pages must be reviewed first. After a musical edit, the old readings
+remain associated with the old revision; the current score starts a fresh reading.
+Changing a reading never changes the original music. Reopening a stale editing
+window cannot overwrite a newer reading.
+
+USE YOUR OWN PIECE
+From Score analysis, choose Explore tension · Piano/Guitar. The first pathway
+supports 1–8 reviewed bars, up to 32 changes, with an applied dominant seventh
+resolving a fifth down to a major/minor chord other than the stated home tonic.
+It selects the first such pair. Select a narrower passage to explore another.
+Chord symbols, including a carried-in symbol, must come from reviewed source pages.
+For other progressions, the score notebook is still editable; this first lesson
+will explain why it cannot generate its particular exercise there.
+
+PIANO AND GUITAR
+Piano: select the Roland FP-10 or another MIDI source, choose Listen to my keyboard,
+then play two separate notes, releasing each. Any octave is accepted, but the
+second must be one semitone above the first and the correct two pitch classes.
+Avoid pedal for a clear line. The check measures pitch/order, not timing, touch
+or expressive quality. Existing held notes are ignored until released. Playback,
+navigation and device resets stop capture without inventing an answer.
+
+Guitar: find the rising semitone on a suggested string/fret pair, then try the
+available full-chord shapes. These use the current tuning/capo. Hear each shape
+and the line. Save your own report of having tried them. This pathway does not
+automatically assess guitar chord recognition, fingering or technique.
+
+YOUR ENDING
+Write my alternative ending opens two blank 4/4 bars with the selected chord pair,
+as a new composition linked to its source. Change notes, rhythm and harmony in
+Compose; guitar includes editable tab. Play it back using Compose or Hear my ending.
+Return to the tension pathway and describe a choice. Finishing requires notes and
+a reflection; it does not grade artistic quality. Opening the answer again reuses
+that same composition. The original piece and the ending link to one another.
+
+INDEPENDENT RETURNS
+Hearing, Explaining, Playing and Creating have separate schedules, also separate
+between piano and guitar. Initial work is supported. Practice home brings due
+skills back with explanations and relevant note hints hidden. A clean independent
+first answer can extend only that skill's interval. A hint, wrong attempt or retry
+cannot be counted as clean recall. Early practice does not push the due date away.
+Guitar self-reports and creative reflection schedule a revisit without granting
+measured mastery. The schedule is a transparent practice policy, not a validated
+estimate of learning. Physical-instrument and learner evaluation are still needed.
+
+READING AND PEDAGOGY
+Open Music Theory, Version 2 (Gotham, Gullings, Hamm, Hughes, Jarvis, Lavengood,
+Peterson; edited by Maher): tonicization and jazz harmony.
+https://viva.pressbooks.pub/openmusictheory/chapter/tonicization/
+https://viva.pressbooks.pub/openmusictheory/part/jazz/
+MIT OpenCourseWare, Brian Robison, Harmony and Counterpoint II (Spring 2005):
+analysis combined with sight-singing, keyboard work and composition.
+https://ocw.mit.edu/courses/21m-302-harmony-and-counterpoint-ii-spring-2005/pages/syllabus/
+
+These are linked references. Cadence's examples, activities and adaptation rules
+are original; no textbook extracts, external recordings or private books are
+bundled. The full pathway works offline; opening a reading link uses your browser.
+No OpenRouter request, paid model use or microphone permission is required.

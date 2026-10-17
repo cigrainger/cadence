@@ -1,0 +1,95 @@
+CADENCE — YOUR MUSIC, REMEMBERED
+
+START WITH A REVIEWED PASSAGE
+Open Library, select a piece, then Learn. Choose 1–4 bars, a part and one melodic
+staff/voice, with up to 12 note attacks. Two bars is a useful starting point.
+Choose which staff supplies the written chord symbols when there is a choice.
+Check the melody, key and chord symbols against the source, tick the confirmation
+and choose Begin with this passage. The session works without an AI key.
+
+For PDF imports, mark the selected original pages reviewed in Compose first.
+A passage cannot bridge a missing imported page or a replacement awaiting review.
+The score remains linked to its original pages; Score & original
+returns to the selected bars in Compose (or Studies for a MusicXML import).
+
+A passage must be a single melodic line. Chords in the selected voice are not
+silently reduced to their top note. Include complete ties at both edges. Rests,
+internal ties, sounding pitch and written spelling are retained. Guitar octave
+notation is supported. Choose a passage in one major or minor key; minor uses
+Do-based solfège (Do, Re, Me, Fa, Sol, Le, Te).
+
+THE FIRST ENCOUNTER
+1. Hear the home note, a breath and your selected melody. Let playback finish.
+2. Imagine the phrase without sound. Take a moment; imagination is not graded.
+3. Sing using a comfortable syllable or solfège. Each stable note needs about
+   half a second. Leave a brief breath between repeated notes. Any consistent
+   octave shift is accepted. Microphone audio stays on this Mac and is not saved.
+4. Find the phrase on your MIDI keyboard, one note at a time, releasing each key.
+   The keyboard check uses the score's sounding octave. Your piano supplies its
+   own sound. Chord gestures and overlong takes need a fresh capture.
+5. Review the pitches and solfège, then play with the band if harmony is available.
+
+Check each capture explicitly. Pause and restart if the microphone heard a noise
+or you played a wrong gesture. Skipping is always available and creates no grade.
+Pitch and note order are assessed; timing, pedal, expression, technique and
+imagination are not. The first encounter is supported learning even if it matches.
+
+PLAY ALONG WITH THE WRITTEN CHANGES
+The band follows this passage's chord symbols, including carried-in chords,
+changes inside a bar, slash bass and N.C. It does not infer harmony from notes.
+The first version uses complete 4/4 bars, 50–160 bpm and one to four rounds.
+Piano voicings use the existing chord-tone and voice-leading logic; bass follows
+the root or printed slash bass. Choose on-beat, offbeat or fixed 2:1 swing backing.
+The guide melody keeps the written rhythm, including straight eighths.
+
+A four-beat count-in remains when parts are muted. Toggle piano, bass, drums and
+the guide melody independently. Leave the guide muted to take the melody part,
+or mute piano to practise accompaniment. Changing a setting stops the band.
+Playback stops when you leave or the app loses focus. No microphone is used here.
+The shared compact sampled bank supplies piano, bass and drums.
+
+Opening a play-along is recorded as an ungraded visit. It is not a claim that you
+played, completed a round or performed correctly. Unsupported meters or missing
+harmony explain why the band is unavailable; the ear exercise can still proceed.
+
+SAVE, RESUME AND RETURN
+Every committed stage is saved locally with the exact piece, revision, bars,
+staff and voice. You can leave and resume an unfinished passage from Practice home
+or the piece's Learn tab. Several passages can remain in progress. If a save
+fails, Retry saving repeats only the local save. No new capture is required.
+Unsaved pending actions remain in memory until saved or explicitly discarded.
+
+After Finish session, a return is scheduled through the existing practice system.
+Singing and keyboard recall have separate review cards. Independent return waits
+at least 20 hours after the last recorded encounter; early returns remain available
+in the library and count as supported practice. Successful delayed recall can
+lengthen the schedule. A miss or use of support calls for another encounter.
+The scheduling policy is a transparent practice aid, not a mastery estimate.
+
+The return begins with the melody and solfège hidden, without replaying the phrase.
+Hear home note supplies tonal orientation without revealing the melody. Hear it
+again, Show solfège or opening the linked score before the checks finish marks
+subsequent answers as supported. Assistance is saved before the hint or playback.
+“Independent” describes recall without these in-session aids after time away;
+Cadence cannot know whether you studied the piece elsewhere.
+
+Edits to notes, rhythm, key, chord symbols, tempo or source-page mapping invalidate
+old exercises. Their history remains saved and no old answer key grades new notes.
+Renaming a piece retains its musical identity. Revoking a PDF review also blocks
+capture until the passage is reviewed again. Start a fresh session for edited music.
+
+CURRENT BOUNDS AND CHECKS
+The first version retains up to 200 source-linked sessions. If that limit is
+reached it preserves the history and explains the limit, rather than overwriting
+it. Existing authored ear sessions keep their separate 20-session archive.
+Practice format 7 adds the optional score-linked session book; older saved data
+migrates through the existing protected atomic store. Score/course formats do not
+change. Choose Write my answer on review or completion to create a linked composition.
+See Creative finish guide.txt for the new response editor and visual play-along.
+
+Automated checks cover selection/review gates, exact source identity, ties, rests,
+minor solfège, guitar pitch, N.C., slash bass, accompaniment boundaries, delayed
+returns, hints, virtual MIDI, generated pitch detection, restart and save failure.
+Native sampled rendering and desktop previews are checked too. A physical Roland
+FP-10 and live microphone trial are still needed. No paid requests or private
+book content were used in these checks.

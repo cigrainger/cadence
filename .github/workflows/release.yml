@@ -1,0 +1,60 @@
+name: Draft a public preview release
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: read
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  public-source:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+      - run: python3 Scripts/check_repository.py
+      - run: Scripts/scan_secrets.sh
+      - run: python3 Scripts/check_advisories.py
+  package:
+    needs: public-source
+    runs-on: macos-15
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+      - name: Check tag and version
+        run: |
+          python3 - <<'PY'
+          import os, plistlib
+          version = plistlib.load(open('Resources/Info.plist', 'rb'))['CFBundleShortVersionString']
+          assert os.environ['GITHUB_REF_NAME'] == 'v' + version, 'Tag and application version differ'
+          PY
+      - run: python3 Scripts/check_repository.py
+      - run: ./verify.sh --tests-only
+      - run: ./build.sh
+      - run: python3 Scripts/package_release.py --app dist/Cadence.app --output dist/release
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: release-assets
+          path: dist/release/*
+          if-no-files-found: error
+          retention-days: 14
+  draft:
+    needs: package
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: release-assets
+          path: release
+      - name: Create reviewable draft with source, checksums and notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: gh release create "$RELEASE_TAG" release/* --verify-tag --draft --prerelease --title "Cadence $RELEASE_TAG" --notes-file release/RELEASE-NOTES.md

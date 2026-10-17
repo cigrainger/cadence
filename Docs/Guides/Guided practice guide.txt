@@ -1,0 +1,62 @@
+CADENCE — PLAY WITH MIDI
+
+Open a composition or reviewed import, choose Practise passage, then select
+Play with MIDI in Studies. Select right hand, left hand or both notation staves.
+For an external MusicXML score the same controls use its printed staff numbers.
+In Settings → MIDI, select the Roland FP-10 USB input. Enable Listen to keyboard
+when ready. The physical keyboard has not been tested during this update.
+
+The highlighted position waits for the exact sounding notes. A chord requires
+its notes to be physically held together; octaves are part of the written music.
+This differs deliberately from the separate chord-quality exercise, which
+accepts inversions and octave doublings. You can add a missing chord note or
+release an extra one without restarting the phrase. Wrong fresh presses count
+as corrections. Duplicate incoming packets do not count twice.
+
+Sustained bass notes may remain held while the melody moves. Written ties do
+not need a second press, while repeated notes do. At the start of a selection,
+a note tied in from an earlier bar is played once to establish it. Rests are
+skipped by the untimed follower; they retain their positions in the notation.
+Release notes whose written duration has ended before advancing. Pedal sound
+cannot substitute for physically playing a chord's keys.
+
+The follower checks pitches and order, not rhythm, duration, pedal technique,
+fingering, dynamics or fluency. Completion is recorded as guided reading, not
+unassisted performance. Show next notes is an additional hint and is recorded.
+Playing from this guide does not earn a claim of mastery or lock later content.
+
+Pause keeps your place. Resume first waits for held keys to be released.
+Disconnecting, resetting MIDI, losing application focus or leaving the view
+stops input. Changing passage, part or hand starts a new pass. Restart passage
+clears the current unfinished pass. Source edits require a fresh practice copy.
+A title-only rename preserves the link. The score cursor follows each attack.
+
+With one staff selected, Hear other hand plays the other notation staff(s) in
+segments between your guided steps. Each segment starts when you reach its
+step and waits if you take longer. It is optional accompaniment, not a test of
+synchronization. Your FP-10 supplies the sound of the notes you play.
+
+When a pass finishes, Cadence saves first-time matches, extra hints, wrong-note
+presses and their bar positions. Retry bars offers the first difficult bar
+with one preceding bar for context. Each different passage/hand has its own
+review identity. A miss returns after ten minutes, support after twenty, and
+clean due reviews follow the shared 1/3/7/14/30/60-day schedule. Immediate clean
+repeats cannot inflate the spacing. Guided reviews appear in Practice when due.
+
+The result, review schedule and journal summary are one atomic practice save.
+If saving fails, the completed pass remains in memory with a save-again button.
+Keep the view open until it saves or explicitly discard it. Retrying a save
+cannot double-count the pass. No MIDI or audio is sent to a service. The latest
+detailed results for up to 256 selections are retained with practice progress;
+compact session summaries remain in the existing bounded journal.
+
+Discuss passage and Create a pathway can include the saved guided result for
+that exact selection. A piece's Tailor with AI option can include its recent
+current-version guided results when practice evidence is enabled. These are
+text summaries, clearly labelled with the limits of the untimed check. No
+model is called automatically. Manual passage comfort reports remain separate.
+
+Verification uses pure matching tests, temporary-storage integration tests and
+a packaged-app scenario with simulated MIDI passing through the real view input
+handler and offline notation renderer. Run ./verify.sh to repeat these checks.
+The test suite does not access a physical keyboard, microphone or paid model.

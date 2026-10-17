@@ -1,0 +1,34 @@
+# Local tools and generated output
+.build/
+.swiftpm/
+.verification/
+dist/
+site/dist/
+node_modules/
+__pycache__/
+*.pyc
+.DS_Store
+*.app/
+*.dSYM/
+*.xcarchive/
+*.xcuserstate
+xcuserdata/
+# Credentials and private development material
+.env
+.env.*
+!.env.example
+*.pem
+*.p12
+*.pfx
+*.key
+Research/
+research/
+private/
+local-data/
+recordings/
+*.log
+# Document inputs are private unless deliberately added as named original fixtures
+*.pdf
+*.epub
+!Resources/ImportExamples/*.pdf
+!Resources/ImportExamples/*.epub

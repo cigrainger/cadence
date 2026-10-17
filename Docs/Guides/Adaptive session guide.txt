@@ -1,0 +1,76 @@
+CADENCE — A SESSION FOR SMOOTH CHORD CHANGES
+
+Library → Courses → Pathways → Make chord changes sound smooth → Begin session.
+If you have not created the pathway yet, use “Use my books to begin” and select
+your Rooksby EPUB and Levine PDF. The adaptive exercises are original Cadence
+material and work without a model request. They do not approve imported book
+notation or claim to reproduce a printed exercise.
+
+THE SESSION
+
+Opening check: find nearby voicings through C–F–G–C. On later sessions, a due
+exact voicing task can replace the first change. Prior keyboard and on-screen
+results retain separate schedules. A returning transfer task retains its own
+identity when brought into the opening review.
+
+Focused practice: after three checks, Cadence suggests a transition from the
+observed chord-tone or movement difficulty. You can choose C→F, F→G or G→C.
+Try it from two starting inversions; retries and this focused stage are support,
+not independent recall. Every stage allows skips and continuing after a miss.
+
+Independent attempt: D–A–G–D changes the key and the order. Hints begin closed;
+opening the solution or the book marks the attempt as supported. The first
+unhinted answer is distinguishable from later retries. Repeating this session
+uses the same transfer progression; success is not proof of general mastery.
+
+Composition finish: open your pathway composition, add music, choose a rhythm
+and revise a change. The editor offers “Back to session”. Listen to the phrase,
+describe one choice and keep it. The saved reflection links to that score
+revision. You can also finish today and return to writing later.
+
+PLAYING AND FEEDBACK
+
+Use three different notes within one octave, between C3 and C6. Keep any shared
+pitch in the same octave. Compare voices from low to high; each may move up to
+five semitones in this exercise. Any inversion satisfying these conditions is
+accepted. These are practice constraints, not universal rules of composition,
+fingering judgments or a measure of how comfortable your hand feels.
+
+With MIDI: choose Listen to keyboard, release any previously held notes, then
+play and release the starting shape shown in the score. Cadence checks that
+shape before accepting the next chord. Play and release your destination chord
+to submit. Alternatively, use “Check starting shape” and then “Check held chord”
+to check the physical keys down at each step, allowing a shared note to stay held. Sustain-pedal sound is
+not treated as a physically held key. Switching app/device, navigating or
+playing a demonstration pauses capture.
+
+Without MIDI: turn on On-screen keys, choose notes and Check my choice. This
+records a pitch-selection task, separately from keyboard execution. It does
+not pretend a clicked chord is a played performance.
+
+Feedback separates chord tones, shape/register, shared pitches and movement.
+You can hear your own change, try another voicing, see a suggested answer or
+continue. A successful retry never erases an earlier miss from the encounter.
+The existing ReviewSchedule supplies review dates; there is no second mastery
+score or hidden adaptive model. No timing, articulation, pedal or technique
+grade is given here. Chord lab → Follow the changes → Play in time remains the
+separate timed practice activity.
+
+SAVING
+
+Session position, hints, answers, detailed practice journal and review changes
+are saved in one practice-state.json write. A failed answer save stays available
+for “Save answer again”; it does not make another request or duplicate credit.
+Committed sessions resume after quitting. Unsaved pending answers exist in
+memory only; save them before quitting if storage is failing.
+
+Practice format 5 protects session data from older app writers and migrates
+formats 1–4 with prior bytes preserved. Courses remain format 2; scores remain
+format 4. One current session and the most recent 20 completed sessions are
+retained, with up to 256 responses per session. The existing journal is bounded
+to 10,000 attempts. No source book is uploaded and no OpenRouter credits are
+needed for this feature.
+
+Open music teaching resources.txt records the verified curriculum shortlist,
+reuse terms and possible advanced pathways. No third-party course content was
+added to the app in this release.

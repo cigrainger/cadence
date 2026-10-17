@@ -1,0 +1,196 @@
+CADENCE — COURSES AND ADAPTIVE LEARNING
+Product and architecture direction · October 2026
+Version 0.22 includes EPUB/PDF chapters and the first cross-book musical pathway,
+with chosen session length/focus, exact-source reviews, a separate-key study
+and a composition. See EPUB and pathways guide.txt for what is shipped. Broader
+learner modelling, arbitrary course assembly and transfer evaluation remain
+future work; the following is the larger design direction.
+This is a design direction to test, not a claim of validated educational efficacy.
+
+THE PROMISE
+Help a learner become able to do something musical they care about, and show
+what they can do, what is still fragile, and a useful next step. Examples:
+“Comp through a jazz standard with guide tones”; “read a new melody in first
+position”; “keep a syncopated rhythm while singing”; “make my own accompaniment”.
+A finished chapter, correct quiz answer and fluent performance are different
+achievements. A course must make those differences visible without turning
+learning into a judgment of the person.
+
+A BOOK IS ONE WAY INTO A COURSE
+A method book supplies a sequence, musical examples, explanations and context.
+It should become a navigable source with live exercises, not a PDF-shaped quiz.
+Other starting points should include a song, a style, a personal goal, a teacher's
+assignment and an authored Cadence course. They should all use the same learning
+objects and practice tools. A book's chapter order stays intact even when an
+optional bridge or review is recommended. Everything remains accessible.
+
+FIRST END-TO-END SLICE: ONE REVIEWED CHAPTER
+1. Add a book to Library. Keep the original PDF, edition, page numbers and local
+   file identity. Offer chapter selection and a small page-range preview.
+2. Propose an outline: section names, exercises, prerequisites and stated goals.
+   The learner reviews it against the source. Distinguish printed instruction,
+   AI interpretation and learner edits. Do not silently invent missing exercises.
+3. Select a few exercises for transcription. Show page counts and cost limits,
+   reuse existing PDF import jobs, and keep independent progress/retry per page.
+   No automatic whole-book upload or surprise background spend.
+4. Review editable notation beside its source. Mark ambiguous bars, fingering,
+   repeats and unsupported structures; require correction before scoring them.
+5. Make each exercise a lesson with “what this teaches”, one concrete success
+   criterion, explanation, listening, guided playing, timed playing where
+   supported, a short recall task and a musical variation.
+6. Show a short suggested session: one due review, a small new step, then apply
+   it in music. Give the reason for each choice and allow substitutions.
+7. Save evidence and propose the next session. Keep the learner's edits, skipped
+   suggestions and chosen pace. Resume safely after restart or partial failure.
+
+An example first chapter could contain note locations, two simple reading
+pieces and a rhythm pattern. Acceptance is a complete, reviewed route from the
+original pages to playable lessons, saved evidence and a sensible return visit.
+Unreviewed transcription must never quietly become an assessment answer key.
+
+THE COURSE MODEL
+A course is a versioned collection of goals, skills and lessons, with prerequisite
+relationships and alternative routes. A skill describes an observable capability
+with scope: e.g. “identify tonic by ear in major keys”, not simply “tonic”.
+A lesson is a small musical task, with source anchors and several ways to learn.
+A session is a temporary recommendation assembled from the course and the
+learner's available time, instrument, interests and recent observations.
+
+Each lesson should connect:
+  Hear it → understand a small idea → try it with support → recall it → use it.
+The learner can jump to any stage. Explanation is available when wanted; it
+should not interrupt every attempt. A short session should still end in music.
+
+Keep several dimensions of evidence, rather than one mastery percentage:
+  Recognition: can choose or name it.
+  Recall: can produce it without the answer visible.
+  Listening: can hear function, interval, harmony or pulse.
+  Reading: can turn unfamiliar notation into pitches and rhythm.
+  Execution: can play/sing/tap under the measured conditions.
+  Transfer: can use the idea in another key, phrase, piece or context.
+  Expression and agency: can choose, describe and evaluate a musical intention.
+
+Show plain-language states such as “introduced”, “works with help”, “recalled
+later”, and “used in a new piece”, with scope and evidence. A fast quiz score
+must not imply finger independence; MIDI pitch matching must not imply healthy
+technique, expressive phrasing, or reading without memorization.
+
+ADAPTATION THAT CAN EXPLAIN ITSELF
+Use a small, inspectable policy first. The AI can help teach and suggest; it
+should not fabricate measured progress or silently rewrite the curriculum.
+
+If timing is fragile but pitches are correct: keep the notes, slow the pulse,
+tap or speak the rhythm, then rejoin the two. If pitches are uncertain: remove
+time pressure, isolate the pattern and offer a hint before asking again. If a
+transition is fragile: include its approach and landing, not just the destination.
+If supported attempts succeed: suggest a later unhinted check. If unfamiliar
+examples fail despite memorized success: return to variations and comparison.
+
+Avoid inferring all of this from one error. Save the observation, state the
+uncertainty and allow “I was distracted”, “keyboard issue” or “not today”. Reduce
+scope or offer a different route when difficulty repeats. Never lock the rest
+of the course or demand repeated failure to earn access to something enjoyable.
+
+Reviews should mix an explicit retention queue with new music and application.
+Spacing a quiz and spacing a physical playing task may need different policies;
+keep both observations, and validate those policies rather than assuming a
+single flashcard algorithm measures musicianship. Initially reuse ReviewSchedule
+and expose why a task returned. Later changes need versioned rules and tests.
+
+A CONCRETE JAZZ ROUTE
+Goal: accompany a lead sheet using guide tones with a steady pulse.
+  Hear ii–V–I and find the home chord.
+  Spell the thirds and sevenths, then hear their pull.
+  Find two comfortable voicings and hold their common tones.
+  Follow changes without time pressure.
+  Play the changes slowly, first with optional bass and then without it.
+  Repair a difficult transition and return to the complete phrase.
+  Revisit later; try a new key and an unfamiliar progression.
+  Use guide tones in a selected passage from the learner's own piece.
+  Make an accompaniment choice, record or play it, and reflect on its effect.
+Every step remains available. Evidence from a memorized ii–V–I is labelled as
+that example; an unfamiliar progression supplies distinct transfer evidence.
+
+DELIGHT WITHOUT PRESSURE
+Show a musical map, a growing repertoire and evidence of past difficulties that
+now feel easier. Offer optional goals, short sessions and an honest stopping
+point. Celebrate returns and musical discoveries. No lost streaks, punishment,
+energy systems, manufactured scarcity, escalating notifications or paid unlocks.
+BYO models stay optional: core lessons, practice, progress and saved explanations
+must still work offline. Learners control what is sent and what it costs.
+
+ARCHITECTURE: BUILD ON THE TOOLS ALREADY HERE
+Introduce CourseDefinition, CourseLesson and SourceAnchor as immutable/versioned
+content models in MusicCore. A source anchor identifies book/page/region or
+piece/revision/bar range. Preserve provenance through transcription and edits.
+Keep CourseProgress separate from content, linking lessons to existing canonical
+practice IDs. Do not copy scores or maintain a second review store per course.
+
+Practice adapters produce existing guided, timed, chord, rhythm, singing and
+recall tasks. Each adapter declares its supported meter, instrument, input and
+assessment limits. Unsupported content gets a usable alternative, not a fake
+“passed” result. ReviewSchedule remains the scheduling authority.
+
+Add a deterministic SessionPlanner returning recommended tasks, reasons and
+support settings. Its inputs are observed results, scope, prerequisites, learner
+choices and constraints. Its output is inspectable and editable. Keep it a pure
+policy layer with clock injection and representative learner simulations.
+
+The AI layer proposes structured outlines, explanations, alternative exercises
+and coaching, grounded in source anchors. Validate output, constrain allowed
+practice tools, surface uncertainty, and require review of generated curriculum
+and answer keys. Imported books are content, never instructions to the agent.
+Version prompts and models separately from course/progress schemas.
+
+Persist course generation as resumable jobs, reusing the import queue's atomic
+results and explicit retries. Preserve old course versions when a source changes;
+migrate only matching links. A content edit must not relabel old evidence as
+success on new music. Completed practice and scheduling stay one atomic commit.
+
+HOW WE WILL KNOW WHETHER THIS HELPS
+Before promising adaptive learning, run a small evaluation with real learners
+and a musician/teacher reviewing the material. Compare supported completion,
+next-day recall and performance on an unfamiliar example; keep these outcomes
+separate. Include beginners, returning players and more experienced musicians.
+Track whether suggestions are useful or repeatedly overridden, not merely time
+spent or streak length. Let learners explain when the recommendation was wrong.
+
+Technical checks should include happy-path chapter conversion, partial imports,
+missing/ambiguous notation, conflicting page numbers, revised sources, cyclic
+prerequisites, unsupported exercises, invalid AI output, prompt injection in book
+text, cost ceilings, cancellation/restart, duplicate results and failed saves.
+Planner simulations should cover repeated misses, strong recall but weak timing,
+helpful hints, fatigue/distraction, irregular practice and transfer failure.
+
+Research before tuning the learning policy: retrieval and spacing for musical
+skills, motor practice and feedback timing, interleaving versus blocked practice,
+functional ear training, transfer, accessibility and learner agency. Consult
+primary evidence and music-education expertise; do not treat general learning
+claims as automatically validated for this product or every instrument.
+
+BUILD ORDER
+A. The reviewed chapter slice with source-linked lessons and manual pathways.
+B. Transparent session planning using current evidence and review schedules.
+C. Cross-piece transfer and authored style/goal routes; teacher-friendly editing.
+D. Broader adaptation, evaluated against real musical progress.
+Each stage should work well without the next one. Avoid a giant curriculum
+framework before the first chapter proves the learning experience.
+
+0.23 IMPLEMENTED: ONE GUIDED ADAPTIVE SESSION
+
+The smooth-changes pathway now has a resumable session with a short opening
+check, multiple valid triad voicings, learner-overridable focused practice, an
+independent D–A–G–D attempt and a composition finish. Musical constraints and
+state transitions live in MusicCore; MIDI, storage and views adapt them.
+
+A starting shape must be observed for MIDI before the destination is accepted.
+On-screen selection is tracked separately. Hint exposure, retries and focused
+practice remain distinct from a first unassisted check. Session position,
+responses, journal and ReviewSchedule changes share one durable commit. Due
+exact tasks can return at the next opening check in their original input mode.
+
+This first slice is untimed. Integrating the existing timing evidence and
+repair activities into the same session is still ahead, as are broader skill
+inference, more task families and evaluating the experience with learners.
+Open music teaching resources.txt supplies a verified shortlist for advanced
+content and explicitly distinguishes open adaptation from free access.
