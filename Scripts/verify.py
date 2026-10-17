@@ -34,12 +34,21 @@ def check_group(report, key, names):
 
 def test_counts(log):
     require(not re.search(r"Test (?:Case|Suite).*failed", log), "A test failed")
-    # SwiftPM may run each target separately. Never trust only the final summary.
+    # SwiftPM 6.2 combines targets; 6.4 can launch separate XCTest bundles.
+    # Both formats must finish after the final case, with evidence from each target.
     counts = {}
     for target in ("MusicCoreTests", "CadenceTests"):
-        names = set(re.findall(r"Test Case '-\[" + target + r"\.([^]]+)\]' passed", log))
+        cases = list(re.finditer(r"Test Case '-\[" + target +
+                                 r"\.([^]]+)\]' (started|passed|skipped)", log))
+        terminal = {case.group(1): case.group(2) for case in cases}
+        require(terminal and all(status != "started" for status in terminal.values()),
+                f"Missing or unfinished XCTest cases for {target}")
+        names = {name for name, status in terminal.items() if status == "passed"}
         require(names, f"No passing XCTest cases found for {target}")
-        require(re.search(r"Test Suite '" + target + r"\.xctest' passed", log), f"Missing completion for {target}")
+        completions = list(re.finditer(r"Test Suite '(?:" + target +
+                                      r"|CadencePackageTests)\.xctest' passed", log))
+        require(any(completion.start() > cases[-1].end() for completion in completions),
+                f"Missing completion for {target}")
         counts[target] = len(names)
     return counts
 

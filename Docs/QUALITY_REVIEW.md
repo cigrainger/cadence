@@ -19,7 +19,7 @@ Review scope: preparing 0.36.0 for public source distribution. This is an engine
 
 ## Automated evidence
 
-On the final relocated source, **501 MusicCore tests and 191 Cadence integration tests passed**. Two opt-in timing tests are normally skipped and were run separately. Eight Python tests cover the verification/report and repository policy tools. Swift formatting and first-party JavaScript syntax checks passed. The only observed compiler warning came from ZIPFoundation's upstream watchOS deployment declaration, not Cadence's macOS source.
+On the final relocated source, **501 MusicCore tests and 191 Cadence integration tests passed**. Two opt-in timing tests are normally skipped and were run separately. Ten Python tests cover the verification/report and repository policy tools. Swift formatting and first-party JavaScript syntax checks passed. The only observed compiler warning came from ZIPFoundation's upstream watchOS deployment declaration, not Cadence's macOS source.
 
 Measured line coverage: **MusicCore 94.93%; Cadence 10.94%**. The latter excludes much of the UI from direct unit execution. The repeatable workflow supplements it with native preview assertions, renderer editing checks and offline audio rendering. All 123 native workflow scenarios passed, followed by checks of the final packaged app and its General/MIDI/About panels. Screenshot evidence is local/generated, not committed user data.
 
