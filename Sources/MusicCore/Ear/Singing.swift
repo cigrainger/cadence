@@ -22,12 +22,15 @@ public enum Solfege {
         return pitch.name + String(octave)
     }
     public static func notes(root: Pitch, scale: Scale, octave: Int = 4) -> [SingingTone] {
-        zip(scale.intervals, scale.degrees).map { interval, degree in
-            SingingTone(
-                midi: 12 * (octave + 1) + root.pc + interval,
-                pitch: root.transposed(semitones: interval, steps: degree), degree: degree + 1,
-                alteration: interval - Pitch.naturals[degree])
+        let baseMIDI = 12 * (octave + 1) + root.pc
+        var tones: [SingingTone] = []
+        for (interval, degree) in zip(scale.intervals, scale.degrees) {
+            let pitch = root.transposed(semitones: interval, steps: degree)
+            let alteration = interval - Pitch.naturals[degree]
+            tones.append(
+                SingingTone(midi: baseMIDI + interval, pitch: pitch, degree: degree + 1, alteration: alteration))
         }
+        return tones
     }
 }
 

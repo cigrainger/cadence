@@ -242,7 +242,7 @@ struct EditorView: View {
         VStack(alignment: .leading, spacing: 16) {
             Card(
                 title: "Your score",
-                subtitle: "\(document.instrument.rawValue) · \(document.barCount) bars · saved on this Mac",
+                subtitle: "\(document.instrument.rawValue) · \(document.barCount) bars · \(state.storageStatus)",
                 padding: 18, spacing: 12
             ) {
                 HStack(spacing: 10) {
