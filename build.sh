@@ -2,7 +2,7 @@
 set -euo pipefail
 
 task_dir="$(cd "$(dirname "$0")" && pwd)"
-if [[ -d /Applications/Xcode.app/Contents/Developer ]]; then
+if [[ -z "${DEVELOPER_DIR:-}" && -d /Applications/Xcode.app/Contents/Developer ]]; then
     export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
 fi
 task_build="${CADENCE_BUILD_DIR:-$task_dir/.build}"
