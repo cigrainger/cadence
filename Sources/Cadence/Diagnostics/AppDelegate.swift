@@ -37,10 +37,23 @@ import WebKit
     private var snapshotPhase = "launch"
     private func snapshotProgress(_ phase: String) {
         snapshotPhase = phase
-        FileHandle.standardError.write(Data("Snapshot: \(phase)\n".utf8))
+        snapshotLog("Snapshot: \(phase)\n")
+    }
+    private lazy var snapshotLogFile: FileHandle? = {
+        guard let index = CommandLine.arguments.firstIndex(of: "--snapshot"), index + 1 < CommandLine.arguments.count
+        else { return nil }
+        let path = URL(fileURLWithPath: CommandLine.arguments[index + 1]).deletingPathExtension()
+            .appendingPathExtension("capture.log")
+        FileManager.default.createFile(atPath: path.path, contents: nil)
+        return try? FileHandle(forWritingTo: path)
+    }()
+    private func snapshotLog(_ text: String) {
+        let data = Data(text.utf8)
+        FileHandle.standardError.write(data)
+        snapshotLogFile?.write(data)
     }
     private func snapshotFailure(_ message: String) -> Never {
-        FileHandle.standardError.write(Data("Snapshot failed during \(snapshotPhase): \(message)\n".utf8))
+        snapshotLog("Snapshot failed during \(snapshotPhase): \(message)\n")
         Darwin.exit(1)
     }
     private func scheduleSnapshot(_ launchWindow: NSWindow) {
@@ -366,6 +379,7 @@ import WebKit
                 }
                 // A preview sheet can keep Cocoa's modal loop alive after
                 // the files are saved. This process has no user state.
+                self.snapshotProgress("complete")
                 Darwin.exit(0)
             }
             @MainActor func findWebs(_ view: NSView) -> [WKWebView] {

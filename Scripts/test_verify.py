@@ -2,13 +2,36 @@ import unittest
 from unittest.mock import Mock, patch
 import signal
 import subprocess
-from verify import run, check_group, check_native, record_combined_coverage, require_clean_swift, require_flags, summarize_coverage, test_counts, test_inputs_digest
+from verify import run, run_preview, check_group, check_native, record_combined_coverage, require_clean_swift, require_flags, summarize_coverage, test_counts, test_inputs_digest
 import copy
 from pathlib import Path
 import tempfile
 
 
 class VerificationTests(unittest.TestCase):
+    def test_system_launch_command_preserves_failing_native_assertions(self):
+        import json
+        scenario = ('fixture', [], [], 'checks', ['required'])
+        for mode in ('complete', 'false'):
+            with self.subTest(mode=mode), tempfile.TemporaryDirectory() as folder:
+                output = Path(folder)
+                png, sidecar = output / 'fixture.png', output / 'fixture.json'
+                png.write_bytes(b'x' * 1001)
+                sidecar.write_text(json.dumps({'checks': {'required': True}}))
+                def launch(command, log, env, timeout):
+                    self.assertEqual(command[:2], ['/fixture/native-preview', '/fixture/Cadence'])
+                    self.assertFalse(png.exists())
+                    self.assertFalse(sidecar.exists())
+                    if mode != 'stale':
+                        png.write_bytes(b'x' * 1001)
+                        sidecar.write_text(json.dumps({'checks': {'required': mode == 'complete'}}))
+                with patch('verify.run', side_effect=launch):
+                    if mode == 'complete':
+                        run_preview('/fixture/Cadence', output, {'CADENCE_PREVIEW_RUNNER': '/fixture/native-preview'}, scenario)
+                    else:
+                        with self.assertRaises(RuntimeError):
+                            run_preview('/fixture/Cadence', output, {'CADENCE_PREVIEW_RUNNER': '/fixture/native-preview'}, scenario)
+
     def test_timeout_samples_only_the_check_child_and_still_terminates_if_sampling_fails(self):
         for sample_error in (None, OSError("sample unavailable"), subprocess.TimeoutExpired("sample", 10)):
             with self.subTest(sample_error=sample_error), tempfile.TemporaryDirectory() as folder:

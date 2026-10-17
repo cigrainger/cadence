@@ -331,7 +331,7 @@ def run_preview(executable, output, env, scenario):
     if name == "song-accessibility":
         run(["swift", "-swift-version", "6", ROOT / "Scripts/native_accessibility.swift", executable, png], output / (name + ".log"), env, 60)
     else:
-        run([executable, "--snapshot", png, *flags], output / (name + ".log"), env, 60)
+        run([env["CADENCE_PREVIEW_RUNNER"], executable, "--snapshot", png, *flags], output / (name + ".log"), env, 60)
     require(png.is_file() and png.stat().st_size > 1000, f"Missing {name} image")
     checks = json.loads(sidecar.read_text())
     require_flags(checks, required, name)
@@ -405,6 +405,11 @@ def main():
         require(report["coverage"]["Cadence"]["lines"]["percent"] >= 12,
                 "Whole-app unit-test line coverage dropped below 12%")
         if not args.tests_only:
+            launcher = output / "native-preview"
+            run(["xcrun", "swiftc", "-swift-version", "6", "-warnings-as-errors", "-parse-as-library",
+                 "-module-cache-path", scratch / "module-cache", ROOT / "Scripts/native_preview.swift", "-o", launcher],
+                output / "preview-launcher-build.log", env, 60)
+            env["CADENCE_PREVIEW_RUNNER"] = str(launcher)
             app = output / "Cadence.app"
             if app.exists():
                 shutil.rmtree(app)
@@ -442,11 +447,11 @@ def main():
             for name in ("general", "midi", "about"):
                 png = output / ("settings-" + name + ".png")
                 png.unlink(missing_ok=True)
-                run([executable, "--settings", "--" + name + "-settings", "--snapshot", png],
+                run([launcher, executable, "--settings", "--" + name + "-settings", "--snapshot", png],
                     output / ("settings-" + name + ".log"), env, 30)
                 require(png.is_file() and png.stat().st_size > 1000, "Missing settings preview: " + name)
                 instrumented_png = collection.folder / ("settings-" + name + ".png")
-                run([collection.executable, "--settings", "--" + name + "-settings", "--snapshot", instrumented_png],
+                run([launcher, collection.executable, "--settings", "--" + name + "-settings", "--snapshot", instrumented_png],
                     collection.folder / ("settings-" + name + ".log"), instrumented_env, 30)
                 require(instrumented_png.is_file() and instrumented_png.stat().st_size > 1000, "Missing instrumented settings preview: " + name)
                 report["settingsPreviews"].append(name)
