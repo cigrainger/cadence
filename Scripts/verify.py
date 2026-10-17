@@ -334,7 +334,11 @@ def run_preview(executable, output, env, scenario):
     if name == "song-accessibility":
         run(["swift", "-swift-version", "6", ROOT / "Scripts/native_accessibility.swift", executable, png], output / (name + ".log"), env, 60)
     else:
-        run([executable, *native_arguments(["--snapshot", png, *flags])], output / (name + ".log"), env, 60)
+        readiness = output / (name + ".requirements.json")
+        readiness.write_text(json.dumps({"scenario": name, "rendererFlags": required,
+                                        "group": group, "groupFlags": group_flags}) + "\n")
+        run([executable, *native_arguments(["--snapshot", png, "--snapshot-requirements", readiness, *flags])],
+            output / (name + ".log"), env, 60)
     require(png.is_file() and png.stat().st_size > 1000, f"Missing {name} image")
     checks = json.loads(sidecar.read_text())
     require_flags(checks, required, name)
@@ -460,6 +464,8 @@ def main():
             # Check score/cursor readiness before the long workflow suite.
             report["scoreRendererPreview"] = run_preview(
                 executable, first_launch, env, next(case for case in native_scenarios() if case[0] == "flow"))
+            report["fullStudyPreview"] = run_preview(
+                executable, first_launch, env, next(case for case in native_scenarios() if case[0] == "full-study"))
             collection = NativeCoverage.prepare(ROOT, output, coverage_path, app, env, run)
             instrumented_env = collection.environment(env)
             native_path = output / "native.json"

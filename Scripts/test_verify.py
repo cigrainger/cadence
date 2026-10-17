@@ -7,10 +7,28 @@ import copy
 from pathlib import Path
 import tempfile
 import threading
-from verify import paired_native_checks, preview_parallelism, native_scenarios
+import json
+from verify import paired_native_checks, preview_parallelism, native_scenarios, run_preview
 
 
 class VerificationTests(unittest.TestCase):
+    def test_driver_passes_the_same_readiness_checks_it_validates_after_capture(self):
+        scenario = next(case for case in native_scenarios() if case[0] == 'full-study')
+        with tempfile.TemporaryDirectory() as folder:
+            output = Path(folder)
+            def capture(command, *args):
+                arguments = dict(zip(command[1::2], command[2::2]))
+                requirements = json.loads(Path(arguments['--snapshot-requirements']).read_text())
+                self.assertEqual(requirements, {'scenario': scenario[0], 'rendererFlags': scenario[2],
+                                                'group': scenario[3], 'groupFlags': scenario[4]})
+                Path(arguments['--snapshot']).write_bytes(b'fixture' * 200)
+                report = {key: True for key in scenario[2]}
+                report.update(kind='ready', svgCount=1)
+                report[scenario[3]] = {key: True for key in scenario[4]}
+                (output / 'full-study.json').write_text(json.dumps(report))
+            with patch('verify.run', side_effect=capture):
+                run_preview('/fixture/Cadence', output, {}, scenario)
+
     def test_accessibility_and_editor_navigation_stay_serial(self):
         scenarios = {case[0]: case for case in native_scenarios()}
         for name in ('song-accessibility', 'workspace-editor-return'):
