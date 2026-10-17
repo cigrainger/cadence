@@ -185,7 +185,7 @@ extension AppState {
                         "Record, save and listen through an improvisation in this session before reflecting.")
                 }
             }
-            if !isPreview { try stores.editor.save(editor) }
+            try libraryWorkspace.saveScores()
             evidence?.scoreID = alternative.id
         }
         if let evidence { snapshot.journal.append(evidence) }

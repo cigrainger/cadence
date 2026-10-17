@@ -123,9 +123,7 @@ extension AppState {
             score.id = link.scoreID
             editor.documents.append(score)
         }
-        _ = try editor.validated()
-        if !isPreview { try stores.editor.save(editor) }
-        self.editor = editor
+        try libraryWorkspace.commitScores(editor)
         reconcileLibrary()
         // Authored learning studies belong with sheet music; the composition
         // activity below remains in the learner's own-compositions collection.
@@ -151,8 +149,7 @@ extension AppState {
             var copy = editor
             copy.documents.append(score)
             _ = try copy.validated()
-            if !isPreview { try stores.editor.save(copy) }
-            editor = copy
+            try libraryWorkspace.commitScores(copy)
             reconcileLibrary()
         }
         courseReturn = .init(courseID: step.courseID, lessonID: step.lessonID)
@@ -165,7 +162,7 @@ extension AppState {
             let score = editor.documents.first(where: { $0.id == scoreID }),
             score.events.contains(where: { !$0.pitches.isEmpty })
         else { throw MusicError.invalid("Add some notes to your composition before saving its reflection.") }
-        if !isPreview { try stores.editor.save(editor) }
+        try libraryWorkspace.saveScores()
         try changeMusicalPathway(id) {
             $0.compositionReflection = text
             $0.compositionReviewedFingerprint = listened ? LibraryPiece(source: .score(score)).fingerprint : nil

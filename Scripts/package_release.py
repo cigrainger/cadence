@@ -15,6 +15,9 @@ import tarfile
 import tempfile
 import urllib.request
 
+from signing import release_metadata
+from build_inputs import source_digest, verify_app_inputs
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -49,6 +52,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--app', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--require-notarised', action='store_true', help='Refuse unsigned or unstapled public assets')
     args = parser.parse_args()
     app, output = args.app.resolve(), args.output.resolve()
     if run('git', 'status', '--porcelain', capture_output=True, text=True).stdout.strip():
@@ -60,7 +64,9 @@ def main():
     binary_info = plistlib.loads((app / 'Contents/Info.plist').read_bytes())
     if any(binary_info.get(k) != info[k] for k in ('CFBundleIdentifier', 'CFBundleShortVersionString', 'CFBundleVersion')):
         raise ValueError('App identity/version does not match the checked-out source')
-    run('codesign', '--verify', '--deep', '--strict', str(app))
+    inputs_digest = source_digest()
+    verify_app_inputs(app, inputs_digest)
+    signing = release_metadata(app, require_notarised=args.require_notarised)
     arches = run('lipo', '-archs', str(app / 'Contents/MacOS/Cadence'), capture_output=True, text=True).stdout.split()
     if not arches or set(arches) - {'arm64', 'x86_64'}: raise ValueError('Unexpected Mach-O architecture')
     architecture = 'universal' if len(arches) == 2 else arches[0]
@@ -90,7 +96,7 @@ def main():
     run('ditto', '-c', '-k', '--keepParent', '--norsrc', str(app), str(output / f'Cadence-{version}-macOS-{architecture}.zip'))
     shutil.copy2(ROOT / f'Docs/Releases/{version}.md', output / 'RELEASE-NOTES.md')
     (output / 'BUILD.json').write_text(json.dumps({'version': version, 'commit': commit, 'architectures': arches,
-        'signing': 'ad-hoc', 'notarised': False}, indent=2) + '\n')
+        'sourceInputsSHA256': inputs_digest, **signing}, indent=2) + '\n')
     assets = sorted(p for p in output.iterdir() if p.is_file())
     (output / 'SHA256SUMS.txt').write_text(''.join(f'{digest(path)}  {path.name}\n' for path in assets))
     print(f'Packaged {version} ({architecture}) from {commit}')

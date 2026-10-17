@@ -9,6 +9,7 @@ task_build="${CADENCE_BUILD_DIR:-$task_dir/.build}"
 export CLANG_MODULE_CACHE_PATH="$task_build/module-cache"
 export SWIFTPM_MODULECACHE_OVERRIDE="$task_build/module-cache"
 cd "$task_dir"
+task_source_digest="$(python3 Scripts/build_inputs.py)"
 swift build --configuration release --disable-sandbox --scratch-path "$task_build"
 task_bin="$(swift build --configuration release --show-bin-path --scratch-path "$task_build")"
 task_destination="${CADENCE_APP_PATH:-$task_dir/dist/Cadence.app}"
@@ -30,7 +31,8 @@ cp "$task_dir/Resources/Third-party notices.txt" "$task_app/Contents/Resources/"
 for task_resource in "$task_bin"/*.bundle(N); do
     cp -R "$task_resource" "$task_app/Contents/Resources/"
 done
-codesign --force --sign - --options runtime --entitlements "$task_dir/Resources/Entitlements.plist" "$task_app"
+python3 "$task_dir/Scripts/build_inputs.py" --app "$task_app" --expected "$task_source_digest"
+python3 "$task_dir/Scripts/signing.py" --app "$task_app" --identity "${CADENCE_SIGNING_IDENTITY:--}"
 # Only replace a recognised Cadence bundle; never remove an arbitrary output directory.
 if [[ -e "$task_destination" ]]; then
     [[ -f "$task_destination/Contents/Info.plist" ]] || { print -u2 "Output is not an app bundle"; exit 1; }
