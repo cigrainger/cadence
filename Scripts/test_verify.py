@@ -1,11 +1,34 @@
 import unittest
-from verify import check_group, check_native, record_combined_coverage, require_clean_swift, require_flags, summarize_coverage, test_counts, test_inputs_digest
+from unittest.mock import Mock, patch
+import signal
+import subprocess
+from verify import run, check_group, check_native, record_combined_coverage, require_clean_swift, require_flags, summarize_coverage, test_counts, test_inputs_digest
 import copy
 from pathlib import Path
 import tempfile
 
 
 class VerificationTests(unittest.TestCase):
+    def test_timeout_samples_only_the_check_child_and_still_terminates_if_sampling_fails(self):
+        for sample_error in (None, OSError("sample unavailable"), subprocess.TimeoutExpired("sample", 10)):
+            with self.subTest(sample_error=sample_error), tempfile.TemporaryDirectory() as folder:
+                child = Mock(pid=1234)
+                child.wait.side_effect = [subprocess.TimeoutExpired("fixture", 1), 0]
+                events = []
+                def sample(command, **kwargs):
+                    events.append(("sample", command))
+                    if sample_error:
+                        raise sample_error
+                with patch('verify.subprocess.Popen', return_value=child), \
+                     patch('verify.subprocess.run', side_effect=sample), \
+                     patch('verify.os.killpg', side_effect=lambda *args: events.append(("terminate", args))), \
+                     patch('verify.sys.platform', 'darwin'):
+                    with self.assertRaisesRegex(RuntimeError, 'Stopped fixture'):
+                        run(["fixture"], Path(folder) / 'fixture.log', {}, 1)
+                self.assertEqual(events[0][1][:3], ['/usr/bin/sample', '1234', '1'])
+                self.assertEqual(events[1], ("terminate", (1234, signal.SIGTERM)))
+                self.assertTrue(events[0][1][-1].endswith('/fixture.sample.log'))
+
     def test_combined_execution_cannot_rename_unit_coverage_or_shrink_its_denominator(self):
         unit = {name: {'files': 2, 'lines': {'count': 100, 'covered': 12}} for name in ('MusicCore', 'Cadence')}
         report = {'coverage': copy.deepcopy(unit), 'unitCoverage': copy.deepcopy(unit)}

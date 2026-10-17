@@ -142,6 +142,15 @@ def run(command, log, env, timeout):
         try:
             code = process.wait(timeout=timeout)
         except (subprocess.TimeoutExpired, KeyboardInterrupt):
+            # Sample only this isolated child before terminating it. A blocked
+            # UI thread otherwise leaves neither a report nor an actionable log.
+            if sys.platform == "darwin":
+                diagnostic = log.with_name(log.stem + ".sample.log")
+                try:
+                    subprocess.run(["/usr/bin/sample", str(process.pid), "1", "-file", str(diagnostic)],
+                                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=10)
+                except (OSError, subprocess.TimeoutExpired):
+                    pass
             # Only terminate this check and its children, never a user's Cadence.
             os.killpg(process.pid, signal.SIGTERM)
             try:
