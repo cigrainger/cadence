@@ -56,6 +56,7 @@ struct ContentView: View {
                                 .accessibilityElement(children: .contain)
                                 .accessibilityIdentifier("workspace.content." + state.destination.routeID)
                         }
+                        .defaultScrollAnchor(.top)
                         .onAppear { proxy.scrollTo("top", anchor: .topLeading) }
                         .onChange(of: state.practicePage) { _, _ in proxy.scrollTo("top", anchor: .topLeading) }
                         .onChange(of: state.destination) { _, _ in proxy.scrollTo("top", anchor: .topLeading) }

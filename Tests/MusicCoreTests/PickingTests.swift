@@ -17,6 +17,7 @@ final class PickingTests: XCTestCase {
     }
     func testThreeStylesShareScoreTabPlaybackAndDistinctRhythms() throws {
         let material = try material()
+        XCTAssertTrue(material.frets.allSatisfy { ($0.max() ?? 99) <= 3 }, "Keep these familiar changes near the nut")
         var fingerprints = Set<String>()
         for style in PickingStyle.allCases {
             let document = try material.document(style: style)
@@ -24,7 +25,7 @@ final class PickingTests: XCTestCase {
             XCTAssertEqual(document.pickingSource, material)
             let xml = try EditorXML.encode(document)
             XCTAssertTrue(xml.contains("<sign>TAB</sign>"))
-            XCTAssertTrue(xml.contains("<words>"))
+            XCTAssertTrue(xml.contains("<words font-size="))
             XCTAssertTrue(xml.contains("<string>"))
             let score = document.playback()
             XCTAssertFalse(score.notes.isEmpty)

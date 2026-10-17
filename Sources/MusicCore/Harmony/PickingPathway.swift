@@ -18,21 +18,34 @@ public enum PickingStyle: String, Codable, CaseIterable, Sendable {
 extension PickingStyle {
     /// Relative gestures over a voicing: one definition feeds selection,
     /// notation, tab and sound. Silent strums retain their rhythmic slots.
-    fileprivate func steps(_ strings: [Int]) -> [(targets: [Int], cue: String?)] {
+    fileprivate func steps(_ strings: [Int], pitches: [Int]) -> [(targets: [Int], cue: String?)] {
         guard strings.count >= 4 else { return [] }
         let bass = strings[0]
         let alternate = strings[1]
-        let upper = Array(strings.suffix(3))
+        // Keep familiar left-hand shapes. Choose treble strings that retain
+        // their colour tones instead of forcing a new barre shape for a fixed
+        // pair of upper strings. Finger choices remain explicit suggestions.
+        func treble(_ count: Int, bass: [Int]) -> [Int] {
+            let available = Array(strings.dropFirst(bass.count))
+            var groups: [[Int]] = [[]]
+            for string in available { groups += groups.filter { $0.count < count }.map { $0 + [string] } }
+            let desired = Set(strings.map { mod(pitches[$0]) })
+            return groups.reversed().first {
+                $0.count == count && Set((bass + $0).map { mod(pitches[$0]) }) == desired
+            } ?? Array(available.suffix(count))
+        }
         switch self {
         case .classical:
+            let upper = treble(3, bass: [bass])
             return zip(
                 [[bass], [upper[0]], [upper[1]], [upper[2]], [upper[1]], [upper[0]], [upper[1]], [upper[2]]],
                 ["p", "i", "m", "a", "m", "i", "m", "a"]
             ).map { ($0, $1) }
         case .travis:
+            let upper = treble(2, bass: [bass, alternate])
             return zip(
-                [[bass, upper[1]], [upper[2]], [alternate], [upper[1]], [bass], [upper[2]], [alternate], [upper[1]]],
-                ["p + m", "a", "p", "m", "p", "a", "p", "m"]
+                [[bass, upper[0]], [upper[1]], [alternate], [upper[0]], [bass], [upper[1]], [alternate], [upper[0]]],
+                ["p + i", "m", "p", "i", "p", "m", "p", "i"]
             ).map { ($0, $1) }
         case .strumming:
             return (0..<8).map { slot in
@@ -134,7 +147,9 @@ public struct PickingMaterial: Codable, Equatable, Sendable {
         let pitches = strings.map { tuning.pitches[$0] + capo + shape[$0] }
         guard target.judge(pitches).correct, pitches.allSatisfy({ (21...108).contains($0) }) else { return false }
         return PickingStyle.allCases.allSatisfy { style in
-            Set(style.steps(strings).flatMap(\.targets).map { mod(tuning.pitches[$0] + capo + shape[$0]) })
+            Set(
+                style.steps(strings, pitches: tuning.pitches.indices.map { tuning.pitches[$0] + capo + shape[$0] })
+                    .flatMap(\.targets).map { mod(tuning.pitches[$0] + capo + shape[$0]) })
                 == target.pitchClasses
         }
     }
@@ -172,7 +187,9 @@ public struct PickingMaterial: Codable, Equatable, Sendable {
             let shape = frets[index]
             let strings = shape.indices.filter { shape[$0] >= 0 }
             document.harmonies.append(.init(bar: bar, symbol: chords[index]))
-            for (slot, step) in style.steps(strings).enumerated() {
+            for (slot, step) in style.steps(
+                strings, pitches: tuning.pitches.indices.map { tuning.pitches[$0] + capo + shape[$0] }
+            ).enumerated() {
                 let targets = step.targets
                 let cue = step.cue
                 var event = EditorEvent(

@@ -238,7 +238,7 @@ public struct EditorDocument: Codable, Equatable, Sendable {
             throw MusicError.invalid("Duplicate note identities in the score.")
         }
         for event in events {
-            guard event.picking.map({ ["p", "i", "m", "a", "p + m", "↓", "↑"].contains($0) }) ?? true else {
+            guard event.picking.map({ ["p", "i", "m", "a", "p + m", "p + i", "↓", "↑"].contains($0) }) ?? true else {
                 throw MusicError.invalid("Unknown picking guidance.")
             }
             guard (0..<barCount).contains(event.bar), (1...staffCount).contains(event.staff),
