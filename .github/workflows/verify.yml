@@ -33,7 +33,7 @@ jobs:
       - run: python3 -m unittest discover -s Scripts -p 'test_*.py'
       - name: Check first-party JavaScript syntax
         run: |
-          node --test Scripts/test_site.cjs Scripts/test_score.cjs
+          node --test Scripts/test_site.cjs Scripts/test_score.cjs Scripts/test_editor.cjs
           node --check site/assets/site.js
           node --check Resources/ScoreViewer/score.js
           node --check Resources/EditorViewer/editor.js
