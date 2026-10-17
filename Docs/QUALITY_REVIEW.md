@@ -29,7 +29,7 @@ The OSV query returned no advisories for the known ZIPFoundation revision, OSMD 
 
 ## Visual and interaction review
 
-Reviewed original-fixture screens for practice home, harmony on piano/guitar, the full score, editing, library, import/review and settings, including compact layouts. The app keeps full-score access and clear activity exits. Choice controls, assisted answers and independent returns remain distinguishable. Playback and storage status are visible across destinations.
+Reviewed original-fixture screens for practice home, harmony on piano/guitar, the full score, editing, library, import/review and settings, including compact layouts. The app keeps full-score access and clear activity exits. Narrow PDF source columns now wrap navigation and zoom as groups, preserving readable page labels and accessible button names. Choice controls, assisted answers and independent returns remain distinguishable. Playback and storage status are visible across destinations.
 
 The website uses the same identity and real original-fixture app imagery. Desktop and phone layouts, project-subpath links, harmony choice/play/stop, guide navigation/filtering and browser errors were checked. Guide search now includes content, so musical terms need not match a title. The site build checks all internal links and anchors.
 

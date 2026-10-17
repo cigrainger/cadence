@@ -76,6 +76,9 @@ def run(command, log, env, timeout):
                 os.killpg(process.pid, signal.SIGKILL)
                 process.wait()
             raise RuntimeError(f"Stopped {log.stem}; see {log}")
+    if code != 0:
+        # CI must expose a useful failure even when artifact upload also fails.
+        print("\n".join(log.read_text(errors="replace").splitlines()[-80:]), file=sys.stderr)
     require(code == 0, f"{log.stem} exited {code}; see {log}")
 
 

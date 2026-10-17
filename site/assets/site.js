@@ -17,10 +17,10 @@
   }));
   if (play) play.addEventListener('click', async () => {
     if (playing) { stop(); status.textContent = 'Stopped.'; return; }
+    const request = ++generation;
     try {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
       if (!AudioContext) throw new Error('Audio unavailable');
-      const request = ++generation;
       const active = new AudioContext(); context = active; playing = true;
       await active.resume();
       if (request !== generation) return;
@@ -35,7 +35,7 @@
         oscillator.connect(gain); gain.connect(bus); oscillator.start(start); oscillator.stop(start + 1.31);
       }));
       timer = setTimeout(() => { stop(); status.textContent = 'Try the other route. What changed when the bass moved?'; }, 4250);
-    } catch { stop(); status.textContent = 'Audio is unavailable in this browser. The diagram shows the same guide-tone movement.'; }
+    } catch { if (request !== generation) return; stop(); status.textContent = 'Audio is unavailable in this browser. The diagram shows the same guide-tone movement.'; }
   });
   document.addEventListener('visibilitychange', () => { if (document.hidden && playing) { stop(); status.textContent = 'Paused when you left this page.'; } });
   window.addEventListener('pagehide', stop);

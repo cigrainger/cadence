@@ -50,5 +50,6 @@ jobs:
           path: |
             .verification/*.json
             .verification/*.log
-          if-no-files-found: warn
+          if-no-files-found: error
+          include-hidden-files: true
           retention-days: 14
