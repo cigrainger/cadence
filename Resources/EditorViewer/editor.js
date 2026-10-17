@@ -1,6 +1,6 @@
 'use strict';
 const post = value => window.webkit?.messageHandlers.editor.postMessage(value);
-let scoreDocument, engineName, osmd, lastXML, lastNotationXML, rendering=false, pending=null, requested=0, selected='', playBeat=null, resizeTimer;
+let scoreDocument, engineName, osmd, lastXML, lastNotationXML, rendering=false, pending=null, requested=0, selected='', playBeat=null, resizeTimer, lastVerify=false;
 const host=document.getElementById('score-host'), layer=document.getElementById('hit-layer');
 let targets=[], diagnostics={}, observedWidth=0, runtimeErrors=[];
 window.addEventListener('error',event=>runtimeErrors.push(event.message));
@@ -53,22 +53,41 @@ function mapOSMD(){
     }
   }
 }
-window.loadEditor=async function(model,engine,xml,notationXML){
+// One render owns its geometry and diagnostic checks. Intermediate scroll-proof
+// redraws and superseded loads must not publish an incomplete ready message.
+async function renderCurrentEditor(token, restoreScroll){
+  targets=[];layer.replaceChildren();host.replaceChildren();
+  const renderer=new opensheetmusicdisplay.OpenSheetMusicDisplay('score-host',{backend:'svg',autoResize:false,drawTitle:false,drawSubtitle:false,drawComposer:false,drawPartNames:false,drawingParameters:'compacttight'});
+  renderer.Zoom=0.85;renderer.EngravingRules.StretchLastSystemLine=true;renderer.EngravingRules.RenderXMeasuresPerLineAkaSystem=4;renderer.EngravingRules.AutoGenerateMultipleRestMeasuresFromRestMeasures=false;renderer.EngravingRules.RenderMultipleRestMeasures=false;renderer.EngravingRules.RenderStringNumbersClassical=false;renderer.EngravingRules.RenderFingerings=false;
+  await renderer.load(window.cadenceEngravingXML(lastXML));
+  if(token!==requested)return false;
+  osmd=renderer;osmd.render();mapOSMD();paintTargets();
+  if(playBeat===null)window.scrollTo(0,restoreScroll);
+  return true;
+}
+window.loadEditor=async function(model,engine,xml,notationXML,verify=false){
   model.meter ||= {beats:4,unit:4};model.barCount ||= 4;
+  if(rendering){++requested;pending=[model,engine,xml,notationXML,verify];return;}
   const restoreScroll=scoreDocument?.id===model.id && (scoreDocument.barOffset||0)===(model.barOffset||0) ? window.scrollY : 0;
-  if(rendering){pending=[model,engine,xml,notationXML];return;}
-  rendering=true;const token=++requested,start=performance.now();scoreDocument=model;engineName=engine='OpenSheetMusicDisplay';lastXML=xml;lastNotationXML=notationXML;targets=[];layer.replaceChildren();
+  rendering=true;const token=++requested,start=performance.now();scoreDocument=model;engineName=engine='OpenSheetMusicDisplay';lastXML=xml;lastNotationXML=notationXML;lastVerify=verify;
   try{
-      host.replaceChildren();osmd=new opensheetmusicdisplay.OpenSheetMusicDisplay('score-host',{backend:'svg',autoResize:false,drawTitle:false,drawSubtitle:false,drawComposer:false,drawPartNames:false,drawingParameters:'compacttight'});osmd.Zoom=0.85;osmd.EngravingRules.StretchLastSystemLine=true;osmd.EngravingRules.RenderXMeasuresPerLineAkaSystem=4;osmd.EngravingRules.AutoGenerateMultipleRestMeasuresFromRestMeasures=false;osmd.EngravingRules.RenderMultipleRestMeasures=false;osmd.EngravingRules.RenderStringNumbersClassical=false;osmd.EngravingRules.RenderFingerings=false;await osmd.load(window.cadenceEngravingXML(xml));osmd.render();mapOSMD();
+    if(!await renderCurrentEditor(token,restoreScroll))return;
+    let scrollRetained=true;
+    if(verify && model.barCount>16){
+      const savedScroll=window.scrollY;
+      window.scrollTo(0,120);const before=window.scrollY;
+      if(!await renderCurrentEditor(token,before))return;
+      scrollRetained=before>50&&Math.abs(window.scrollY-before)<2;
+      window.scrollTo(0,savedScroll);
+    }
+    const checks=verify?window.verifyEditor():{};
     if(token!==requested)return;
-    paintTargets();
-    if(playBeat===null)window.scrollTo(0,restoreScroll);
-    diagnostics={kind:'ready',engine,milliseconds:performance.now()-start,height:Math.ceil(host.scrollHeight),targets:targets.length,tabTargets:scoreDocument.instrument==='Guitar'?targets.filter(t=>t.displayStaff===2).length:0,events:scoreDocument.events.length,mappedEvents:new Set(targets.map(t=>t.id)).size,dynamicLabelsSeparated:window.cadenceDynamicOffsets||0,voiceTargets:targets.reduce((r,t)=>(r[t.staff+':'+t.voice]=(r[t.staff+':'+t.voice]||0)+1,r),{}),svgCount:host.querySelectorAll('.score-container svg,#osmdCanvasPage1 svg').length||host.querySelectorAll('svg').length,barOffset:scoreDocument.barOffset||0,meter:scoreDocument.meter,offline:true,linkedTab:scoreDocument.instrument==='Guitar',staffCount:scoreDocument.instrument==='Piano'?2:1,firstSVGIDs:[...host.querySelectorAll('[id]')].slice(0,16).map(e=>e.id)};
+    diagnostics={kind:'ready',engine,milliseconds:performance.now()-start,height:Math.ceil(host.scrollHeight),targets:targets.length,tabTargets:scoreDocument.instrument==='Guitar'?targets.filter(t=>t.displayStaff===2).length:0,events:scoreDocument.events.length,mappedEvents:new Set(targets.map(t=>t.id)).size,dynamicLabelsSeparated:window.cadenceDynamicOffsets||0,voiceTargets:targets.reduce((r,t)=>(r[t.staff+':'+t.voice]=(r[t.staff+':'+t.voice]||0)+1,r),{}),svgCount:host.querySelectorAll('.score-container svg,#osmdCanvasPage1 svg').length||host.querySelectorAll('svg').length,barOffset:scoreDocument.barOffset||0,meter:scoreDocument.meter,offline:true,linkedTab:scoreDocument.instrument==='Guitar',staffCount:scoreDocument.instrument==='Piano'?2:1,firstSVGIDs:[...host.querySelectorAll('[id]')].slice(0,16).map(e=>e.id),...checks,...(verify?{scrollRetained}:{})};
     post(diagnostics);
-  }catch(error){post({kind:'error',engine,message:String(error.message||error),detail:String(error.stack||error),runtimeErrors});}
+  }catch(error){if(token===requested)post({kind:'error',engine,message:String(error.message||error),detail:String(error.stack||error),runtimeErrors});}
   finally{rendering=false;if(pending){const args=pending;pending=null;await window.loadEditor(...args);}}
 };
-window.verifyEditor=async function(){
+window.verifyEditor=function(){
   const initial=selected;const buttons=[...layer.querySelectorAll('button')];const first=buttons[0],last=buttons.at(-1);let selectedFirst=false,selectedLast=false;
   if(first){first.click();selectedFirst=selected===first.dataset.eventId;}if(last){last.click();selectedLast=selected===last.dataset.eventId;}window.selectEditor(initial,(scoreDocument.barOffset||0)*scoreDocument.meter.beats*4/scoreDocument.meter.unit+0.5);const playbackHighlight=layer.querySelectorAll('.playing').length>0;window.selectEditor(initial,null);
   const exportInfo={};
@@ -84,15 +103,7 @@ window.verifyEditor=async function(){
   const harmonyVisible=!scoreDocument.harmonies?.length || harmonyLabels.length===scoreDocument.harmonies.length && renderedHarmony.every(e=>e?.box?.width>0);
   const harmonySeparated=!scoreDocument.harmonies?.length || renderedHarmony.every((e,i)=>renderedHarmony.every((other,j)=>i===j||!e?.box||!other?.box||Math.abs(e.box.x-other.box.x)>5||Math.abs(e.box.y-other.box.y)>5));
   const line=layer.querySelector(".score-playhead");window.selectEditor(initial,(scoreDocument.barOffset||0)*scoreDocument.meter.beats*4/scoreDocument.meter.unit+0.2);const firstX=parseFloat(line.style.left);window.selectEditor(initial,(scoreDocument.barOffset||0)*scoreDocument.meter.beats*4/scoreDocument.meter.unit+0.7);const continuousPlayhead=!line.hidden&&parseFloat(line.style.left)>firstX;window.selectEditor(initial,null);
-  if(scoreDocument.barCount>16 && window.scrollProof===undefined){
-    window.scrollProof='running';const savedScroll=window.scrollY;
-    window.scrollTo(0,120);const before=window.scrollY;
-    await window.loadEditor(scoreDocument,engineName,lastXML,lastNotationXML);
-    window.scrollProof=before>50&&Math.abs(window.scrollY-before)<2;
-    window.scrollTo(0,savedScroll);
-  }
-  const scrollRetained=window.scrollProof===undefined||window.scrollProof===true;
-  return {scrollRetained,continuousPlayhead,harmonyVisible,harmonySeparated,harmonyLabels,harmonyText:labels.map(e=>e.text),selectedFirst,selectedLast,playbackHighlight,distinctVoices,allEventsMapped:scoreDocument.events.every(e=>targets.some(t=>t.id===e.id)),selectionIDsValid:buttons.every(b=>scoreDocument.events.some(e=>e.id===b.dataset.eventId)),...exportInfo};
+  return {continuousPlayhead,harmonyVisible,harmonySeparated,harmonyLabels,harmonyText:labels.map(e=>e.text),selectedFirst,selectedLast,playbackHighlight,distinctVoices,allEventsMapped:scoreDocument.events.every(e=>targets.some(t=>t.id===e.id)),selectionIDsValid:buttons.every(b=>scoreDocument.events.some(e=>e.id===b.dataset.eventId)),...exportInfo};
 };
-new ResizeObserver(()=>{const width=host.clientWidth;if(Math.abs(width-observedWidth)<2)return;observedWidth=width;clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{if(scoreDocument&&!rendering)window.loadEditor(scoreDocument,engineName,lastXML,lastNotationXML);},180);}).observe(host);
+new ResizeObserver(()=>{const width=host.clientWidth;if(Math.abs(width-observedWidth)<2)return;observedWidth=width;clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{if(scoreDocument&&!rendering)window.loadEditor(scoreDocument,engineName,lastXML,lastNotationXML,lastVerify);},180);}).observe(host);
 post({kind:'loaded'});

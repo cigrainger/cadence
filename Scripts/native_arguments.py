@@ -3,7 +3,7 @@
 """Encode diagnostic options without leaving macOS positional open requests."""
 
 VALUE_OPTIONS = frozenset({
-    '--snapshot', '--selfcheck', '--screen', '--width', '--height',
+    '--snapshot', '--snapshot-requirements', '--selfcheck', '--screen', '--width', '--height',
     '--vision-fixture', '--pdf-draft', '--pdf-source', '--interval', '--exercise',
 })
 

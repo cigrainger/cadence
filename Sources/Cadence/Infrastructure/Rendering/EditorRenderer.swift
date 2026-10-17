@@ -65,6 +65,13 @@ struct EditorRenderer: NSViewRepresentable {
         var cachedFrom = -1, cachedThrough = -1
         var cachedData = Data()
         init(_ parent: EditorRenderer) { self.parent = parent }
+        static func verifiesPreview(arguments: [String]) -> Bool {
+            let options: Set<String> = [
+                "--creative-preview", "--full-piece-preview", "--editor-check", "--poly-check",
+                "--harmony-check", "--course-score-review",
+            ]
+            return !options.isDisjoint(with: arguments)
+        }
         func update() {
             guard loaded, let web, web.bounds.width > 100 else { return }
             do {
@@ -88,9 +95,10 @@ struct EditorRenderer: NSViewRepresentable {
                     var payload = try JSONSerialization.jsonObject(with: data) as! [String: Any]
                     payload["barOffset"] = parent.from
                     web.callAsyncJavaScript(
-                        "window.editorPreview=preview; await window.loadEditor(document,engine,xml,notationXML)",
+                        "window.editorPreview=preview; await window.loadEditor(document,engine,xml,notationXML,verify)",
                         arguments: [
-                            "preview": CommandLine.arguments.contains("--snapshot"), "document": payload,
+                            "preview": CommandLine.arguments.contains("--snapshot"),
+                            "verify": Self.verifiesPreview(arguments: CommandLine.arguments), "document": payload,
                             "engine": parent.engine,
                             "xml": try EditorXML.encode(excerpt, firstBarNumber: parent.from + 1),
                             "notationXML": try EditorXML.encode(
@@ -154,20 +162,6 @@ struct EditorRenderer: NSViewRepresentable {
                                 EditorDiagnostics.native["fixturePDF"] = FileManager.default.fileExists(
                                     atPath: prefix.appendingPathExtension("pdf").path)
                             }
-                        }
-                    }
-                }
-                if CommandLine.arguments.contains("--creative-preview")
-                    || CommandLine.arguments.contains("--full-piece-preview")
-                    || CommandLine.arguments.contains("--editor-check")
-                    || CommandLine.arguments.contains("--poly-check")
-                    || CommandLine.arguments.contains("--harmony-check")
-                    || CommandLine.arguments.contains("--course-score-review")
-                {
-                    web?.callAsyncJavaScript("return await window.verifyEditor()", arguments: [:], in: nil, in: .page) {
-                        result in
-                        if case .success(let value) = result, let checks = value as? [String: Any] {
-                            for (key, value) in checks { EditorDiagnostics.latest[key] = value }
                         }
                     }
                 }

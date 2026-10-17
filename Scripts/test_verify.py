@@ -6,9 +6,69 @@ from verify import run, check_group, check_native, record_combined_coverage, req
 import copy
 from pathlib import Path
 import tempfile
+import threading
+import json
+from verify import paired_native_checks, preview_parallelism, native_scenarios, run_preview
 
 
 class VerificationTests(unittest.TestCase):
+    def test_driver_passes_the_same_readiness_checks_it_validates_after_capture(self):
+        scenario = next(case for case in native_scenarios() if case[0] == 'full-study')
+        with tempfile.TemporaryDirectory() as folder:
+            output = Path(folder)
+            def capture(command, *args):
+                arguments = dict(zip(command[1::2], command[2::2]))
+                requirements = json.loads(Path(arguments['--snapshot-requirements']).read_text())
+                self.assertEqual(requirements, {'scenario': scenario[0], 'rendererFlags': scenario[2],
+                                                'group': scenario[3], 'groupFlags': scenario[4]})
+                Path(arguments['--snapshot']).write_bytes(b'fixture' * 200)
+                report = {key: True for key in scenario[2]}
+                report.update(kind='ready', svgCount=1)
+                report[scenario[3]] = {key: True for key in scenario[4]}
+                (output / 'full-study.json').write_text(json.dumps(report))
+            with patch('verify.run', side_effect=capture):
+                run_preview('/fixture/Cadence', output, {}, scenario)
+
+    def test_accessibility_and_editor_navigation_stay_serial(self):
+        scenarios = {case[0]: case for case in native_scenarios()}
+        for name in ('song-accessibility', 'workspace-editor-return'):
+            self.assertEqual(preview_parallelism(scenarios[name], 2), 1)
+        for name in ('song-pathway', 'flow', 'editor-piano'):
+            self.assertEqual(preview_parallelism(scenarios[name], 2), 2)
+            self.assertEqual(preview_parallelism(scenarios[name], 1), 1)
+
+    def test_parallel_captures_overlap_and_keep_each_result(self):
+        barrier = threading.Barrier(2, timeout=2)
+        def capture(value):
+            barrier.wait()
+            return value
+        self.assertEqual(paired_native_checks(lambda: capture('production'), lambda: capture('instrumented'), 2),
+                         ('production', 'instrumented'))
+
+    def test_serial_captures_do_not_overlap_and_failure_stops_the_next_launch(self):
+        calls = []
+        def first():
+            calls.append('production')
+            raise RuntimeError('capture failed')
+        with self.assertRaisesRegex(RuntimeError, 'capture failed'):
+            paired_native_checks(first, lambda: calls.append('instrumented'), 1)
+        self.assertEqual(calls, ['production'])
+        with self.assertRaises(RuntimeError):
+            paired_native_checks(lambda: None, lambda: None, 3)
+
+    def test_parallel_failure_joins_the_other_capture_before_returning(self):
+        barrier = threading.Barrier(2, timeout=2)
+        joined = threading.Event()
+        def first():
+            barrier.wait()
+            raise RuntimeError('capture failed')
+        def second():
+            barrier.wait()
+            joined.set()
+        with self.assertRaisesRegex(RuntimeError, 'capture failed'):
+            paired_native_checks(first, second, 2)
+        self.assertTrue(joined.is_set())
+
     def test_timeout_samples_only_the_check_child_and_still_terminates_if_sampling_fails(self):
         for sample_error in (None, OSError("sample unavailable"), subprocess.TimeoutExpired("sample", 10)):
             with self.subTest(sample_error=sample_error), tempfile.TemporaryDirectory() as folder:
