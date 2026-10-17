@@ -55,6 +55,8 @@ final class PublicBoundaryTests: XCTestCase {
         XCTAssertTrue(LocalDocumentPolicy.allows(URL(string: entry.absoluteString + "#bar-2"), entry: entry))
         for candidate in [
             URL(string: "https://example.invalid"), URL(string: "javascript:alert(1)"),
+            URL(string: "file://remote.example/tmp/cadence/ScoreViewer/index.html"),
+            URL(string: entry.absoluteString + "?document=private.json"),
             URL(fileURLWithPath: "/tmp/cadence/ScoreViewer/../private.json"),
             URL(fileURLWithPath: "/tmp/cadence/ScoreViewer/index.html.bak"), nil,
         ] {

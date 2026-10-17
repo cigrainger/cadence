@@ -20,6 +20,8 @@ Use a branch and a pull request. Describe the problem, the resulting behaviour, 
 - The formatter permits wire-format field names and labelled trailing closure callbacks; the two corresponding stylistic lint rules are intentionally disabled.
 - Update the guide when the user's workflow changes. Document limits honestly.
 
+Cadence is developed with AI assistance. Such contributions are welcome, but the person submitting them remains responsible for understanding the change, testing it and checking permissions. Do not submit generated code or musical claims you have not reviewed.
+
 ## Rights and sign-off
 
 Contribute code under AGPL-3.0-or-later and original docs/art/examples under CC-BY-SA-4.0, as described in `LICENSING.md`. Retain third-party notices. No copyright assignment or proprietary relicensing CLA is required.
