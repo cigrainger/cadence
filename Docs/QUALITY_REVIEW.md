@@ -36,7 +36,7 @@ The website uses the same identity and real original-fixture app imagery. Deskto
 ## Remaining limits
 
 - Physical keyboards, microphone permission flows, device switching, VoiceOver and Intel builds still need dedicated release testing. Virtual MIDI and rendered audio are not substitutes.
-- Ad hoc signing is not notarisation. The current app is not isolated by App Sandbox.
+- The 0.36.0 build was ad-hoc signed. The 0.36.1 release below is Developer ID signed and notarised. The app is not isolated by App Sandbox.
 - OSMD's prebuilt bundle lacks a resolved transitive lockfile. The inventory lists 13 unknown bundled versions and explicitly marks the graph incomplete. Supplied upstream source enables inspection; bit-identical upstream rebuilding is not claimed.
 - AppState and several activity views remain large. Extract stable owners when changing them, retaining tested boundaries; avoid a generic exercise framework that erases musical differences.
 - AI response collection still relies on URLSession and provider limits before task-specific parsing; the new persisted-file cap is not a general network-memory bound.
@@ -52,3 +52,9 @@ The owner tests cover successful restart, failed writes/conflicts without public
 The release pipeline supports Developer ID signing, Keychain-backed notarisation, resuming pending submissions, stapling and Gatekeeper assessment. It rejects incorrect certificates, missing runtime/timestamps, debugger entitlements and unstapled public artifacts. A build-input digest prevents packaging a stale binary beside newer source. Credentials and certificate exports are not checked into the repository or copied into GitHub secrets.
 
 The homepage now explains the score → focused practice → independent return journey. Its harmony example shows the bass separately and uses B/C♭ according to the selected chord. Silent controller tests verify the visible and sounding pitches, audio cancellation/races and unavailable audio. A reproducible 1280×640 social preview shares the app's existing identity.
+
+Validation for 0.36.1: **501 MusicCore tests, 204 Cadence native-state tests, 20 Python tests and seven website controller tests passed**. Measured line coverage is **94.94% for MusicCore, 11.02% for the complete Cadence target, and 97.89% for the two workspace owners**. The app-wide denominator is unchanged; the owner coverage gate is additional, not a replacement.
+
+Apple accepted the arm64 Developer ID build on 17 October 2026. Its stapled ticket, code signature and Gatekeeper assessment passed, as did the signed app’s native self-check. Public-source and history scans found no leaks. The repository social preview was uploaded and verified in GitHub settings.
+
+The final full verification passed all **123 native workflow scenarios**, the General/MIDI/About settings previews, renderer editing and virtual MIDI checks, offline audio checks, and comparison of 25 bundled resources. Physical devices, microphone permissions and VoiceOver were not exercised by this run. No paid model requests were made.
