@@ -75,7 +75,7 @@ jobs:
         run: python3 Scripts/swift_build_cache.py restore
       - name: Test Swift 6, native workflows and whole-app coverage
         id: verification
-        run: ./verify.sh --skip-accessibility --skip-audio-output --preview-jobs 2
+        run: ./verify.sh --skip-accessibility --skip-audio-output --preview-jobs 4
       # A native failure need not throw away successful compilation. Caches
       # never replace fresh tests, profiles, source inventories or native gates.
       - name: Prepare compiler cache without coverage results
