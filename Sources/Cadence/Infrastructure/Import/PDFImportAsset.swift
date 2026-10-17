@@ -97,35 +97,16 @@ struct PDFPagePane: View {
     @State private var fit = 0
     var body: some View {
         VStack(spacing: 10) {
-            HStack(spacing: 8) {
-                Button {
-                    page = max(1, page - 1)
-                } label: {
-                    Image(systemName: "chevron.left")
-                }.disabled(page <= 1)
-                Text("Page").font(.caption)
-                TextField(
-                    "Page number", value: Binding(get: { page }, set: { page = min(asset.pageCount, max(1, $0)) }),
-                    format: .number
-                ).labelsHidden().textFieldStyle(.roundedBorder).font(.caption.monospacedDigit()).frame(width: 44)
-                Text("of \(asset.pageCount)").font(.caption.monospacedDigit())
-                Button {
-                    page = min(asset.pageCount, page + 1)
-                } label: {
-                    Image(systemName: "chevron.right")
-                }.disabled(page >= asset.pageCount)
-                Spacer(minLength: 0)
-                Button {
-                    zoom -= 1
-                } label: {
-                    Image(systemName: "minus.magnifyingglass")
-                }.help("Zoom out")
-                Button {
-                    zoom += 1
-                } label: {
-                    Image(systemName: "plus.magnifyingglass")
-                }.help("Zoom in")
-                Button("Fit") { fit += 1 }
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 12) {
+                    pageControls
+                    Spacer(minLength: 0)
+                    zoomControls
+                }
+                VStack(alignment: .leading, spacing: 8) {
+                    pageControls
+                    zoomControls
+                }
             }.controlSize(.small)
             NativePDFPage(document: asset.document, page: page, zoom: zoom, fit: fit).clipShape(
                 RoundedRectangle(cornerRadius: 8)
@@ -133,6 +114,46 @@ struct PDFPagePane: View {
             .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.line, lineWidth: 1))
         }
     }
+
+    // Keep navigation and zoom in distinct groups. Narrow source columns wrap
+    // the groups instead of splitting page labels or squeezing the buttons.
+    private var pageControls: some View {
+        HStack(spacing: 8) {
+            Button {
+                page = max(1, page - 1)
+            } label: {
+                Image(systemName: "chevron.left")
+            }.disabled(page <= 1).accessibilityLabel("Previous page").help("Previous page")
+            Text("Page").font(.caption)
+            TextField(
+                "Page number", value: Binding(get: { page }, set: { page = min(asset.pageCount, max(1, $0)) }),
+                format: .number
+            ).labelsHidden().textFieldStyle(.roundedBorder).font(.caption.monospacedDigit()).frame(width: 44)
+            Text("of \(asset.pageCount)").font(.caption.monospacedDigit())
+            Button {
+                page = min(asset.pageCount, page + 1)
+            } label: {
+                Image(systemName: "chevron.right")
+            }.disabled(page >= asset.pageCount).accessibilityLabel("Next page").help("Next page")
+        }.fixedSize()
+    }
+
+    private var zoomControls: some View {
+        HStack(spacing: 8) {
+            Button {
+                zoom -= 1
+            } label: {
+                Image(systemName: "minus.magnifyingglass")
+            }.accessibilityLabel("Zoom out").help("Zoom out")
+            Button {
+                zoom += 1
+            } label: {
+                Image(systemName: "plus.magnifyingglass")
+            }.accessibilityLabel("Zoom in").help("Zoom in")
+            Button("Fit") { fit += 1 }.help("Fit the page to the available space")
+        }.fixedSize()
+    }
+
 }
 
 struct PDFReferencePane: View {

@@ -1,6 +1,6 @@
 # Verification
 
-Run from the repository root on macOS with Xcode/Swift 6 and Python 3.11+.
+Run from the repository root on macOS with Xcode/Swift 6 and Python 3.11+. CI selects Xcode 26.3 explicitly; local builds honour DEVELOPER_DIR. The formatter omits the multiline-string reflow option because older and newer Swift toolchains encode its default differently.
 
 ```sh
 python3 Scripts/check_repository.py

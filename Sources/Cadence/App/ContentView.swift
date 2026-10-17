@@ -197,7 +197,7 @@ struct ContentView: View {
             HStack(spacing: 7) {
                 Image(systemName: state.storageWarnings.isEmpty ? "internaldrive" : "exclamationmark.circle")
                     .foregroundStyle(state.storageWarnings.isEmpty ? Color.moss : Color.clay)
-                Text(state.storageWarnings.isEmpty ? "Stored on this Mac" : "Some work is not saved")
+                Text(state.storageStatus)
                     .foregroundStyle(.secondary)
             }.font(.system(size: 10)).padding(.horizontal, 12).padding(.bottom, 17)
         }.padding(.horizontal, 18).background(Color.sidebar)

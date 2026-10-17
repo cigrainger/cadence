@@ -22,6 +22,25 @@ class VerificationTests(unittest.TestCase):
                         for target in ("MusicCoreTests", "CadenceTests"))
         self.assertEqual(test_counts(log + log), {"MusicCoreTests": 1, "CadenceTests": 1})
 
+    def test_combined_swiftpm_bundle_counts_each_target(self):
+        log = "\n".join(f"Test Case '-[{target}.Fixture testOne]' passed"
+                        for target in ("MusicCoreTests", "CadenceTests"))
+        with self.assertRaises(RuntimeError):
+            test_counts(log)
+        log += "\nTest Suite 'CadencePackageTests.xctest' passed"
+        self.assertEqual(test_counts(log), {"MusicCoreTests": 1, "CadenceTests": 1})
+        with self.assertRaises(RuntimeError):
+            test_counts(log + "\nTest Case '-[MusicCoreTests.Fixture testInterrupted]' started")
+
+    def test_incomplete_case_or_failed_combined_bundle_cannot_pass(self):
+        cases = "\n".join(f"Test Case '-[{target}.Fixture testOne]' passed"
+                          for target in ("MusicCoreTests", "CadenceTests"))
+        for ending in ("Test Suite 'CadencePackageTests.xctest' failed",
+                       "Test Case '-[CadenceTests.Fixture testInterrupted]' started\n"
+                       "Test Suite 'CadencePackageTests.xctest' passed"):
+            with self.assertRaises(RuntimeError):
+                test_counts(cases + "\n" + ending)
+
     def test_coverage_excludes_dependencies_and_test_code(self):
         summary = {kind: {"count": 10, "covered": 7} for kind in ("lines", "regions", "functions")}
         paths = ["/Sources/MusicCore/A.swift", "/Sources/Cadence/A.swift", "/Tests/MusicCoreTests/A.swift", "/Sources/ZIPFoundation/A.swift"]

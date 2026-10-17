@@ -105,7 +105,7 @@ struct LibraryView: View {
                             : "Try a different title or tag, or change the collection filter.")
                 ).frame(minHeight: 400)
             }
-            Text("\(pieces.count) pieces · practice copies stay with their parent piece · saved on this Mac").font(
+            Text("\(pieces.count) pieces · practice copies stay with their parent piece · \(state.storageStatus)").font(
                 .caption
             ).foregroundStyle(.secondary)
         }
