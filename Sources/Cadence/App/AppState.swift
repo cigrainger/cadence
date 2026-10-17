@@ -79,6 +79,7 @@ struct Preferences: Codable, Equatable {
     @Published var songJourneyID: UUID?
     @Published var songLesson: SongLesson?
     let songInput = SongOpeningInput()
+    let pickingInput = PickingInput()
     @Published var practiceMIDIExercise = false
     @Published var adaptiveFromPractice = false
     @Published var root = Pitch(0)

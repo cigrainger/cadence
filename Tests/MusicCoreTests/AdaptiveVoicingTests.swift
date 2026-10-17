@@ -280,7 +280,7 @@ final class AdaptiveVoicingTests: XCTestCase {
         json.removeValue(forKey: "smooth")
         let migrated = try JSONDecoder().decode(PracticeState.self, from: JSONSerialization.data(withJSONObject: json))
             .validated()
-        XCTAssertEqual(migrated.schemaVersion, 15)
+        XCTAssertEqual(migrated.schemaVersion, 16)
         XCTAssertNil(migrated.smooth)
         var book = SmoothPractice()
         try book.begin(session())

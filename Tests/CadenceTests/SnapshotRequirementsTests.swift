@@ -63,3 +63,20 @@ final class SnapshotRequirementsTests: XCTestCase {
         XCTAssertEqual(decoded.missing(in: [:]), fullStudy.missing(in: [:]))
     }
 }
+
+extension SnapshotRequirementsTests {
+    func testFramingBudgetOnlyWaitsForScheduledUIActions() {
+        XCTAssertEqual(
+            SnapshotFraming.delay(arguments: ["--snapshot-requirements", "r.json", "--screen", "library"]), 0.6)
+        for flag in [
+            "--editor-live-edit", "--workspace-editor-roundtrip", "--reharm-detail", "--harmony-sheet",
+            "--study-bottom",
+        ] {
+            XCTAssertGreaterThanOrEqual(
+                SnapshotFraming.delay(arguments: ["--snapshot-requirements", "r.json", flag]), 3.5)
+        }
+        XCTAssertEqual(SnapshotFraming.delay(arguments: ["--song-ax"]), 30)
+        XCTAssertEqual(SnapshotFraming.delay(arguments: ["--settings"]), 2)
+        XCTAssertEqual(SnapshotFraming.delay(arguments: ["--snapshot", "manual.png"]), 10)
+    }
+}

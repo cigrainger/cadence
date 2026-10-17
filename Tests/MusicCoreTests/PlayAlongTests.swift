@@ -160,9 +160,9 @@ final class PlayAlongTests: XCTestCase {
         XCTAssertThrowsError(try state.validated())
         state = PracticeState()
         state.schemaVersion = 7
-        XCTAssertEqual(try state.validated().schemaVersion, 15)
+        XCTAssertEqual(try state.validated().schemaVersion, 16)
         XCTAssertNil(try state.validated().history.playAlong)
-        state.schemaVersion = 16
+        state.schemaVersion = 17
         XCTAssertThrowsError(try state.validated())
     }
     func testRestAndTieOnlyProduceWrittenAttacksAndSourceBarNumbers() throws {

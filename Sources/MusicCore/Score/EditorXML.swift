@@ -54,6 +54,10 @@ public enum EditorXML {
                     let xmlVoice = (staff - 1) * 2 + voice
                     let sequence = document.ordered(staff: sourceStaff, voice: voice)
                     for event in document.inBar(bar, staff: sourceStaff, voice: voice) {
+                        if staff == 1, let cue = event.picking {
+                            xml +=
+                                "<direction placement=\"above\"><direction-type><words font-size=\"9\" relative-y=\"16\">\(escape(cue))</words></direction-type><voice>\(xmlVoice)</voice><staff>1</staff></direction>"
+                        }
                         if let dynamic = event.dynamic {
                             xml +=
                                 "<direction placement=\"\(document.voices(staff:sourceStaff).count > 1 && voice == 1 ? "above" : "below")\"><direction-type><dynamics><\(dynamic.rawValue)/></dynamics></direction-type><voice>\(xmlVoice)</voice><staff>\(staff)</staff></direction>"

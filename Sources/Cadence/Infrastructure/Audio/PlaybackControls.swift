@@ -15,6 +15,7 @@ extension AppState {
         reharmInput.pause()
         tensionInput.pause()
         triadInput.pause()
+        pickingInput.pause()
         earInput.pause()
         scoreEarInput.pause()
         adaptiveInput.pause(held: midi.keyboard.downNotes)

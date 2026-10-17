@@ -1,6 +1,6 @@
 # Guitar picking and accompaniment
 
-Captured proposal, not implemented. The goal is to turn a progression from the learner's library into an accompaniment they can play, understand and make their own.
+Implemented first pathway in source; pending a new binary release and guitarist/learner review. The goal is to turn a progression from the learner's library into an accompaniment they can play, understand and make their own.
 
 ## See and hear the pattern
 
@@ -33,3 +33,15 @@ Represent the picking pattern as relative gestures over a chosen voicing, then p
 Keep tuning, string/course layout, register and right-hand conventions explicit. Guitar is the first complete teaching experience. Ukulele can gain its own patterns and voicings; banjo needs deliberate treatment of variants, rolls and its short drone string. The shared model should support that progression without presenting guitar patterns as specialist instruction for every instrument.
 
 First acceptance: a learner can see and hear each pattern, follow the gradual sequence, use a library progression, save a playable arrangement and find it again. Unsupported input remains explicit. Review exercises with guitarists, test relevant keyboard/accessibility actions, and cover invalid string targets, source changes, cancellation and failed saves before describing the pathway as complete.
+
+## First build and remaining validation
+
+In Learn, choose **Find your picking pattern**, a library part/staff and 1–8 reviewed bars. The first version requires 4/4 and chord symbols on bar lines. It uses complete chord tones, including a slash bass, and reports an unavailable shape instead of dropping notes. Tuning, capo, source revision and explicit frets belong to the session. Suggested shapes still need a comfort check.
+
+The vertical trail covers hear/tap, muted strings, one chord, changes, a creative finish and a later independent return. The score shows linked notation/tab with `p i m a` or stroke cues. Hear all notes, bass or upper strings; isolate a two-bar join, then return to the full phrase. Spacebar tapping is exploratory, with no timing grade. Technique checks are labelled self-report. A return without the demonstration is distinct from measured performance; its review schedule retains self-report provenance.
+
+The creative step compares the three styles, changes backbeat accents and saves a separate editable arrangement in Studio. The original's Library entry lists its accompaniments. Reopening an existing style preserves edits and a renamed title. Picking guidance persists in the native document and is exported as MusicXML direction text; importing arbitrary direction text as editable picking guidance is not yet supported.
+
+The one-chord step optionally captures one clean sustained bass note locally. Saved windows retain sample/host timestamps, sample rate, frame length, RMS, clipping, YIN frequency and heuristic confidence. The pitch trace and summary show inconclusive captures explicitly. Only an explicit coach send can share the bounded summary; no raw recording is captured or uploaded. It cannot assess the full polyphonic pattern, precise attacks, fingers or pick direction. Acoustic latency calibration, onset alignment, polyphonic transcription and held-out guitar recordings remain next validation work.
+
+Keyboard controls, virtual microphone input, persistence failure and source changes are automated checks. Actual microphone permission, guitar recording quality, comfortable voicings, left-handed teaching and VoiceOver need hands-on review.

@@ -1,6 +1,6 @@
 # AI connections and performance coaching
 
-Design proposal, October 2026. These are next steps, not supported features. Current AI requests use OpenRouter; current microphone input provides a clean single-note YIN pitch estimate, held-note checks and a basic quantised transcription. It does not yet provide calibrated acoustic onset timing, polyphonic grading or technique diagnosis.
+Design and staged implementation, October 2026. Provider expansion and calibrated performance assessment remain proposals. Current AI requests use OpenRouter; current microphone input provides a clean single-note YIN pitch estimate, held-note checks and a basic quantised transcription. The guitar picking one-chord activity now stores timestamped, unquantised window observations, local signal-quality/pitch inspection and explicit evidence-summary coaching. It does not yet provide calibrated acoustic onset timing, polyphonic grading or technique diagnosis.
 
 ## Bring your own key, bring your own model
 

@@ -289,9 +289,9 @@ final class ScoreEarTests: XCTestCase {
         XCTAssertThrowsError(try corrupt.validated())
         var old = PracticeState()
         old.schemaVersion = 6
-        XCTAssertEqual(try old.validated().schemaVersion, 15)
+        XCTAssertEqual(try old.validated().schemaVersion, 16)
         var unsupported = old
-        unsupported.schemaVersion = 16
+        unsupported.schemaVersion = 17
         XCTAssertThrowsError(try unsupported.validated())
     }
     func testLongSourceTitleStillProducesValidEvidence() throws {

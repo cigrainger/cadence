@@ -173,6 +173,13 @@ def native_scenarios():
     smooth = ["twoSources", "fiveSteps", "fourStudies", "epubReadable", "unreviewedBlocked", "midiEvidence", "spacedReview", "sessionBudget"]
     song = ["sourceLinked", "eightBarSource", "openMilestones", "noPaidRequests"]
     return [
+        ("picking-travis", ["--picking-preview", "--width", "1350", "--height", "1100"], ["offline", "linkedTab", "allEventsMapped"], "pickingChecks", ["sourceLinked", "validState", "playableTab", "separateEvidence", "localOnly"]),
+        ("picking-classical", ["--picking-preview", "--picking-classical"], ["offline", "linkedTab"], "pickingChecks", ["sourceLinked", "validState", "playableTab"]),
+        ("picking-strumming", ["--picking-preview", "--picking-strumming"], ["offline", "linkedTab"], "pickingChecks", ["sourceLinked", "validState", "playableTab"]),
+        ("picking-chord", ["--picking-preview", "--picking-chord"], ["offline", "linkedTab"], "pickingChecks", ["sourceLinked", "validState", "separateEvidence"]),
+        ("picking-create", ["--picking-preview", "--picking-create"], ["offline", "linkedTab"], "pickingChecks", ["sourceLinked", "validState", "playableTab"]),
+        ("picking-answer", ["--picking-preview", "--picking-answer"], ["offline", "linkedTab"], "pickingChecks", ["sourceLinked", "validState", "playableTab"]),
+        ("picking-return", ["--picking-preview", "--picking-return"], [], "pickingChecks", ["sourceLinked", "validState", "separateEvidence"]),
         ('song-pathway', ['--song-preview', '--width', '1350', '--height', '1050'], [], 'songJourneyChecks', song),
         ('song-pathway-small', ['--song-preview', '--width', '1120', '--height', '800'], [], 'songJourneyChecks', song),
         ('song-pathway-guitar', ['--song-preview', '--song-guitar', '--width', '1350', '--height', '1050'], [], 'songJourneyChecks', song),
@@ -460,7 +467,7 @@ def main():
             # launch state. Keep the full post-selfcheck suite below as well.
             first_launch = output / "first-launch"
             first_launch.mkdir(exist_ok=True)
-            report["firstLaunchPreview"] = run_preview(executable, first_launch, env, native_scenarios()[0])
+            report["firstLaunchPreview"] = run_preview(executable, first_launch, env, next(case for case in native_scenarios() if case[0] == "song-pathway"))
             # Check score/cursor readiness before the long workflow suite.
             report["scoreRendererPreview"] = run_preview(
                 executable, first_launch, env, next(case for case in native_scenarios() if case[0] == "flow"))

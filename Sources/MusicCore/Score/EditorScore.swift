@@ -76,6 +76,7 @@ public struct EditorEvent: Codable, Equatable, Identifiable, Sendable {
     public var accent: Bool
     public var dynamic: MusicDynamic?
     public var slurTo: UUID?
+    public var picking: String?
     public init(
         bar: Int, staff: Int = 1, voice: Int = 1, rhythm: EditorRhythm = EditorRhythm(), pitches: [EditorPitch] = [],
         tieNext: Bool = false, stem: EditorStem = .automatic, staccato: Bool = false, accent: Bool = false,
@@ -94,7 +95,7 @@ public struct EditorEvent: Codable, Equatable, Identifiable, Sendable {
         self.slurTo = slurTo
     }
     private enum CodingKeys: String, CodingKey {
-        case id, bar, staff, voice, rhythm, pitches, tieNext, stem, staccato, accent, dynamic, slurTo
+        case id, bar, staff, voice, rhythm, pitches, tieNext, stem, staccato, accent, dynamic, slurTo, picking
     }
     public init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
@@ -110,13 +111,14 @@ public struct EditorEvent: Codable, Equatable, Identifiable, Sendable {
         accent = try c.decodeIfPresent(Bool.self, forKey: .accent) ?? false
         dynamic = try c.decodeIfPresent(MusicDynamic.self, forKey: .dynamic)
         slurTo = try c.decodeIfPresent(UUID.self, forKey: .slurTo)
+        picking = try c.decodeIfPresent(String.self, forKey: .picking)
     }
     public var isRest: Bool { pitches.isEmpty }
     public var label: String { isRest ? "Rest" : pitches.map(\.label).joined(separator: " + ") }
 }
 /// Two independent, complete voices per staff, with integer quarter-note ticks.
 public struct EditorDocument: Codable, Equatable, Sendable {
-    public var schemaVersion = 8
+    public var schemaVersion = 9
     public var id = UUID()
     public var title: String
     public var instrument: EditorInstrument
@@ -132,6 +134,8 @@ public struct EditorDocument: Codable, Equatable, Sendable {
     public var pdfSource: PDFScoreSource?
     public var responseSource: CreativeResponse?
     public var triadSource: TriadMaterial?
+    public var pickingSource: PickingMaterial?
+    public var pickingStyle: PickingStyle?
     public var tensionSource: TensionSource?
     public var reharmSource: ReharmSource?
     public init(title: String, instrument: EditorInstrument, events: [EditorEvent]) {
@@ -141,12 +145,12 @@ public struct EditorDocument: Codable, Equatable, Sendable {
     }
     private enum CodingKeys: String, CodingKey {
         case schemaVersion, id, title, instrument, tempo, fifths, minor, tuning, capo, barCount, meter, events,
-            harmonies, pdfSource, responseSource, triadSource, tensionSource, reharmSource
+            harmonies, pdfSource, responseSource, triadSource, tensionSource, reharmSource, pickingSource, pickingStyle
     }
     public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         let version = try values.decode(Int.self, forKey: .schemaVersion)
-        guard [1, 2, 3, 4, 5, 6, 7, 8].contains(version) else {
+        guard [1, 2, 3, 4, 5, 6, 7, 8, 9].contains(version) else {
             throw MusicError.invalid("This score needs a newer version of Cadence.")
         }
         id = try values.decode(UUID.self, forKey: .id)
@@ -161,12 +165,14 @@ public struct EditorDocument: Codable, Equatable, Sendable {
         harmonies = try values.decodeIfPresent([EditorHarmony].self, forKey: .harmonies) ?? []
         pdfSource = try values.decodeIfPresent(PDFScoreSource.self, forKey: .pdfSource)
         responseSource = try values.decodeIfPresent(CreativeResponse.self, forKey: .responseSource)
+        pickingStyle = try values.decodeIfPresent(PickingStyle.self, forKey: .pickingStyle)
+        pickingSource = try values.decodeIfPresent(PickingMaterial.self, forKey: .pickingSource)
         triadSource = try values.decodeIfPresent(TriadMaterial.self, forKey: .triadSource)
         tensionSource = try values.decodeIfPresent(TensionSource.self, forKey: .tensionSource)
         reharmSource = try values.decodeIfPresent(ReharmSource.self, forKey: .reharmSource)
         barCount = version == 1 ? 4 : try values.decode(Int.self, forKey: .barCount)
         meter = version == 1 ? EditorMeter(4, 4) : try values.decode(EditorMeter.self, forKey: .meter)
-        schemaVersion = 8
+        schemaVersion = 9
     }
     public var staffCount: Int { instrument == .piano ? 2 : 1 }
     public func voices(staff: Int) -> [Int] { Array(Set(events.filter { $0.staff == staff }.map(\.voice))).sorted() }
@@ -196,6 +202,9 @@ public struct EditorDocument: Codable, Equatable, Sendable {
         return (items[lo].id, items[hi].id, actual, actual * 2 / 3, EditorRhythm(unit))
     }
     public func validated() throws -> Self {
+        guard pickingSource?.valid ?? true else {
+            throw MusicError.invalid("The accompaniment source link is invalid.")
+        }
         guard reharmSource?.valid ?? true else {
             throw MusicError.invalid("The reharmonisation’s source link is invalid.")
         }
@@ -214,7 +223,7 @@ public struct EditorDocument: Codable, Equatable, Sendable {
                 throw MusicError.invalid("The imported page links do not match the score's bars.")
             }
         }
-        guard schemaVersion == 8, (1...128).contains(barCount), EditorMeter.choices.contains(meter), title.count <= 500,
+        guard schemaVersion == 9, (1...128).contains(barCount), EditorMeter.choices.contains(meter), title.count <= 500,
             (20...300).contains(tempo), (-7...7).contains(fifths), (0...9).contains(capo), tuning.pitches.count == 6,
             tuning.pitches.allSatisfy({ (24...88).contains($0) }), events.count <= 4096,
             events.reduce(0, { $0 + max(1, $1.pitches.count) }) * (instrument == .guitar ? 2 : 1) <= 10000,
@@ -229,6 +238,9 @@ public struct EditorDocument: Codable, Equatable, Sendable {
             throw MusicError.invalid("Duplicate note identities in the score.")
         }
         for event in events {
+            guard event.picking.map({ ["p", "i", "m", "a", "p + m", "p + i", "↓", "↑"].contains($0) }) ?? true else {
+                throw MusicError.invalid("Unknown picking guidance.")
+            }
             guard (0..<barCount).contains(event.bar), (1...staffCount).contains(event.staff),
                 (1...2).contains(event.voice), [1920, 960, 480, 240, 120].contains(event.rhythm.base),
                 !(event.rhythm.dotted && event.rhythm.triplet), event.pitches.count <= (instrument == .guitar ? 6 : 8)

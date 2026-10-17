@@ -112,6 +112,30 @@ extension AppState {
                 let scope = rehearsalSession.sourcePlan?.source?.scope
                 source = (id, scope?.from ?? 0, scope?.through ?? 3, scope?.partID, "Practise this piece")
             }
+        case .picking:
+            if let session = pickingPractice.active {
+                var value = libraryPieces.first(where: { $0.id == session.material.pieceID }).map {
+                    pieceCoachContext(
+                        $0, from: session.material.scope.from, through: session.material.scope.through,
+                        partID: session.material.scope.partID)
+                }
+                if value != nil {
+                    value!.id =
+                        session.key + ":" + session.stage.rawValue + ":"
+                        + (session.takes.last?.id.uuidString ?? "no-take")
+                    value!.subtitle = session.style.rawValue + " · " + session.stage.title
+                    value!.reference +=
+                        "\nPicking activity: " + session.style.detail + " Current task: " + session.stage.title
+                    if let take = session.takes.last {
+                        value!.reference +=
+                            "\nSelected local take " + take.id.uuidString + " target MIDI " + String(take.target) + ": "
+                            + take.summary
+                    }
+                    value!.reference +=
+                        "\nThese are observations, not an automatic performance grade. Suggest one cautious experiment. Do not infer hand mechanics, timing offsets, polyphonic accuracy or causes from windowed pitch. Do not assign practice credit."
+                }
+                return value
+            }
         case .triads:
             if let material = triadPractice.active?.material {
                 source = (

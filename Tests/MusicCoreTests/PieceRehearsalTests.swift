@@ -318,7 +318,7 @@ final class PieceRehearsalTests: XCTestCase {
     func testPracticeMigrationPreservesOldStateAndRejectsFuture() throws {
         var old = PracticeState()
         old.schemaVersion = 8
-        XCTAssertEqual(try old.validated().schemaVersion, 15)
+        XCTAssertEqual(try old.validated().schemaVersion, 16)
         XCTAssertNil(try old.validated().rehearsal)
         var book = PieceRehearsalBook()
         let r = try completed()
@@ -326,7 +326,7 @@ final class PieceRehearsalTests: XCTestCase {
         old.rehearsal = book
         let restored = try JSONDecoder().decode(PracticeState.self, from: JSONEncoder().encode(old)).validated()
         XCTAssertEqual(restored.rehearsal, book)
-        old.schemaVersion = 16
+        old.schemaVersion = 17
         XCTAssertThrowsError(try old.validated())
         old.schemaVersion = 9
         old.rehearsal?.records["bad"] = r

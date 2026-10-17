@@ -7,6 +7,7 @@ import Foundation
 import MusicCore
 
 @MainActor final class Microphone: ObservableObject {
+    let observations = PassthroughSubject<PerformanceObservation, Never>()
     let detections = PassthroughSubject<(DetectedPitch?, Double), Never>()
     @Published var listening = false
     @Published var pitch: DetectedPitch?
@@ -68,7 +69,7 @@ import MusicCore
         let analysisQueue = queue
         // AVFoundation invokes this on its render thread. Copy samples before
         // leaving the callback; only immutable values reach the analysis queue.
-        return { @Sendable [weak self] buffer, _ in
+        return { @Sendable [weak self] buffer, time in
             guard let channel = buffer.floatChannelData?[0] else { return }
             // Downsample with averaging to keep pitch analysis away from the audio callback.
             let factor = max(1, Int(buffer.format.sampleRate / (forTuner ? 48000 : 12000)))
@@ -82,10 +83,27 @@ import MusicCore
                 }
             }
             let rate = buffer.format.sampleRate / Double(factor)
+            let sampleTime: Int64? = time.isSampleTimeValid ? time.sampleTime : nil
+            let hostSeconds = time.isHostTimeValid ? AVAudioTime.seconds(forHostTime: time.hostTime) : nil
+            var energy = 0.0
+            var clipped = 0
+            for index in 0..<count {
+                let value = Double(channel[index])
+                energy += value * value
+                if abs(value) >= 0.99 { clipped += 1 }
+            }
+            let rms = count > 0 ? sqrt(energy / Double(count)) : 0
+            let clipping = count > 0 ? Double(clipped) / Double(count) : 0
+            let originalRate = buffer.format.sampleRate
             analysisQueue.async { [weak self, samples] in
                 let detection = PitchDetector.detect(samples, sampleRate: rate, frequencyRange: analysisRange)
                 Task { @MainActor in
                     guard self?.epoch == token else { return }
+                    let observation = PerformanceObservation(
+                        sampleTime: sampleTime, hostSeconds: hostSeconds,
+                        sampleRate: originalRate, frameCount: count, rms: rms, clippedFraction: clipping,
+                        frequency: detection?.frequency, confidence: detection?.confidence ?? 0)
+                    if observation.valid { self?.observations.send(observation) }
                     self?.receive(detection)
                 }
             }

@@ -236,3 +236,89 @@ final class MicrophoneTests: XCTestCase {
         }
     }
 }
+
+extension MicrophoneTests {
+    @MainActor func testObservationPreservesDeviceClockAndRejectsStoppedEpoch() async throws {
+        let input = MicrophoneFixture()
+        let microphone = Microphone(input: input, permission: { true })
+        var frames: [PerformanceObservation] = []
+        let subscription = microphone.observations.sink { frames.append($0) }
+        defer {
+            subscription.cancel()
+            microphone.stop()
+        }
+        await microphone.start()
+        let handler = try XCTUnwrap(input.handler)
+        await Self.emit(handler, midi: 69, rate: 48000, frames: 8192)
+        try await waitFor { frames.count == 1 }
+        XCTAssertEqual(frames[0].sampleTime, 0)
+        XCTAssertNil(frames[0].hostSeconds)
+        XCTAssertEqual(frames[0].sampleRate, 48000)
+        XCTAssertEqual(frames[0].frameCount, 8192)
+        XCTAssertEqual(frames[0].clippedFraction, 0)
+        XCTAssertGreaterThan(frames[0].rms, 0.1)
+        microphone.stop()
+        await Self.emit(handler, midi: 60)
+        try await Task.sleep(nanoseconds: 100_000_000)
+        XCTAssertEqual(frames.count, 1)
+    }
+}
+
+extension MicrophoneTests {
+    @MainActor func testWideGuitarInputDetectsLowBWithoutOctaveSubstitution() async throws {
+        let input = MicrophoneFixture()
+        let microphone = Microphone(input: input, permission: { true })
+        var frames = 0
+        let subscription = microphone.observations.sink { _ in frames += 1 }
+        defer {
+            subscription.cancel()
+            microphone.stop()
+        }
+        await microphone.start(forTuner: true)
+        XCTAssertTrue(input.tuner)
+        let handler = try XCTUnwrap(input.handler)
+        await Self.emit(handler, midi: 35, rate: 12000, frames: 4096)
+        try await waitFor { frames == 1 }
+        XCTAssertEqual(microphone.pitch?.midi, 35)
+        XCTAssertLessThan(abs(microphone.pitch?.cents ?? 999), 15)
+    }
+}
+
+extension MicrophoneTests {
+    @MainActor func testPickingStartsWideInputAndOlderPermissionCannotPauseNewCapture() async throws {
+        let state = AppState(
+            storageOverride: FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString))
+        let device = MicrophoneFixture()
+        let gate = PermissionGate()
+        let microphone = Microphone(input: device, permission: { await gate.request() })
+        defer {
+            microphone.stop()
+            state.stopAllPlayback()
+            state.midi.shutdown()
+            try? FileManager.default.removeItem(at: state.storage)
+        }
+        let score = try PickingChecks.document()
+        state.editor.documents.append(score)
+        try state.beginPicking(
+            piece: .init(source: .score(score)), scope: .init(partID: "P1", staff: 1, from: 0, through: 3),
+            style: .travis)
+        for _ in 0..<2 { state.pickingInput.submit(.tried, state: state) }
+        let input = state.pickingInput
+        input.arm(state)
+        let old = Task { await input.startMicrophone(microphone) }
+        try await waitFor(gate, calls: 1)
+        input.pause()
+        microphone.stop()
+        input.arm(state)
+        let current = Task { await input.startMicrophone(microphone) }
+        try await waitFor(gate, calls: 2)
+        await gate.answer(1, false)
+        await old.value
+        XCTAssertTrue(input.recording)
+        await gate.answer(2, true)
+        await current.value
+        XCTAssertTrue(input.recording)
+        XCTAssertTrue(microphone.listening)
+        XCTAssertTrue(device.tuner)
+    }
+}

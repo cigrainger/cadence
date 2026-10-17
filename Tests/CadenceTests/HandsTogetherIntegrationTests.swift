@@ -51,7 +51,7 @@ final class HandsTogetherIntegrationTests: XCTestCase {
         restored.openPieceRehearsal(piece)
         XCTAssertEqual(restored.pianoTakes, state.pianoTakes)
         XCTAssertEqual(restored.currentRehearsal, state.currentRehearsal)
-        XCTAssertEqual(restored.practiceState.schemaVersion, 15)
+        XCTAssertEqual(restored.practiceState.schemaVersion, 16)
     }
     @MainActor func testActualStartFreezesOnlyPartnerAndBothHandsForcePartnerOff() throws {
         let (state, _) = try prepared()

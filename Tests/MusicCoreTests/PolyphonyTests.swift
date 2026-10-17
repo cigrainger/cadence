@@ -17,7 +17,7 @@ final class PolyphonyTests: XCTestCase {
         }
         let migrated = try JSONDecoder().decode(EditorDocument.self, from: JSONSerialization.data(withJSONObject: json))
         XCTAssertEqual(migrated, original)
-        XCTAssertEqual(migrated.schemaVersion, 8)
+        XCTAssertEqual(migrated.schemaVersion, 9)
         _ = try migrated.validated()
     }
     func testOriginalStudiesRoundTripVoicesExpressionAndExactGuitarPositions() throws {
