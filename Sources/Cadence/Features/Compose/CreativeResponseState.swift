@@ -50,6 +50,9 @@ extension AppState {
             editor.documents[index].events.contains(where: { !$0.pitches.isEmpty })
         else { throw MusicError.invalid("Add a few notes to your answer, then listen to it.") }
         let score = editor.documents[index]
+        if songJourneys.contains(where: { $0.compositionID == id }), score.barCount != 8 {
+            throw MusicError.invalid("Keep eight bars for this arrangement, then listen to the complete version.")
+        }
         guard listenedFingerprint == LibraryPiece(source: .score(score)).fingerprint else {
             throw MusicError.invalid("Listen to your latest changes before saving the finished answer.")
         }

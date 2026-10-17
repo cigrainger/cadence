@@ -11,6 +11,7 @@ import WebKit
     let filename: String
     let pdf: PDFImportAsset?
     let epub: EPUBDocument?
+    private let digest: String
     var pageCount: Int { epub?.sections.count ?? pdf?.pageCount ?? 0 }
     var unit: String { epub == nil ? "PDF page" : "Section" }
     var title: String { epub?.title ?? URL(fileURLWithPath: filename).deletingPathExtension().lastPathComponent }
@@ -19,14 +20,17 @@ import WebKit
         epub = nil
         data = pdf.data
         filename = pdf.filename
+        digest = CourseBook.digest(pdf.data)
     }
     init(data: Data, filename: String, epub: EPUBDocument) {
         self.data = data
         self.filename = filename
         self.epub = epub
         pdf = nil
+        digest = CourseBook.digest(data)
     }
     static func read(_ url: URL) async throws -> BookAsset {
+        try Task.checkCancellation()
         if url.pathExtension.lowercased() != "epub" { return try await .init(pdf: PDFImportAsset.read(url)) }
         let result = try await Task.detached(priority: .userInitiated) {
             let access = url.startAccessingSecurityScopedResource()
@@ -46,7 +50,8 @@ import WebKit
             epubSections: epub?.sections.map(\.reference))
     }
     func images(in source: CourseSourceAnchor) -> [EPUBImage] {
-        guard let epub, source.fromPage > 0, source.throughPage >= source.fromPage,
+        guard let epub, source.valid, source.digest == digest, source.fromPage > 0,
+            source.throughPage >= source.fromPage,
             source.throughPage <= epub.sections.count
         else { return [] }
         var paths = Set<String>()
@@ -183,7 +188,7 @@ struct EPUBReadingView: NSViewRepresentable {
     let html: String
     var fragment = ""
     var scale = 1.0
-    final class Coordinator: NSObject, WKNavigationDelegate {
+    @MainActor final class Coordinator: NSObject, WKNavigationDelegate {
         var html = "", fragment = ""
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
             guard !fragment.isEmpty, let data = try? JSONEncoder().encode([fragment]) else { return }
@@ -193,7 +198,7 @@ struct EPUBReadingView: NSViewRepresentable {
         }
         func webView(
             _ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction,
-            decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
+            decisionHandler: @escaping @MainActor @Sendable (WKNavigationActionPolicy) -> Void
         ) {
             decisionHandler(
                 navigationAction.navigationType == .other && navigationAction.request.url?.scheme == "about"

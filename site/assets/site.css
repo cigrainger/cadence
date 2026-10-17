@@ -13,6 +13,7 @@
 .voices{margin:7px 0 0}.bass-lane{border-top:1px solid var(--line);padding-top:12px;margin-bottom:14px}.bass-lane .voice-heading{margin:0!important}
 .bass-route{display:flex;justify-content:space-around;align-items:center;font-family:var(--serif);font-size:26px;margin-top:12px}.bass-route strong{color:var(--accent);font-weight:400}.bass-route>span:nth-child(even){font-family:var(--sans);font-size:16px;color:#71816d}.bass-route>span:first-child,.bass-route>span:last-child,.bass-route strong{width:50px;text-align:center}
 .listening-room .harmony-explanation{font-size:12px;line-height:1.55;min-height:38px;margin-bottom:16px}
+.demo-listening{display:flex;align-items:center;gap:12px;margin-top:12px}.demo-listening button{flex:0 0 auto;min-height:36px;padding:8px 10px;border:1px solid #b8c3af;border-radius:5px;background:transparent;color:var(--green);font-size:12px}.demo-listening button[aria-pressed=true]{background:var(--green);color:var(--paper)}.demo-listening span{font-size:11px;line-height:1.45;color:var(--muted)}
 .practice-journey{list-style:none;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:32px;margin:0 0 34px}.practice-journey li{border-top:1px solid var(--line);padding-top:18px}.practice-journey b{font-size:13px;color:var(--green)}.practice-journey p{font-size:14px;color:var(--muted);margin:10px 0 0}
 @media(max-width:720px){.practice-journey{grid-template-columns:1fr;gap:18px}.voice-heading{font-size:10px!important}.hero h1{font-size:48px}}
 

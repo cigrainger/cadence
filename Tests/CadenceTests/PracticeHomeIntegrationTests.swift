@@ -34,7 +34,7 @@ final class PracticeHomeIntegrationTests: XCTestCase {
     @MainActor func testFreshHomeOffersActivitiesWithoutInventingProgress() throws {
         let state = try state()
         XCTAssertEqual(state.destination, .practice)
-        XCTAssertEqual(state.practicePage, .home)
+        XCTAssertEqual(state.practicePage, .songJourney)
         XCTAssertNil(state.homePathway)
         XCTAssertNil(state.homeComposition)
         XCTAssertFalse(state.canResumeAdaptive)
@@ -48,7 +48,7 @@ final class PracticeHomeIntegrationTests: XCTestCase {
         state.openPractice(.intervals)
         XCTAssertFalse(state.practiceMIDIExercise)
         state.navigate(to: .practice)
-        XCTAssertEqual(state.practicePage, .home)
+        XCTAssertEqual(state.practicePage, .exercises)
         state.navigate(to: .explore)
         XCTAssertEqual(state.destination, .explore)
         XCTAssertTrue(state.journal.attempts.isEmpty)
@@ -103,7 +103,7 @@ final class PracticeHomeIntegrationTests: XCTestCase {
         XCTAssertEqual(state.smoothPractice.active, session)
         state.showPathways()
         state.returnToCourse(location)
-        XCTAssertEqual(state.destination, .library)
+        XCTAssertEqual(state.destination, .courses)
     }
     @MainActor func testMissingSessionPathwayDoesNotSilentlyCreateAnotherSession() throws {
         let state = try state(pathway: true)

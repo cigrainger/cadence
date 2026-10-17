@@ -8,45 +8,28 @@ import UniformTypeIdentifiers
 
 struct LibraryView: View {
     @EnvironmentObject private var state: AppState
-    @State private var category: PieceKind?
-    @State private var query = ""
-    @State private var favorites = false
-    @State private var order = "Recently opened"
+    @ObservedObject var browser: LibraryBrowserState
     private var pieces: [LibraryPiece] {
         state.libraryPieces.filter { piece in
-            let record = state.pieceRecord(piece)
-            return (category == nil || record.kind == category) && (!favorites || record.favorite)
-                && (query.isEmpty
-                    || (piece.title + " " + record.composer + " " + record.tags + " " + piece.instrument)
-                        .localizedCaseInsensitiveContains(query))
+            browser.matches(piece, record: state.pieceRecord(piece))
         }.sorted { a, b in
             let x = state.pieceRecord(a)
             let y = state.pieceRecord(b)
-            if order == "Recently opened", (x.lastOpened ?? x.addedAt) != (y.lastOpened ?? y.addedAt) {
+            if browser.order == "Recently opened", (x.lastOpened ?? x.addedAt) != (y.lastOpened ?? y.addedAt) {
                 return (x.lastOpened ?? x.addedAt) > (y.lastOpened ?? y.addedAt)
             }
             return a.title.localizedStandardCompare(b.title) == .orderedAscending
         }
     }
     private var selected: LibraryPiece? { pieces.first { $0.id == state.librarySelection } ?? pieces.first }
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            if !state.libraryCourses || state.learningShelf != "Pathways"
-                || (state.musicalPathwayStep == nil && !state.showAdaptiveSession)
-            {
-                Picker("Library", selection: $state.libraryCourses) {
-                    Text("Music").tag(false)
-                    Text("Courses").tag(true)
-                }.pickerStyle(.segmented).labelsHidden().frame(width: 240)
-            }
-            if state.libraryCourses { CourseLibraryView() } else { musicWorkspace }
-        }
-    }
+    var body: some View { musicWorkspace }
     private var musicWorkspace: some View {
         VStack(alignment: .leading, spacing: 18) {
             HStack(spacing: 12) {
-                TextField("Search title, composer, instrument or tag", text: $query).textFieldStyle(.roundedBorder)
-                    .frame(maxWidth: 420)
+                TextField("Search title, composer, instrument or tag", text: $browser.query).textFieldStyle(
+                    .roundedBorder
+                )
+                .frame(maxWidth: 420)
                 Spacer()
                 Button("Import PDF", systemImage: "doc.viewfinder") {
                     state.pdfImportScoreID = nil
@@ -59,13 +42,13 @@ struct LibraryView: View {
                 }.fixedSize()
             }.controlSize(.small)
             HStack {
-                Picker("Collection", selection: $category) {
+                Picker("Collection", selection: $browser.category) {
                     Text("All music").tag(Optional<PieceKind>.none)
                     ForEach(PieceKind.allCases, id: \.self) { kind in Text(kind.rawValue).tag(Optional(kind)) }
                 }.pickerStyle(.segmented).labelsHidden().frame(maxWidth: 570)
                 Spacer(minLength: 8)
-                Toggle("Favorites", isOn: $favorites).toggleStyle(.checkbox).font(.caption)
-                Picker("Sort", selection: $order) {
+                Toggle("Favorites", isOn: $browser.favorites).toggleStyle(.checkbox).font(.caption)
+                Picker("Sort", selection: $browser.order) {
                     Text("Recently opened").tag("Recently opened")
                     Text("Title").tag("Title")
                 }.labelsHidden().frame(width: 150)
@@ -91,16 +74,18 @@ struct LibraryView: View {
                         }
                     }.frame(width: 255, height: 710)
                     ScrollView {
-                        PieceDetailView(piece: selected).id(selected.id).frame(
-                            maxWidth: .infinity, alignment: .topLeading
-                        ).padding(.trailing, 3)
+                        PieceDetailView(piece: selected, coach: state.pieceCoachSession(selected.id)).id(selected.id)
+                            .frame(
+                                maxWidth: .infinity, alignment: .topLeading
+                            ).padding(.trailing, 3)
                     }.frame(maxWidth: .infinity).frame(height: 710)
                 }
             } else {
                 ContentUnavailableView(
-                    query.isEmpty ? "A place for your music" : "No matching pieces", systemImage: "books.vertical",
+                    browser.query.isEmpty ? "A place for your music" : "No matching pieces",
+                    systemImage: "books.vertical",
                     description: Text(
-                        query.isEmpty
+                        browser.query.isEmpty
                             ? "Import sheet music, start a composition, or explore the included examples. Your scores and notes stay on this Mac."
                             : "Try a different title or tag, or change the collection filter.")
                 ).frame(minHeight: 400)
@@ -111,9 +96,11 @@ struct LibraryView: View {
         }
         .onAppear {
             state.reconcileLibrary()
+            state.librarySelection = selected?.id
             state.saveSoon()
         }
-        .onChange(of: category) { _, _ in state.librarySelection = nil }
+        .onChange(of: browser.category) { _, _ in state.librarySelection = nil }
+        .onChange(of: selected?.id) { _, id in state.librarySelection = id }
     }
     private func row(_ piece: LibraryPiece, selected: Bool) -> some View {
         let record = state.pieceRecord(piece)
@@ -162,7 +149,7 @@ private struct PieceDetailView: View {
     @EnvironmentObject private var ai: AISettings
     @Environment(\.openSettings) private var openSettings
     let piece: LibraryPiece
-    @StateObject private var coach = PieceCoachSession()
+    @ObservedObject var coach: PieceCoachSession
     @State private var tab = "Overview"
     @State private var from = 1
     @State private var through = 4
@@ -247,6 +234,17 @@ private struct PieceDetailView: View {
         .onAppear {
             through = min(4, barCount)
             if let study { partID = study.partID }
+            if let location = state.libraryBrowser.locations[piece.id] {
+                tab = location.tab
+                if study?.document.parts.contains(where: { $0.id == location.partID }) == true {
+                    partID = location.partID
+                }
+                from = max(1, min(barCount, location.from))
+                through = max(from, min(barCount, min(from + 15, location.through)))
+                prompt = location.prompt
+                includeProfile = location.includeProfile
+                analysisID = location.analysisID
+            }
             if state.libraryLearning {
                 tab = "Learn"
                 state.libraryLearning = false
@@ -255,15 +253,30 @@ private struct PieceDetailView: View {
             if state.isPreview && CommandLine.arguments.contains("--library-analysis") { tab = "Analysis" }
             if state.isPreview && CommandLine.arguments.contains("--library-coach") { tab = "Coach" }
         }
-        .onDisappear { coach.cancel() }
-        .onChange(of: from) { _, value in through = max(value, min(through, min(barCount, value + 15))) }
-        .onChange(of: partID) { _, _ in
+        .onDisappear { rememberLocation() }
+        .onChange(of: from) { _, value in
+            through = max(value, min(through, min(barCount, value + 15)))
+            rememberLocation()
+        }
+        .onChange(of: through) { _, _ in rememberLocation() }
+        .onChange(of: partID) { previous, _ in
+            guard !previous.isEmpty else { return }
             from = 1
             through = min(4, barCount)
         }
         .onChange(of: record.analyses.last?.id) { _, _ in analysisID = record.analyses.last?.id }
         .onChange(of: record.conversation.last?.id) { _, _ in prompt = "" }
-        .onChange(of: prompt) { _, value in if value.count > 2500 { prompt = String(value.prefix(2500)) } }
+        .onChange(of: prompt) { _, value in
+            if value.count > PieceExchange.maximumQuestionCharacters {
+                prompt = String(value.prefix(PieceExchange.maximumQuestionCharacters))
+            }
+            rememberLocation()
+        }
+    }
+    private func rememberLocation() {
+        state.libraryBrowser.locations[piece.id] = PieceNotebookLocation(
+            tab: tab, from: from, through: through, partID: partID, prompt: prompt,
+            includeProfile: includeProfile, analysisID: analysisID)
     }
     private var header: some View {
         VStack(alignment: .leading, spacing: 10) {

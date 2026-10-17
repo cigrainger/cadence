@@ -263,7 +263,7 @@ struct PieceRehearsalView: View {
     private var header: some View {
         HStack(alignment: .top) {
             VStack(alignment: .leading, spacing: 6) {
-                Button("Practice home", systemImage: "arrow.left") { state.showPracticeHome() }.buttonStyle(.plain)
+                Button("Back to Learn", systemImage: "arrow.left") { state.showPracticeHome() }.buttonStyle(.plain)
                     .font(.caption).foregroundStyle(Color.moss)
                 Text(piece?.title ?? "Practise this piece").font(.system(size: 30, weight: .medium, design: .serif))
                 Text("A phrase at a time. Always part of the music.").font(.callout).foregroundStyle(.secondary)

@@ -4,9 +4,9 @@ Quit an older running copy before opening this build. Existing scores,
 studies, pathways, preferences and progress remain on this Mac.
 
 START FROM YOUR MUSIC
-1. Open Compose (Command-7) and choose a guitar or piano score.
+1. Open Studio → Write & arrange (Command-3) and choose a guitar or piano score.
 2. Set From / Through to a passage of up to 16 bars.
-3. Choose Practise passage. The saved copy opens in Studies (Command-5).
+3. Choose Practise passage. The saved copy opens in Studio → Rehearse (Command-3).
 4. Loop it slowly with a count-in and optional metronome. Choose guitar or
    piano under Under your fingers. Piano copies start on the piano view.
 5. Use Back to Compose to continue writing at the selected bars. An unchanged score reuses its

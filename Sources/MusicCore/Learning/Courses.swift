@@ -289,22 +289,28 @@ public struct CourseReflection: Codable, Equatable, Sendable {
 /// Content/provenance and learner reflections are separate. Measured practice and
 /// spacing remain in the existing PracticeState; there is no second course SRS.
 public struct CourseLibrary: Codable, Equatable, Sendable {
-    public var schemaVersion = 2
+    public var schemaVersion = 3
     public var books: [CourseBook] = []
     public var courses: [CourseDefinition] = []
     public var reflections: [String: CourseReflection] = [:]
     public var musicalPathways: [MusicalPathway]?
+    public var songJourneys: [SongJourney]?
     public init() {}
-    private enum CodingKeys: String, CodingKey { case schemaVersion, books, courses, reflections, musicalPathways }
+    private enum CodingKeys: String, CodingKey {
+        case schemaVersion, books, courses, reflections, musicalPathways, songJourneys
+    }
     public init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         let version = try c.decode(Int.self, forKey: .schemaVersion)
-        guard [1, 2].contains(version) else { throw MusicError.invalid("This course library needs a newer Cadence.") }
+        guard [1, 2, 3].contains(version) else {
+            throw MusicError.invalid("This course library needs a newer Cadence.")
+        }
         books = try c.decode([CourseBook].self, forKey: .books)
         courses = try c.decode([CourseDefinition].self, forKey: .courses)
         reflections = try c.decode([String: CourseReflection].self, forKey: .reflections)
         musicalPathways = try c.decodeIfPresent([MusicalPathway].self, forKey: .musicalPathways)
-        schemaVersion = 2
+        songJourneys = try c.decodeIfPresent([SongJourney].self, forKey: .songJourneys)
+        schemaVersion = 3
     }
     public func restored() throws -> Self {
         var copy = try validated()
@@ -316,13 +322,17 @@ public struct CourseLibrary: Codable, Equatable, Sendable {
         return copy
     }
     public func validated() throws -> Self {
-        guard schemaVersion == 2, books.count <= 50, courses.count <= 100, reflections.count <= 2000,
+        guard schemaVersion == 3, books.count <= 50, courses.count <= 100, reflections.count <= 2000,
             Set(books.map(\.id)).count == books.count, Set(courses.map(\.id)).count == courses.count,
             books.allSatisfy(\.valid), reflections.allSatisfy({ ScoreRevision.valid($0.key) && $0.value.valid })
         else { throw MusicError.invalid("This course library is damaged or needs a newer Cadence.") }
         guard (musicalPathways?.count ?? 0) <= 100,
             Set((musicalPathways ?? []).map(\.id)).count == (musicalPathways?.count ?? 0)
         else { throw MusicError.invalid("The saved pathways are invalid.") }
+        guard (songJourneys?.count ?? 0) <= 100,
+            Set((songJourneys ?? []).map(\.id)).count == (songJourneys?.count ?? 0),
+            (songJourneys ?? []).allSatisfy(\.valid)
+        else { throw MusicError.invalid("The saved song journeys are invalid.") }
         for pathway in musicalPathways ?? [] { try pathway.validate(in: self) }
         for course in courses {
             guard let book = books.first(where: { $0.id == course.chapter.source.bookID }) else {

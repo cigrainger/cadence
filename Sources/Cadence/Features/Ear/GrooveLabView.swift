@@ -56,7 +56,7 @@ struct GrooveLabView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 22) {
             HStack {
-                Button("Practice home", systemImage: "arrow.left") { state.showPracticeHome() }.buttonStyle(.plain)
+                Button("Back to Learn", systemImage: "arrow.left") { state.showPracticeHome() }.buttonStyle(.plain)
                 Spacer()
                 Text("Accompaniment lab · listen, then join in").font(.caption).foregroundStyle(.secondary)
             }

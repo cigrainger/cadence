@@ -2,17 +2,21 @@
 
 # Cadence
 
-**A place to make music.** A native Mac studio for learning piano, guitar and music theory through the music you care about.
+**Learn the music you love. Make it your own.**
 
-Hear an idea. Imagine it. Find it under your fingers. Make something of your own.
-Cadence connects scores, listening, instrument practice and composition, with separate evidence for **hearing, explaining, playing and creating**. No paid lessons, advertising, streak penalties or account required. Optional AI uses your own OpenRouter account and credits.
+A free, open-source music learning studio for Mac, connecting **piano, guitar, music theory, composition and arrangement** through guided musical pathways.
+
+Start with a piece, a book or an idea. Hear it, understand it, find it under your fingers, then make something of your own. Cadence connects the full score to focused practice, independent returns and your creative work. Optional AI coaching helps you understand the music and find a useful next step; it uses your own OpenRouter account and credits.
+
+The first complete pathway, **Make a song your own**, connects an opening check, ear training, chord changes, accompaniment and an eight-bar arrangement. Its course map and transparent session suggestions are available in current source builds; the downloadable 0.36.1 preview predates this pathway. Hearing, explaining, playing and creating retain separate evidence. Current source builds organise the workspace into **Learn, Library, Studio and Explore**, with coaching beside the current music. No paid lessons, advertising, streak penalties or account required.
 
 [Download the public preview](https://github.com/cigrainger/cadence/releases/tag/v0.36.1) · [User guide](https://cigrainger.github.io/cadence/docs/) · [Project website](https://cigrainger.github.io/cadence/) · [Contribute](CONTRIBUTING.md)
 
-![Cadence's harmony studio, with the full score and guided activities](site/assets/studio.png)
+![Make a song your own: Cadence’s Learn workspace, a theory activity and its contextual coach](site/assets/learning-pathway.png)
 
-## Make music, from several directions
+## One musical journey, connected tools
 
+- **Follow a pathway:** start with original music or four reviewed bars from your library. See the whole journey, revisit a difficulty and keep a linked arrangement.
 - **Explore:** keys, scales, modes, chord tones, guitar shapes and piano visualisations. Guitar voicings are calculated from tuning and chord intervals; they are not a scraped chord database.
 - **Compose:** linked notation and guitar tab, piano staves, chord symbols, MIDI step entry, playback and editable MusicXML import/export.
 - **Bring your music:** a library separating imported scores and your compositions. Optional PDF transcription produces an editable draft beside its source. EPUB/PDF chapters can support reviewed, source-linked courses.
@@ -30,7 +34,7 @@ The **0.36.1 app ZIP is Developer ID signed and Apple notarised**, with a staple
 
 ## Build from source
 
-Requires macOS 14+, Xcode with a Swift 6 toolchain, Python 3.11+ for verification/site tooling, and Node.js 24+ for website interaction checks. No Xcode project or npm install is needed for the app. SwiftPM fetches the exact ZIPFoundation version in `Package.resolved`.
+Requires macOS 14+, Xcode with Swift 6.2 or later, Python 3.11+ for verification/site tooling, and Node.js 24+ for website interaction checks. Every first-party app, core and test target uses Swift 6 language mode. No Xcode project or npm install is needed for the app. SwiftPM fetches the exact ZIPFoundation version in `Package.resolved`.
 
 ```sh
 git clone https://github.com/cigrainger/cadence.git
@@ -43,12 +47,12 @@ open dist/Cadence.app
 
 ```sh
 python3 Scripts/check_repository.py
-./verify.sh --tests-only                 # core + native state tests, coverage
-./verify.sh                              # also native previews, audio and renderer checks
+./verify.sh --tests-only                 # core + native state tests, unit coverage
+./verify.sh                              # production + instrumented native journeys, combined coverage
 python3 Scripts/build_site.py            # site/dist, including internal-link checks
 ```
 
-Full verification requires a logged-in Mac desktop. It uses original fixtures and isolated preview state, never your API key, microphone or saved library. See [Testing](Docs/TESTING.md) and [Architecture](Docs/ARCHITECTURE.md).
+Full verification requires an unlocked Mac desktop and Accessibility access for the invoking terminal. CI explicitly skips accessibility actions and live audio-output checks while retaining offline audio, virtual MIDI, native previews and coverage. Both routes use original fixtures and isolated preview state. See [Testing](Docs/TESTING.md) and [Architecture](Docs/ARCHITECTURE.md).
 
 ## Your data and your music
 

@@ -13,19 +13,20 @@ import MusicCore
     @Published private(set) var calibrated = false
     private var subscriptions = Set<AnyCancellable>()
     private var connection: AnyCancellable?
-    init(clock: @escaping () -> Double = PracticeClock.now) {
+    init(
+        clock: @escaping () -> Double = PracticeClock.now,
+        notifications: NotificationCenter = .default,
+        workspaceNotifications: NotificationCenter = NSWorkspace.shared.notificationCenter
+    ) {
         timing = TimedPracticeSession(clock: clock)
         timing.objectWillChange.sink { [weak self] in self?.objectWillChange.send() }.store(in: &subscriptions)
-        NotificationCenter.default.publisher(for: .AVAudioEngineConfigurationChange).receive(on: RunLoop.main).sink {
-            [weak self] _ in
-            MainActor.assumeIsolated {
+        notifications.publisher(for: .AVAudioEngineConfigurationChange).sink { @Sendable [weak self] _ in
+            Task { @MainActor [weak self] in
                 self?.invalidateTiming("Audio output changed. Check timing again before your next pass.")
             }
         }.store(in: &subscriptions)
-        NSWorkspace.shared.notificationCenter.publisher(for: NSWorkspace.willSleepNotification).receive(
-            on: RunLoop.main
-        ).sink { [weak self] _ in
-            MainActor.assumeIsolated {
+        workspaceNotifications.publisher(for: NSWorkspace.willSleepNotification).sink { @Sendable [weak self] _ in
+            Task { @MainActor [weak self] in
                 self?.invalidateTiming("The Mac went to sleep. Check timing again before your next pass.")
             }
         }.store(in: &subscriptions)

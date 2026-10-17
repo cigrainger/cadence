@@ -273,6 +273,9 @@ public struct SavedPieceAnalysis: Codable, Equatable, Identifiable, Sendable {
     }
 }
 public struct PieceExchange: Codable, Equatable, Identifiable, Sendable {
+    public static let maximumQuestionCharacters = 2500
+    public static let maximumAnswerCharacters = 20000
+    public static let maximumModelCharacters = 200
     public var id = UUID()
     public var date = Date()
     public var fingerprint: String
@@ -313,8 +316,10 @@ public struct PieceRecord: Codable, Equatable, Sendable {
             }
             && conversation.allSatisfy {
                 $0.date.timeIntervalSince1970.isFinite && ScoreRevision.valid($0.fingerprint) && $0.scope.valid
-                    && !$0.question.isEmpty && $0.question.count <= 2500 && !$0.answer.isEmpty
-                    && $0.answer.count <= 20000 && !$0.model.isEmpty && $0.model.count <= 200
+                    && !$0.question.isEmpty && $0.question.count <= PieceExchange.maximumQuestionCharacters
+                    && !$0.answer.isEmpty
+                    && $0.answer.count <= PieceExchange.maximumAnswerCharacters && !$0.model.isEmpty
+                    && $0.model.count <= PieceExchange.maximumModelCharacters
             }
     }
 }

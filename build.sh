@@ -10,7 +10,7 @@ export CLANG_MODULE_CACHE_PATH="$task_build/module-cache"
 export SWIFTPM_MODULECACHE_OVERRIDE="$task_build/module-cache"
 cd "$task_dir"
 task_source_digest="$(python3 Scripts/build_inputs.py)"
-swift build --configuration release --disable-sandbox --scratch-path "$task_build"
+swift build --configuration release --disable-sandbox --scratch-path "$task_build" -Xswiftc -warnings-as-errors
 task_bin="$(swift build --configuration release --show-bin-path --scratch-path "$task_build")"
 task_destination="${CADENCE_APP_PATH:-$task_dir/dist/Cadence.app}"
 mkdir -p "$(dirname "$task_destination")"

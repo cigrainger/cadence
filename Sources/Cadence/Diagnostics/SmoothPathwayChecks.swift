@@ -86,8 +86,6 @@ import MusicCore
         } else {
             state.musicalPathwayStep = nil
         }
-        state.destination = .library
-        state.libraryCourses = true
-        state.learningShelf = "Pathways"
+        state.destination = .courses
     }
 }

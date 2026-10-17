@@ -27,9 +27,7 @@ extension AppState {
         musicalPathwayStep = step.id
         courseSelection = step.courseID
         courseLessonSelection = step.lessonID
-        learningShelf = "Pathways"
-        libraryCourses = true
-        destination = .library
+        destination = .courses
     }
     func musicalObservations(_ pathway: MusicalPathway) -> [PathwayObservation] {
         pathway.steps.compactMap { step in
@@ -75,8 +73,7 @@ extension AppState {
             try repairSmoothScores(existing)
             musicalPathwaySelection = existing.id
             musicalPathwayStep = nil
-            learningShelf = "Pathways"
-            libraryCourses = true
+            destination = .courses
             return existing.id
         }
         guard songAsset.epub != nil, jazzAsset.pdf != nil else {
@@ -107,9 +104,7 @@ extension AppState {
         try repairSmoothScores(draft.pathway)
         musicalPathwaySelection = draft.pathway.id
         musicalPathwayStep = nil
-        learningShelf = "Pathways"
-        libraryCourses = true
-        destination = .library
+        destination = .courses
         return draft.pathway.id
     }
     func repairSmoothScores(_ pathway: MusicalPathway) throws {

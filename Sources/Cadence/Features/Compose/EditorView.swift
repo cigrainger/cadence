@@ -10,6 +10,8 @@ struct EditorView: View {
     @EnvironmentObject var state: AppState
     @ObservedObject var audio: AudioPlayer
     @ObservedObject var midi: MIDIKeyboard
+    var coach: ContextCoachSession
+    @State private var coachTyping = false
     @State private var showTheory = false
     @State private var showHarmony = false
     @State private var harmonyID: UUID?
@@ -36,8 +38,10 @@ struct EditorView: View {
     @State private var entryOctave = 4
     @State private var click = false
     @FocusState private var titleFocused: Bool
-    private var scoreInputBlocked: Bool { showTheory || showHarmony || state.showPDFImport }
-    private var shortcutsBlocked: Bool { titleFocused || scoreInputBlocked }
+    private var scoreInputBlocked: Bool {
+        showTheory || showHarmony || state.showPDFImport
+    }
+    private var shortcutsBlocked: Bool { titleFocused || scoreInputBlocked || coachTyping }
     private var document: EditorDocument { state.editor.active }
     private var selected: EditorEvent? { document.events.first { $0.id == selectedID } ?? document.events.first }
     private var polyphonic: Bool { (1...document.staffCount).contains { document.voices(staff: $0).count > 1 } }
@@ -117,7 +121,8 @@ struct EditorView: View {
     private var documentLifecycle: some View {
         editorContent
             .onAppear(perform: prepareEditorAppearance)
-            .onChange(of: state.editor.active.id) { _, _ in
+            .onChange(of: state.editor.active.id) { previous, _ in
+                rememberLocation(previous)
                 audio.stop()
                 reviewSource = document.pdfSource != nil
                 session.reset()
@@ -126,9 +131,11 @@ struct EditorView: View {
                 rangeThrough = min(3, document.barCount - 1)
                 entryOctave = document.instrument == .guitar ? 3 : 4
                 select(document.events[0].id)
+                restoreLocation()
                 applyOpeningFocus()
             }
             .onChange(of: state.editorPassageFocus) { _, _ in applyOpeningFocus() }
+            .onChange(of: selectedID) { _, _ in rememberLocation(document.id) }
             .onChange(of: wholePiece) { _, _ in audio.stop() }
             .onChange(of: state.pdfReviewPage) { _, _ in focusPDFPage() }
             .onChange(of: state.pdfImportRevision) { _, _ in
@@ -146,14 +153,19 @@ struct EditorView: View {
 
     private var playbackLifecycle: some View {
         documentLifecycle
+            .onReceive(coach.$typing.removeDuplicates()) { coachTyping = $0 }
             .onChange(of: speed) { _, _ in audio.stop() }
             .onChange(of: loop) { _, _ in audio.stop() }
             .onChange(of: click) { _, _ in audio.stop() }
             .onChange(of: rangeFrom) { _, value in
                 audio.stop()
                 rangeThrough = min(document.barCount - 1, max(value, min(rangeThrough, value + 15)))
+                rememberLocation(document.id)
             }
-            .onChange(of: rangeThrough) { _, _ in audio.stop() }
+            .onChange(of: rangeThrough) { _, _ in
+                audio.stop()
+                rememberLocation(document.id)
+            }
             .onChange(of: document.meter) { _, _ in if !rhythms.contains(entryRhythm) { entryRhythm = EditorRhythm() } }
             .onChange(of: audio.studyPlayhead) { _, head in
                 if !wholePiece, let head, !head.isCountIn {
@@ -164,7 +176,10 @@ struct EditorView: View {
                 }
             }
             .onChange(of: countIn) { _, _ in audio.stop() }
-            .onDisappear { audio.stop() }
+            .onDisappear {
+                rememberLocation(document.id)
+                audio.stop()
+            }
     }
 
     private func prepareEditorAppearance() {
@@ -175,6 +190,7 @@ struct EditorView: View {
         if needsOSMD { state.editor.engine = "OpenSheetMusicDisplay" }
         if state.isPreview && CommandLine.arguments.contains("--midi-entry-check") { showMIDI = true }
         entryOctave = document.instrument == .guitar ? 3 : 4
+        restoreLocation()
         if (document.responseSource != nil || document.triadSource != nil || document.tensionSource != nil)
             && document.events.allSatisfy(\.isRest)
         {
@@ -189,6 +205,15 @@ struct EditorView: View {
             }
         }
         if state.isPreview && CommandLine.arguments.contains("--editor-check") { nativeChecks() }
+        if state.isPreview && CommandLine.arguments.contains("--coach-piece") {
+            let before = document
+            coach.typing = true
+            EditorDiagnostics.native["coachBlocksMIDI"] = !enterMIDI([60]) && document == before
+            coachTyping = true
+            EditorDiagnostics.native["coachDisablesNoteShortcuts"] = shortcutsBlocked && document == before
+            coach.typing = false
+            coachTyping = false
+        }
         if state.isPreview && CommandLine.arguments.contains("--poly-check") { polyChecks() }
         if state.isPreview && CommandLine.arguments.contains("--harmony-check") { harmonyChecks() }
         if state.isPreview && CommandLine.arguments.contains("--harmony-sheet") {
@@ -218,6 +243,25 @@ struct EditorView: View {
         }
         focusPDFPage()
         applyOpeningFocus()
+        if state.isPreview && CommandLine.arguments.contains("--workspace-editor-roundtrip") {
+            if let expected = EditorNavigationDiagnostics.expected {
+                EditorDiagnostics.native["navigationKeepsSelection"] =
+                    selectedID == EditorNavigationDiagnostics.selection && document == expected
+                undoOnce()
+                EditorDiagnostics.native["navigationKeepsUndo"] = document == EditorNavigationDiagnostics.original
+            } else {
+                EditorNavigationDiagnostics.original = document
+                let first = document.events[0]
+                edit { try $0.setPitch(first.id, midi: first.pitches[0].midi + 1) }
+                selectBar(4)
+                EditorNavigationDiagnostics.expected = document
+                EditorNavigationDiagnostics.selection = selectedID
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    state.navigateWorkspace(.explore)
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { state.navigateWorkspace(.studio) }
+                }
+            }
+        }
         if state.isPreview && CommandLine.arguments.contains("--editor-live-edit") {
             DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
                 let first = document.events[0]
@@ -234,6 +278,24 @@ struct EditorView: View {
                     && document.events[0].pitches[0].midi == first.pitches[0].midi + 1
             }
         }
+    }
+
+    private func rememberLocation(_ id: UUID) {
+        state.editorLocations[id] = EditorLocation(
+            selectedID: selectedID, pitchID: pitchID, from: rangeFrom, through: rangeThrough,
+            wholePiece: wholePiece, session: session, writing: writing, rhythm: entryRhythm, octave: entryOctave)
+    }
+    private func restoreLocation() {
+        guard let location = state.editorLocations[document.id] else { return }
+        rangeFrom = max(0, min(document.barCount - 1, location.from))
+        rangeThrough = max(rangeFrom, min(document.barCount - 1, location.through))
+        wholePiece = location.wholePiece
+        session = location.session
+        writing = location.writing
+        entryRhythm = location.rhythm
+        entryOctave = location.octave
+        selectedID = document.events.first(where: { $0.id == location.selectedID })?.id ?? document.events.first?.id
+        pitchID = selected?.pitches.first(where: { $0.id == location.pitchID })?.id
     }
 
     private func applyOpeningFocus() {
@@ -1364,7 +1426,7 @@ struct EditorView: View {
         edit { try $0.setPitch(selected.id, pitchID: pitch.id, midi: midi, spelling: spelling) }
     }
     private func enterMIDI(_ notes: [Int]) -> Bool {
-        guard !scoreInputBlocked, let selected else { return false }
+        guard !scoreInputBlocked, !coach.typing, let selected else { return false }
         let before = document
         var next = selected.id
         guard edit({ next = try $0.enterMIDI(notes, eventID: selected.id, rhythm: entryRhythm) }) else { return false }

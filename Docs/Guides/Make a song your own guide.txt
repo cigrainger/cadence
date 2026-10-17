@@ -1,0 +1,92 @@
+CADENCE — MAKE A SONG YOUR OWN
+
+This pathway is new in current source builds. The 0.36.1 public download predates it.
+
+A PIECE, A PATHWAY, A VERSION OF YOUR OWN
+
+In Learn → Your pathway, choose Begin my pathway. Select piano or guitar and use the original
+Cadence example, or choose a piece from your library. This first slice needs four
+reviewed 4/4 bars, a single melodic voice on staff/voice 1, and written chord
+symbols. Unsupported material stays editable in your library. No AI request,
+book upload or subscription is needed for the original pathway.
+
+The original example is an eight-bar lead sheet. Activities select its first
+four bars; Open full score always opens the complete piece. The second original
+example changes the key and melody for a later return. These are reviewed,
+redistributable examples, not transcriptions of a private book.
+
+The vertical map has five open chapters:
+  Hear where home is — hear, imagine, sing and find the phrase.
+  Make the changes flow — recognise a common tone and try several valid voicings.
+  Give it a groove — calibrated MIDI play-along with optional accompaniment.
+  Make your own version — an editable eight-bar arrangement in My compositions.
+  Take it somewhere new — a later independent attempt in the second example.
+
+Select a chapter to see its goal, recorded evidence and activity. Your pathway
+returns to the map from the activity, coach and full score. Other exercises,
+book courses and existing pathways remain available under Explore other activities.
+
+AN OPENING CHECK AND A SMALL SESSION
+
+The opening check asks for a close C-major to F-major change. MIDI first observes
+C4–E4–G4 and its release, then checks the next shape. Multiple valid answers are
+accepted by the existing voicing rule. Shared notes retain their register; the
+exercise allows three ordered voices within an octave and movement of at most
+five semitones. These are this task's constraints, not universal harmony rules.
+On-screen choices are saved separately from instrument performance. Hints and
+retries remain labelled as support. A failed save keeps the answer for retry.
+
+Choose 10, 15 or 25 minutes. Suggestions read the actual activity history and
+name their reason. An uncertain opening leads to slower chord work; supported
+or incorrect activity results return for care. A session reserves room for your
+own musical choices. Times are guidance, without a countdown. Every chapter
+remains available, including the creative finish.
+
+The common-tone question records harmony recognition separately from listening
+and playing. It does not claim to grade an explanation in prose. The coach can
+help you explain or explore a choice: its prepared question includes a bounded
+symbolic melody, chord symbols and scoped evidence. You explicitly send it using
+your configured key; opening the coach makes no automatic paid request.
+
+AN ARRANGEMENT TO KEEP
+
+Open my eight bars creates one linked composition, repeat-safely. Its first
+phrase has a harmonic scaffold; all eight bars are yours to write. Choose a
+melody, bass and accompaniment, then make a contrast and a return. Piano has two
+editable staves; guitar has linked notation/tab. Use MIDI step entry or the
+editor controls. Your original source is never overwritten.
+
+Hear my arrangement plays the whole version. Save finished arrangement becomes
+available after playback completes for the current musical fingerprint. Keep
+eight bars for this pathway. An empty score cannot be finished. Later edits
+require another listen. A finished version is a creative artifact, not a grade
+for artistic quality. It remains linked to the original passage.
+
+RETURNING INDEPENDENTLY
+
+A delayed return is eligible at least a day after the most recent familiar-piece
+practice or finished arrangement. Early attempts remain available. The separate
+MIDI play-along must use the second piece, with the guide muted; timing conditions
+remain visible. A supported or early pass cannot become an independent result.
+Existing activity schedules remain the scheduling authority; the course map does
+not create a second gradebook. Guitar microphone activities match monophonic
+pitch; this first timed return requires MIDI and does not assess guitar technique.
+
+SAVING AND SOURCES
+
+Course storage is now format 3, including stable pathway/source/composition links.
+Practice evidence stays in its existing store. Older courses migrate; older app
+versions reject the newer course file. Back up the complete data folder before
+switching between development and older releases.
+
+Changing or removing source music invalidates its recommendations, preserving
+old evidence and compositions. Review the new source and begin a fresh pathway.
+A failed course write cannot publish a new pathway or approval. Failed opening
+answers and received import replies remain available for save-only retry.
+
+VERIFICATION LIMITS
+
+Core, storage, virtual MIDI and native accessibility-action regressions use
+original fixtures. These do not establish learning effectiveness or substitute
+for physical keyboard, microphone permission or VoiceOver testing. Consult
+Docs/DEVICE_TESTING.md for the remaining hands-on release matrix.

@@ -20,7 +20,7 @@ import MusicCore
     private(set) var flowSource: TimedPracticePlan?
     let takePlayer = PianoTakePlayer()
     private var takeSubscription: AnyCancellable?
-    override init(clock: @escaping () -> Double = PracticeClock.now) {
+    init(clock: @escaping () -> Double = PracticeClock.now) {
         super.init(clock: clock)
         takeSubscription = takePlayer.objectWillChange.sink { [weak self] in self?.objectWillChange.send() }
     }

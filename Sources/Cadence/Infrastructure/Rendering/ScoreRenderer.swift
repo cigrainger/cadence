@@ -77,11 +77,12 @@ struct ScoreRenderer: NSViewRepresentable {
                 previousFeedback = nil
                 previousFocus = ""
                 web.callAsyncJavaScript(
-                    "await window.loadStudy(xml,partID,from,through,durations,feedbackRoom)",
+                    "await window.loadStudy(xml,partID,from,through,durations,feedbackRoom,verifyCursor)",
                     arguments: [
                         "xml": study.document.originalXML, "partID": study.partID, "from": study.from,
                         "through": study.through, "durations": study.selectedMeasures.map(\.duration),
                         "feedbackRoom": parent.feedbackRoom,
+                        "verifyCursor": CommandLine.arguments.contains("--snapshot"),
                     ], in: nil, in: .page
                 ) { [weak self] result in
                     if case .failure(let failure) = result { self?.parent.error = failure.localizedDescription }
@@ -149,34 +150,32 @@ struct ScoreRenderer: NSViewRepresentable {
         func userContentController(
             _ userContentController: WKUserContentController, didReceive message: WKScriptMessage
         ) {
-            guard message.frameInfo.isMainFrame, let data = message.body as? [String: Any],
-                let kind = data["kind"] as? String
-            else { return }
+            guard let data = message.body as? [String: Any] else { return }
+            receive(data, isMainFrame: message.frameInfo.isMainFrame)
+        }
+        func receive(_ data: [String: Any], isMainFrame: Bool) {
+            guard isMainFrame, let kind = data["kind"] as? String else { return }
             if kind == "loaded" {
                 loaded = true
                 update()
             }
             if kind == "ready" {
-                ScoreRendererDiagnostics.latest = data
-                parent.height = min(100000, max(160, CGFloat(data["height"] as? Double ?? 240)))
-                parent.error = nil
-                if CommandLine.arguments.contains("--snapshot") {
-                    web?.callAsyncJavaScript("return window.verifyStudyCursor()", arguments: [:], in: nil, in: .page) {
-                        result in
-                        if case .success(let value) = result, let checks = value as? [String: Any] {
-                            for (key, value) in checks { ScoreRendererDiagnostics.latest[key] = value }
-                        }
-                    }
+                guard let layout = RendererLayout(data, defaultHeight: 240) else {
+                    parent.error = "The score renderer returned an invalid layout."
+                    return
                 }
+                ScoreRendererDiagnostics.latest = data
+                parent.height = layout.height
+                parent.error = nil
             }
             if kind == "error" {
-                parent.error = data["message"] as? String ?? "The score could not be displayed."
+                parent.error = String((data["message"] as? String ?? "The score could not be displayed.").prefix(2000))
                 ScoreRendererDiagnostics.latest = data
             }
         }
         func webView(
             _ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction,
-            decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
+            decisionHandler: @escaping @MainActor @Sendable (WKNavigationActionPolicy) -> Void
         ) {
             decisionHandler(
                 LocalDocumentPolicy.allows(navigationAction.request.url, entry: entryURL) ? .allow : .cancel)

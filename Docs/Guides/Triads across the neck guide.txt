@@ -1,6 +1,6 @@
 TRIADS ACROSS THE NECK · CADENCE
 
-Practice → Explore on guitar. Choose a piece, part, chord-symbol staff, up to
+Learn → Practice & review → Explore on guitar. Choose a piece, part, chord-symbol staff, up to
 eight bars and one of four adjacent three-string sets. Set tuning and capo before
 starting. Library → a piece → Learn also opens this pathway for the selected bars.
 The source must have written chord symbols; PDF pages must have been reviewed.
@@ -43,7 +43,7 @@ PROGRESS
 Every action commits together with its practice record. Failed saves retain the
 pending answer for retry. Relaunching preserves your place, string set, tuning
 and capo. Source edits require a new pathway; the old work remains available.
-Completed sessions get a supported-practice reminder in Practice → Bring it back.
+Completed sessions get a supported-practice reminder in Learn → Practice & review → Bring it back.
 This is not a calibrated mastery model. Reading choices, local microphone pitches
 and self-reported chord playing/improvising are separate evidence types.
 

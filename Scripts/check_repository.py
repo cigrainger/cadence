@@ -20,8 +20,10 @@ CODE_LICENSES = {'MIT', 'BSD-3-Clause', 'ISC', 'Apache-2.0', 'Zlib', 'MIT AND Zl
 def public_files(root):
     """Inspect tracked files when available; ignore generated directories before initial Git setup."""
     if (root / '.git').exists():
-        result = subprocess.run(['git', 'ls-files', '-z'], cwd=root, check=True, capture_output=True)
-        return [root / name for name in result.stdout.decode().split('\0') if name]
+        result = subprocess.run(['git', 'ls-files', '--cached', '--others', '--exclude-standard', '-z'],
+                                cwd=root, check=True, capture_output=True)
+        return [root / name for name in result.stdout.decode().split('\0')
+                if name and ((root / name).exists() or (root / name).is_symlink())]
     return [p for p in root.rglob('*') if p.is_file() and not any(x in IGNORED for x in p.relative_to(root).parts)]
 
 
@@ -39,6 +41,15 @@ def check_path(path):
     if any(x.endswith(('.app', '.dSYM', '.xcarchive')) for x in parts):
         return 'build output'
     return None
+
+
+def check_swift_mode(manifest):
+    errors = []
+    if not re.search(r'swiftLanguageModes\s*:\s*\[\s*\.v6\s*\]', manifest):
+        errors.append('All first-party targets must use package-wide Swift 6 language mode')
+    if re.search(r'\.swiftLanguageMode\s*\(', manifest):
+        errors.append('Per-target language-mode overrides need review; keep the app and tests in Swift 6')
+    return errors
 
 
 def validate_components(manifest, root):
@@ -98,7 +109,7 @@ def main():
     parser.add_argument('--sbom', type=Path, default=ROOT / '.verification/cadence.cdx.json')
     parser.add_argument('--skip-site', action='store_true')
     args = parser.parse_args()
-    errors = []
+    errors = check_swift_mode((ROOT / 'Package.swift').read_text())
     for path in public_files(ROOT):
         relative = path.relative_to(ROOT).as_posix()
         reason = check_path(relative)

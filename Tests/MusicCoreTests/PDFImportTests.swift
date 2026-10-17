@@ -211,9 +211,9 @@ final class PDFImportTests: XCTestCase {
         }
     }
     func testPaidFailuresDoNotRetryAndMissingKeyDoesNotCallTransport() async {
-        var calls = 0
+        let calls = RequestProbe()
         let client = PDFTranscriptionClient { request in
-            calls += 1
+            await calls.sent()
             return (
                 Data(#"{"error":{"message":"No ZDR endpoint"}}"#.utf8),
                 HTTPURLResponse(url: request.url!, statusCode: 503, httpVersion: nil, headerFields: nil)!
@@ -223,12 +223,12 @@ final class PDFImportTests: XCTestCase {
             _ = try await client.transcribe(pagePDF: Data("%PDF-fixture".utf8), instrument: .guitar, apiKey: "")
             XCTFail()
         } catch {}
-        XCTAssertEqual(calls, 0)
+        await calls.assertCount(0)
         do {
             _ = try await client.transcribe(pagePDF: Data("%PDF-fixture".utf8), instrument: .guitar, apiKey: "fixture")
             XCTFail()
         } catch {}
-        XCTAssertEqual(calls, 1)
+        await calls.assertCount(1)
     }
     func testCancellationDiscardsACompletedResponse() async throws {
         let text = String(decoding: try JSONEncoder().encode(PDFTranscription(.pianoExample)), as: UTF8.self)
@@ -288,9 +288,9 @@ final class PDFImportTests: XCTestCase {
     func testTotalDeadlineCancelsBusyTransportWithoutRetry() async throws {
         let started = expectation(description: "request started")
         let cancelled = expectation(description: "request cancelled")
-        var calls = 0
+        let calls = RequestProbe()
         let client = PDFTranscriptionClient(deadline: 0.08) { _ in
-            calls += 1
+            await calls.sent()
             started.fulfill()
             do {
                 // Activity must not reset the total deadline.
@@ -310,7 +310,7 @@ final class PDFImportTests: XCTestCase {
         }
         await fulfillment(of: [started, cancelled], timeout: 1)
         XCTAssertLessThan(Date().timeIntervalSince(before), 2)
-        XCTAssertEqual(calls, 1)
+        await calls.assertCount(1)
     }
     func testStoppingAnInFlightRequestCancelsTransportPromptly() async throws {
         let started = expectation(description: "request started")

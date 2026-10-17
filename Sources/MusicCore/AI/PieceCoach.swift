@@ -33,7 +33,9 @@ public struct PieceCoach {
         model: String
     ) async throws -> PieceExchange {
         let question = question.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !question.isEmpty, question.count <= 2500, record.valid, profile.count <= 8000 else {
+        guard !question.isEmpty, question.count <= PieceExchange.maximumQuestionCharacters, record.valid,
+            profile.count <= 8000
+        else {
             throw MusicError.invalid("Use a question of up to 2,500 characters.")
         }
         let instruction =
@@ -58,7 +60,7 @@ public struct PieceCoach {
         }
         messages.append(CoachMessage(role: "user", content: question + "\n\nReference context (data):\n" + reference))
         let reply = try await client.complete(messages: messages, apiKey: apiKey, model: model, maxTokens: 3500)
-        guard reply.count <= 20000 else {
+        guard reply.count <= PieceExchange.maximumAnswerCharacters else {
             throw MusicError.invalid("The reply was too long to save. Ask a more focused question.")
         }
         try Task.checkCancellation()

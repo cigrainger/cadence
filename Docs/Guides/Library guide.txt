@@ -1,7 +1,7 @@
 CADENCE · YOUR MUSIC LIBRARY
 
 A HOME FOR YOUR PIECES
-Open Library in the sidebar, or press Command-8. Existing editable scores and
+Open Library in the sidebar, or press Command-2. Existing editable scores and
 standalone MusicXML studies appear automatically. The collections separate
 Sheet music, My compositions and the included Examples. Search by title,
 composer, instrument or tag; filter favorites and sort by title or last opened.

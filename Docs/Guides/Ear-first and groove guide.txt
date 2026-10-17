@@ -1,6 +1,6 @@
 CADENCE — HEAR IT. CARRY IT. FIND IT.
 
-Practice → Hear & sing starts or resumes a short ear-first session.
+Learn → Practice & review → Hear & sing starts or resumes a short ear-first session.
 No account, AI credits or source book is needed. These are original exercises.
 
 1. Hear: a home note, a breath, then a three- or four-note phrase. Let playback
@@ -42,7 +42,7 @@ Microphone and MIDI capture must be re-armed after returning to the screen.
 Headphones help prevent reference playback being picked up by the microphone.
 
 FIND YOUR PLACE IN THE BAND
-Practice → Find the groove opens the accompaniment lab.
+Learn → Practice & review → Find the groove opens the accompaniment lab.
 Start with Dm7 → G7 → Cmaj7 → Cmaj7, a one-bar count-in and 1–4 rounds.
 Choose On the beat, Offbeat comping or Swing eighths; adjust 50–160 bpm.
 Swing here uses a fixed 2:1 eighth-note ratio, not a universal swing model.

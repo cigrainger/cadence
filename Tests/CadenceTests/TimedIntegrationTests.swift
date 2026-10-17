@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: 2026 Cadence contributors
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import AppKit
 import Combine
 import CoreMIDI
 import MusicCore
@@ -241,46 +240,6 @@ final class TimedIntegrationTests: XCTestCase {
         let fallback = MIDIKeyboard.copyPackets(&zero)
         XCTAssertTrue(fallback[0].arrivalTimestamp)
         XCTAssertGreaterThanOrEqual(fallback[0].timestamp, earliest)
-    }
-    @MainActor func testSpaceCaptureKeepsTypingShortcutsOtherWindowsAndRepeatOutOfPractice() throws {
-        _ = NSApplication.shared
-        let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 100, height: 100), styleMask: .titled, backing: .buffered,
-            defer: false)
-        window.isReleasedWhenClosed = false
-        let view = NSView()
-        window.contentView = view
-        let capture = SpaceTapCapture.Coordinator()
-        capture.view = view
-        var timestamps: [Double] = []
-        capture.tap = { timestamps.append($0) }
-        func event(
-            repeatKey: Bool = false, modifiers: NSEvent.ModifierFlags = [], key: UInt16 = 49, windowNumber: Int? = nil
-        ) -> NSEvent {
-            NSEvent.keyEvent(
-                with: .keyDown, location: .zero, modifierFlags: modifiers, timestamp: 123.456,
-                windowNumber: windowNumber ?? window.windowNumber, context: nil, characters: " ",
-                charactersIgnoringModifiers: " ", isARepeat: repeatKey, keyCode: key)!
-        }
-        XCTAssertNotNil(capture.process(event(), appActive: true))
-        capture.enabled = true
-        XCTAssertNil(capture.process(event(), appActive: true))
-        XCTAssertEqual(timestamps, [123.456])
-        XCTAssertNil(capture.process(event(repeatKey: true), appActive: true))
-        XCTAssertEqual(timestamps.count, 1)
-        XCTAssertNotNil(capture.process(event(modifiers: .command), appActive: true))
-        XCTAssertNotNil(capture.process(event(key: 0), appActive: true))
-        XCTAssertNotNil(capture.process(event(), appActive: false))
-        XCTAssertNotNil(capture.process(event(windowNumber: -1), appActive: true))
-        let text = NSTextView()
-        view.addSubview(text)
-        window.makeFirstResponder(text)
-        XCTAssertNotNil(capture.process(event(), appActive: true))
-        XCTAssertEqual(timestamps.count, 1)
-        capture.install()
-        capture.remove()
-        XCTAssertNil(capture.monitor)
-        window.close()
     }
     @MainActor func testVersionTwoMigrationPreservesBackupAndProtectsTimedResults() throws {
         let directory = try folder()

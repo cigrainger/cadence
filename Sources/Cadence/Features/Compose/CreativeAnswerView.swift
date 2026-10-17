@@ -45,13 +45,15 @@ struct CreativeAnswerBar: View {
     @State private var playback: (id: UUID, fingerprint: String)?
     @State private var listened: String?
     @State private var error: String?
+    private var isArrangement: Bool { state.songJourneys.contains { $0.compositionID == document.id } }
     private var fingerprint: String { LibraryPiece(source: .score(document)).fingerprint }
     var body: some View {
         if let link = document.responseSource {
             VStack(alignment: .leading, spacing: 12) {
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 5) {
-                        Eyebrow(text: "Your musical answer").foregroundStyle(Color.moss)
+                        Eyebrow(text: isArrangement ? "Your eight-bar arrangement" : "Your musical answer")
+                            .foregroundStyle(Color.moss)
                         Text("In conversation with “\(link.material.title)”").font(
                             .system(size: 22, weight: .medium, design: .serif))
                         Text(link.material.label + " · " + link.material.sourceLabel).font(.caption).foregroundStyle(
@@ -67,7 +69,9 @@ struct CreativeAnswerBar: View {
                     }
                 }
                 Text(
-                    "Keep something you heard; change something of your own. Enter notes below or turn on MIDI step entry. Drafts save as you work."
+                    isArrangement
+                        ? "Give the melody, bass and accompaniment clear roles. Make a contrast in the second phrase, then find a way home. Enter notes or use MIDI step entry; your draft saves as you work."
+                        : "Keep something you heard; change something of your own. Enter notes below or turn on MIDI step entry. Drafts save as you work."
                 ).font(.callout).foregroundStyle(.secondary)
                 HStack(spacing: 12) {
                     Button("Hear original", systemImage: "ear") {
@@ -77,7 +81,8 @@ struct CreativeAnswerBar: View {
                         audio.play(Score(tempo: link.material.tempo, notes: notes))
                     }
                     Button(
-                        audio.isPlaying || audio.isPreparing ? "Stop" : "Hear my answer",
+                        audio.isPlaying || audio.isPreparing
+                            ? "Stop" : isArrangement ? "Hear my arrangement" : "Hear my answer",
                         systemImage: audio.isPlaying || audio.isPreparing ? "stop.fill" : "play.fill"
                     ) {
                         if audio.isPlaying || audio.isPreparing {
@@ -87,7 +92,10 @@ struct CreativeAnswerBar: View {
                             hearAnswer()
                         }
                     }.disabled(!document.events.contains { !$0.pitches.isEmpty })
-                    Button("Save finished answer", systemImage: "checkmark.seal") {
+                    Button(
+                        isArrangement ? "Save finished arrangement" : "Save finished answer",
+                        systemImage: "checkmark.seal"
+                    ) {
                         do {
                             try state.finishCreativeAnswer(
                                 document.id, listenedFingerprint: listened ?? link.listenedFingerprint ?? "")

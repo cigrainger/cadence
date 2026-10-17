@@ -1,7 +1,7 @@
 CADENCE · LEARN THROUGH YOUR MUSIC
 
 START FROM A PIECE
-Open Library (Command-8), select a piece, and choose Learn. Select a part and
+Open Library (Command-2), select a piece, and choose Learn. Select a part and
 up to 16 bars. Add a personal goal in Overview, then set your experience,
 session time and starting point in the pathway brief.
 
@@ -12,7 +12,7 @@ notes and starting point, with an optional summary of this piece's recorded
 practice. The resulting plan is saved separately; existing progress stays put.
 To adapt a plan after more practice, choose New plan and Tailor with AI.
 
-Both kinds of plan appear here and in AI coach → Learning pathways. These
+Both kinds of plan appear here and in Learn → Personal plans. These
 are passage pathways, not automatic analyses of an entire book or song.
 The stage checkboxes are your own readiness marks. They never unlock or lock
 material, and they do not replace recorded exercise results.

@@ -9,7 +9,9 @@ enum Destination: String, CaseIterable, Identifiable {
     case explore = "Explore"
     case chords = "Chord lab"
     case practice = "Practice"
-    case coach = "AI coach"
+    case plans = "Personal plans"
+    case courses = "Courses"
+    case books = "Books & chapters"
     case studies = "Studies"
     case
         tools = "Practice tools"
@@ -21,7 +23,9 @@ enum Destination: String, CaseIterable, Identifiable {
         case .explore: "circle.hexagongrid"
         case .chords: "guitars"
         case .practice: "ear"
-        case .coach: "sparkles"
+        case .plans: "sparkles"
+        case .courses: "point.topleft.down.to.point.bottomright.curvepath"
+        case .books: "book.pages"
         case .studies: "music.note.list"
         case .tools: "metronome"
         case .editor: "pencil.and.outline"
@@ -33,7 +37,9 @@ enum Destination: String, CaseIterable, Identifiable {
         case .explore: "Find the connections. Then hear them."
         case .chords: "Find the notes. Hear the connections."
         case .practice: "A little practice. A deeper musical instinct."
-        case .coach: "Ask about the music in front of you."
+        case .plans: "Shape a plan around your own musical goal."
+        case .courses: "Follow a musical idea into something of your own."
+        case .books: "Read the source. Bring its music to life."
         case .studies: "Make a little music your own."
         case .tools: "Find your pitch. Set your pulse."
         case .editor: "Write a phrase. Make it your own."
@@ -65,8 +71,14 @@ struct Preferences: Codable, Equatable {
 }
 
 @MainActor final class AppState: ObservableObject {
-    @Published var destination: Destination = .practice
-    @Published var practicePage = PracticePage.home
+    @Published var destination: Destination = .practice {
+        didSet { workspaceLocations[destination.section] = destination }
+    }
+    private(set) var workspaceLocations: [WorkspaceSection: Destination] = [:]
+    @Published var practicePage = PracticePage.songJourney
+    @Published var songJourneyID: UUID?
+    @Published var songLesson: SongLesson?
+    let songInput = SongOpeningInput()
     @Published var practiceMIDIExercise = false
     @Published var adaptiveFromPractice = false
     @Published var root = Pitch(0)
@@ -88,14 +100,17 @@ struct Preferences: Codable, Equatable {
     @Published var comparison: Scale?
     @Published var instrumentFocus = 0
     @Published var message: String?
-    @Published var coachPrompt = ""
     @Published var coachFocus = 0
-    @Published var coachLines: [ChatLine] = []
+    let contextCoach = ContextCoachSession()
+    let libraryBrowser = LibraryBrowserState()
+    var editorLocations: [UUID: EditorLocation] = [:]
+    var learningPlanDraft: LearningPlanDraft?
+    let learningPlanRequest = SavedRequest<LearningPathway>()
+    private var pieceCoachSessions: [String: PieceCoachSession] = [:]
     var learningStorageError: String? { stores.practiceError }
     @Published var libraryLearning = false
     @Published var pathwaySession: PathwayPracticeSession?
     @Published var importingStudy = false
-    @Published var coachStudy: StudyReference?
     @Published var pendingStudyPathway: StudyReference?
     @Published var practiceExercise: Exercise?
     @Published var guidedStudyID: UUID?
@@ -114,9 +129,6 @@ struct Preferences: Codable, Equatable {
     @Published var metronome = MetronomeSettings()
     @Published var tuner = TunerSettings()
     @Published var librarySelection: String?
-    @Published var libraryCourses = false
-    @Published var courses = CourseLibrary()
-    @Published var learningShelf = "Pathways"
     @Published var musicalPathwaySelection: UUID?
     @Published var musicalPathwayStep: UUID?
     let earInput = EarSessionInput()
@@ -127,7 +139,7 @@ struct Preferences: Codable, Equatable {
     @Published var courseSelection: UUID?
     @Published var courseLessonSelection: UUID?
     @Published var courseReturn: CourseLocation?
-    let courseOutline = SavedRequest<CourseOutlineReply>()
+    var courseOutline: SavedRequest<CourseOutlineReply> { courseWorkspace.outline }
     var libraryStorageError: String? { stores.notebook.loadError }
     @Published var editorPassageFocus: EditorPassageFocus?
     @Published var studyWholePiece = false
@@ -143,6 +155,7 @@ struct Preferences: Codable, Equatable {
     let microphone = Microphone()
     let practiceWorkspace: PracticeWorkspace
     let libraryWorkspace: LibraryWorkspace
+    let courseWorkspace: CourseWorkspace
     private var workspaceObservations = Set<AnyCancellable>()
     let stores: WorkspaceStorage
     var storage: URL { stores.directory }
@@ -154,13 +167,18 @@ struct Preferences: Codable, Equatable {
 
     init(preview: Bool = false, storageOverride: URL? = nil) {
         self.isPreview = preview
-        midi = MIDIKeyboard(preview: preview || storageOverride != nil)
+        let keyboard = MIDIKeyboard(preview: preview || storageOverride != nil)
+        // Hold the client before loading music or doing audio work. An idle
+        // MIDIServer exit can otherwise invalidate this process's connection.
+        if !preview, storageOverride == nil { keyboard.start() }
+        midi = keyboard
         aiSettings = AISettings(preview: preview || storageOverride != nil)
         let support = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
         stores = WorkspaceStorage(
             directory: storageOverride ?? support.appendingPathComponent("Cadence", isDirectory: true))
         practiceWorkspace = PracticeWorkspace(storage: stores, ephemeral: preview)
         libraryWorkspace = LibraryWorkspace(storage: stores, ephemeral: preview)
+        courseWorkspace = CourseWorkspace(storage: stores, ephemeral: preview)
         if !preview { loadWorkspace() }
         configurePreview()
         // Forward only persisted draft changes; transport ticks keep their own observers.
@@ -168,15 +186,29 @@ struct Preferences: Codable, Equatable {
             .store(in: &workspaceObservations)
         libraryWorkspace.objectWillChange.sink { [weak self] _ in self?.objectWillChange.send() }
             .store(in: &workspaceObservations)
+        courseWorkspace.objectWillChange.sink { [weak self] _ in self?.objectWillChange.send() }
+            .store(in: &workspaceObservations)
+        if !preview, let journey = songJourneys.first {
+            songJourneyID = journey.id
+            practicePage = .songJourney
+        }
     }
     var libraryPieces: [LibraryPiece] { libraryWorkspace.pieces }
+    func pieceCoachSession(_ id: String) -> PieceCoachSession {
+        if let session = pieceCoachSessions[id] { return session }
+        let session = PieceCoachSession()
+        pieceCoachSessions[id] = session
+        return session
+    }
     func pieceRecord(_ piece: LibraryPiece) -> PieceRecord { libraryWorkspace.record(for: piece) }
     func reconcileLibrary() { libraryWorkspace.reconcile() }
     func changePiece(_ id: String, _ change: (inout PieceRecord) -> Void) throws {
         try libraryWorkspace.changePiece(id, change)
     }
     func showLibraryPiece(_ id: String) {
-        libraryCourses = false
+        if let piece = libraryPieces.first(where: { $0.id == id }) {
+            libraryBrowser.reveal(piece, record: pieceRecord(piece))
+        }
         audio.stop()
         librarySelection = id
         reconcileLibrary()
@@ -400,10 +432,14 @@ struct Preferences: Codable, Equatable {
         destination = .chords
     }
     func ask(_ prompt: String, study: StudyReference? = nil) {
-        coachStudy = study
-        coachPrompt = prompt
-        destination = .coach
-        coachFocus += 1
+        stopAllPlayback()
+        let context =
+            study.map {
+                CoachContext(
+                    id: "study:" + CourseBook.digest(Data($0.context.utf8)), title: $0.title, subtitle: $0.passageLabel,
+                    reference: $0.context)
+            } ?? currentCoachContext
+        contextCoach.open(context, prompt: prompt)
     }
     func useLearningTool(_ tool: PathwayTool) {
         if let exercise = tool.exercise {

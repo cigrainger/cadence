@@ -206,9 +206,9 @@ final class PiecePathwayTests: XCTestCase {
                     fromBar: 2, throughBar: 2)
             ], caveats: ["No performance was heard."])
         let reply = String(decoding: try JSONEncoder().encode(outline), as: UTF8.self)
-        var calls = 0
+        let calls = RequestProbe()
         let client = CoachClient { request in
-            calls += 1
+            await calls.sent()
             let body = String(decoding: request.httpBody!, as: UTF8.self)
             XCTAssertTrue(body.contains("Difficulty with rhythm"))
             XCTAssertTrue(body.contains("selfReport"))
@@ -227,7 +227,7 @@ final class PiecePathwayTests: XCTestCase {
         let path = try PiecePathwayFactory.make(
             piece: piece, snapshot: snap, record: PieceRecord(kind: .composition), profile: LearnerProfile(),
             analysis: analysis)
-        XCTAssertEqual(calls, 1)
+        await calls.assertCount(1)
         XCTAssertEqual(path.outline.steps[1].title, "One bar at a time")
         XCTAssertTrue(path.outline.sourceNotes.contains("No performance was heard"))
     }

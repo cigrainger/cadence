@@ -119,11 +119,11 @@ final class PieceLibraryTests: XCTestCase {
     func testAnalysisRequestIsScopedZDRAndSavesReturnedModelWithoutPDF() async throws {
         let snap = try snapshot()
         let answer = String(decoding: try JSONEncoder().encode(outline), as: UTF8.self)
-        var calls = 0
+        let calls = RequestProbe()
         var record = PieceRecord(kind: .composition)
         record.goal = "Even pulse"
         let client = CoachClient { request in
-            calls += 1
+            await calls.sent()
             let payload = try XCTUnwrap(JSONSerialization.jsonObject(with: request.httpBody!) as? [String: Any])
             XCTAssertEqual(payload["model"] as? String, "chosen/model")
             XCTAssertEqual((payload["provider"] as? [String: Any])?["zdr"] as? Bool, true)
@@ -140,7 +140,7 @@ final class PieceLibraryTests: XCTestCase {
         }
         let result = try await PieceCoach(client: client).analyse(
             snapshot: snap, record: record, apiKey: "secret", model: "chosen/model")
-        XCTAssertEqual(calls, 1)
+        await calls.assertCount(1)
         XCTAssertEqual(result.outline, outline)
         XCTAssertEqual(result.fingerprint, snap.fingerprint)
         XCTAssertEqual(result.model, "chosen/model")
@@ -178,15 +178,14 @@ final class PieceLibraryTests: XCTestCase {
         XCTAssertEqual(response.scope, snap.scope)
     }
     func testCoachDeadlineCancelsActiveTransportWithoutRetry() async throws {
-        var calls = 0
-        var cancelled = false
+        let calls = RequestProbe()
         let client = CoachClient(deadline: 0.04) { _ in
-            calls += 1
+            await calls.sent()
             do {
                 try await Task.sleep(nanoseconds: 5_000_000_000)
                 throw URLError(.badServerResponse)
             } catch {
-                cancelled = Task.isCancelled
+                await calls.cancellation(Task.isCancelled)
                 throw error
             }
         }
@@ -196,7 +195,7 @@ final class PieceLibraryTests: XCTestCase {
         } catch {
             XCTAssertTrue(error.localizedDescription.contains("four minutes"))
         }
-        XCTAssertEqual(calls, 1)
-        XCTAssertTrue(cancelled)
+        await calls.assertCount(1)
+        await calls.assertCancelled()
     }
 }

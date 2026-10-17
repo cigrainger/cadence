@@ -1,13 +1,35 @@
-# Next work
+# Cadence's direction
 
-The priority after this public preview is evidence from real musical use, not a larger feature list.
+**Learn the music you love. Make it your own.**
 
-- Test keyboard timing, audio-device changes and microphone work on more physical setups. Add a real-device compatibility matrix.
-- Review keyboard-only and VoiceOver navigation with learners; replace screenshot-only assumptions with accessibility journeys.
-- Complete the renderer dependency provenance and lock its rebuild inputs before claiming a complete SBOM.
-- Build on the extracted library/practice owners: isolate course storage and cancellable import orchestration, then migrate feature bindings incrementally.
-- Plan Swift 6 language-mode migration around actor/Sendable ownership and device callback tests; a compiler upgrade alone does not provide strict concurrency.
-- Validate adaptive recommendations against teacher and learner feedback, especially transfer and independent return.
-- Improve notation/import fidelity from concrete unsupported examples, preserving originals and honest review states.
+Learning pathways are the centre. Pieces and creative projects give them a purpose. Piano and guitar connect listening, theory, composition and arrangement; optional AI explains and suggests while the practice system records what happened. The full score remains accessible inside every journey.
 
-The existing guide records the current boundaries. Proposals should state a musical goal, an observable activity and how a learner will demonstrate it independently.
+## First complete journey: Make a song your own
+
+Implemented in current source; the 0.36.1 download predates this work. Begin with original music or a reviewed library passage, take a short opening check, hear/imagine/sing/play, follow the changes, join the accompaniment, write eight bars and return independently in a different original example. A vertical course map shows the route and recorded evidence. Every chapter remains open. Session suggestions explain their reasons and preserve a creative finish.
+
+The first policy reads scoped activity results and schedules. It is not a calibrated estimate of general skill. On-screen choices, assisted practice, MIDI checks and finished creative work describe different accomplishments. An early return is still useful practice; it does not establish delayed recall. An external native accessibility runner covers chapter selection, opening an arrangement, returning to the map and opening the full piece.
+
+Next acceptance: a musician reviews the examples and several learners try the entire journey, including next-day recall and a genuinely unfamiliar library piece. Observe confusing exits, ignored suggestions and unsupported instrument/input combinations. Revise the journey before producing many more courses.
+
+## Engineering work that supports the journey
+
+- **Ownership and cancellation:** library, practice and course content now have separate observable owners. The PDF queue uses the library owner, rejects stale replies and holds a received draft across local save failure. Continue extracting feature bindings and import preparation into focused owners as those workflows change.
+- **Coverage:** unit and native execution have separate reports, with the complete app denominator retained. The latest measurements and unexecuted actions are recorded in [Quality review](QUALITY_REVIEW.md). Gates require 90% core, 85% workspace owners, 80% learning/import workflows, 12% whole-app unit coverage, 50% combined whole-app coverage and 80% combined device/request-owner coverage. Native execution is instrumented against matching debug binaries; production scenarios are checked separately. Next interaction targets include the PDF import sheet, practice tools, passage singing, course-lesson editing, play-chord controls and library/pathway navigation. Their controls still need journeys even where their underlying rules have tests. A line hit is not a substitute for a meaningful assertion or a learner's result.
+- **Concurrency:** all first-party app, core and test targets use Swift 6 mode, with a Swift 6.2 minimum. Warnings and language-mode fallbacks are gated. Device callbacks copy values across explicit Sendable boundaries; calibration notifications hop to their owner actor, and keyboard-monitor cleanup is actor isolated. Preserve these contracts when extending activities. Toolchain updates and language-mode migration remain separate checks; verification never installs a new global toolchain.
+- **Hardware and accessibility:** complete the release matrix in `Docs/DEVICE_TESTING.md`. Virtual MIDI and native accessibility actions do not establish physical MIDI compatibility, microphone permission handling or VoiceOver usability.
+- **Dependencies:** complete the renderer's transitive provenance and lock its rebuild inputs before claiming a complete dependency graph.
+- **Import fidelity and performance:** use real unsupported examples to improve notation while preserving source review. Profile long scores, cancellation and repeated navigation on the same hardware before setting latency claims.
+
+## Build outward from a reliable learning experience
+
+The flagship journey and four-section workspace are implemented in current source. Keep broader curriculum and adaptive-planner expansion behind the engineering gate and the first learner pilot. The remaining items below are future work.
+
+1. **A workspace organised around the learner — implemented in current source.** Learn (pathways, today's session and reviews), Library (pieces, books and your work), Studio (compose, arrange, rehearse and record) and Explore are the main destinations. Existing activities, source links and full-score access remain available. The coach opens in a native inspector with visible, pinned context and retained drafts; received piece replies use the existing notebook. Section routes, library controls, editor position/undo and pending plan/analysis replies survive navigation. Learner acceptance still includes following a recommended activity, returning to its pathway and finding the saved creative result without losing pending work.
+2. **A shared session planner across goals and pieces.** Connect more existing activities through lesson, source, evidence and session contracts. Show why a branch is recommended and how it rejoins the main trail. Keep hearing, explaining, playing and creating separate; distinguish supported execution, later recall and transfer. AI may propose reviewed activities; the practice system owns evidence and scheduling. Compare recommendations with a teacher before describing adaptation as effective.
+3. **Arrangement as a first-class activity.** Make melody, bass and accompaniment roles visible; compare texture, register, groove and section choices. Keep alternatives and source links. Grow from the eight-bar finish to complete arrangements. A learner should be able to hear a before/after, explain one choice and keep a version of their own as the musical reward.
+4. **Reviewed open course material and authoring.** Build small modules using original examples and appropriately licensed sources such as Open Music Theory. Track provenance and exceptions. Support editing/sharing reviewed pathways, rather than automatically treating a generated plan as an answer key. Keep private book-derived work separate from redistributable curriculum.
+5. **A deeper theory sequence.** Extend current tension/resolution and jazz substitutions into harmonic colour, independently singable voices and counterpoint, motif development and form, then broader improvisation and non-functional harmony. Teach with audible comparisons, playing tasks and saved musical alternatives.
+6. **Broader sources and transcription.** Improve book navigation and course assembly beyond reviewed excerpts; add audio transcription and the previously discussed YouTube synchronisation/slow practice when the core journey is proven.
+
+Proposals should name a musical goal, the learner's action, its source, the assessment's limits and an independent demonstration. A testable teaching hypothesis is not a claim of demonstrated educational effectiveness. Validate adaptation with teachers and learners, including unfamiliar material and delayed returns.
