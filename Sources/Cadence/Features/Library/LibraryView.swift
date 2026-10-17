@@ -366,6 +366,22 @@ private struct PieceDetailView: View {
             ForEach(tensionAnswers, id: \.id) { answer in
                 Button("Open alternative ending: " + answer.title) { state.returnToCompose(answer.id) }
             }
+            if case .score(let score) = piece.source, let source = score.pickingSource {
+                Label("Accompaniment from “" + source.title + "”", systemImage: "hand.draw").font(.callout)
+                if let original = state.libraryPieces.first(where: { $0.id == source.pieceID }) {
+                    Button("Open accompaniment source") { state.openLibraryPiece(original) }
+                }
+            }
+            let pickingAnswers = state.editor.documents.filter { $0.pickingSource?.pieceID == piece.id }
+            if !pickingAnswers.isEmpty {
+                Card(title: "My accompaniments", padding: 16) {
+                    ForEach(pickingAnswers, id: \.id) { answer in
+                        Button(answer.title, systemImage: "hand.draw") {
+                            state.openLibraryPiece(.init(source: .score(answer)))
+                        }
+                    }
+                }
+            }
             if case .score(let score) = piece.source, let source = score.triadSource {
                 TriadAnswerBar(material: source)
             }

@@ -236,7 +236,7 @@ final class TensionPathwayTests: XCTestCase {
         json["schemaVersion"] = 13
         let old = try JSONDecoder().decode(PracticeState.self, from: JSONSerialization.data(withJSONObject: json))
         XCTAssertNil(old.tension)
-        XCTAssertEqual(try old.validated().schemaVersion, 15)
+        XCTAssertEqual(try old.validated().schemaVersion, 16)
         book.sessions.append(s)
         XCTAssertThrowsError(try book.validated())
         book.sessions = [s]
@@ -303,7 +303,7 @@ final class TensionPathwayTests: XCTestCase {
         data["schemaVersion"] = 6
         data.removeValue(forKey: "tensionSource")
         let migrated = try JSONDecoder().decode(EditorDocument.self, from: JSONSerialization.data(withJSONObject: data))
-        XCTAssertEqual(migrated.schemaVersion, 8)
+        XCTAssertEqual(migrated.schemaVersion, 9)
         XCTAssertNil(migrated.tensionSource)
         _ = try migrated.validated()
     }

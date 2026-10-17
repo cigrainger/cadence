@@ -249,8 +249,8 @@ final class ReharmonisationTests: XCTestCase {
         json["schemaVersion"] = 14
         let old = try JSONDecoder().decode(PracticeState.self, from: JSONSerialization.data(withJSONObject: json))
         XCTAssertNil(old.reharm)
-        XCTAssertEqual(try old.validated().schemaVersion, 15)
-        state.schemaVersion = 16
+        XCTAssertEqual(try old.validated().schemaVersion, 16)
+        state.schemaVersion = 17
         XCTAssertThrowsError(try state.validated())
         book.sessions.append(s)
         XCTAssertThrowsError(try book.validated())
@@ -260,6 +260,6 @@ final class ReharmonisationTests: XCTestCase {
         doc.removeValue(forKey: "reharmSource")
         let migrated = try JSONDecoder().decode(EditorDocument.self, from: JSONSerialization.data(withJSONObject: doc))
         XCTAssertNil(migrated.reharmSource)
-        XCTAssertEqual(migrated.schemaVersion, 8)
+        XCTAssertEqual(migrated.schemaVersion, 9)
     }
 }

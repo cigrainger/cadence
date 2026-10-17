@@ -68,7 +68,7 @@ struct EditorRenderer: NSViewRepresentable {
         static func verifiesPreview(arguments: [String]) -> Bool {
             let options: Set<String> = [
                 "--creative-preview", "--full-piece-preview", "--editor-check", "--poly-check",
-                "--harmony-check", "--course-score-review",
+                "--harmony-check", "--course-score-review", "--picking-preview",
             ]
             return !options.isDisjoint(with: arguments)
         }

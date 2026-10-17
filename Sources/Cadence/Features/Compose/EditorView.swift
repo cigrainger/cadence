@@ -101,6 +101,28 @@ struct EditorView: View {
             }
             if let source = document.reharmSource { ReharmAnswerBar(source: source) }
             if let source = document.tensionSource { TensionAnswerBar(source: source, instrument: document.instrument) }
+            if let source = document.pickingSource {
+                HStack {
+                    Label("Accompaniment from “" + source.title + "”", systemImage: "hand.draw").font(.callout)
+                    Spacer()
+                    Button("Return to picking") {
+                        if let session = state.pickingPractice.sessions.first(where: {
+                            $0.material.id == source.id && $0.style == document.pickingStyle
+                        }) {
+                            do { try state.resumePicking(session.id, independent: false) } catch {
+                                message = error.localizedDescription
+                            }
+                        } else {
+                            state.showPicking()
+                        }
+                    }
+                    Button("Open original") {
+                        if let piece = state.libraryPieces.first(where: { $0.id == source.pieceID }) {
+                            state.openLibraryPiece(piece)
+                        }
+                    }
+                }
+            }
             if let material = document.triadSource { TriadAnswerBar(material: material) }
             if document.responseSource != nil { CreativeAnswerBar(document: document, audio: audio) }
             if let source = document.pdfSource { pdfReviewBanner(source) }

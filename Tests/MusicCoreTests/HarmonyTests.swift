@@ -165,9 +165,9 @@ final class HarmonyTests: XCTestCase {
         json["schemaVersion"] = 3
         json.removeValue(forKey: "harmonies")
         let migrated = try JSONDecoder().decode(EditorDocument.self, from: JSONSerialization.data(withJSONObject: json))
-        XCTAssertEqual(migrated.schemaVersion, 8)
+        XCTAssertEqual(migrated.schemaVersion, 9)
         XCTAssertTrue(migrated.harmonies.isEmpty)
-        json["schemaVersion"] = 9
+        json["schemaVersion"] = 10
         XCTAssertThrowsError(
             try JSONDecoder().decode(EditorDocument.self, from: JSONSerialization.data(withJSONObject: json)))
     }

@@ -206,7 +206,7 @@ final class TimedChangesTests: XCTestCase {
         progress.timedChanges = [p.identity(.init()): .init(result: .init(plan: p, conditions: .init(), events: []))]
         XCTAssertNoThrow(try progress.validated())
         var future = PracticeState()
-        future.schemaVersion = 16
+        future.schemaVersion = 17
         XCTAssertThrowsError(try future.validated())
     }
     func testConditionsIdentitiesSupportGradesAndRoundTrip() throws {

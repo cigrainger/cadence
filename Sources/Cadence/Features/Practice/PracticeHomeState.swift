@@ -7,7 +7,8 @@ import MusicCore
 /// Navigation is transient. Practice results and resumable sessions remain in
 /// their existing stores; the home screen never creates a second progress model.
 enum PracticePage {
-    case home, exercises, adaptive, ear, scoreEar, groove, playAlong, rehearsal, triads, tension, reharm, songJourney
+    case picking, home, exercises, adaptive, ear, scoreEar, groove, playAlong, rehearsal, triads, tension, reharm,
+        songJourney
 }
 
 struct PracticeReviewItem: Identifiable {
@@ -15,6 +16,7 @@ struct PracticeReviewItem: Identifiable {
         case reharm(UUID, TheorySkill)
         case tension(UUID, TheorySkill)
         case triads(UUID)
+        case picking(UUID)
         case rehearsal(String)
         case playAlong(
             PlayAlongResult)
@@ -164,6 +166,11 @@ extension AppState {
                 context: (libraryPieces.first { $0.id == material.pieceID }?.title ?? material.title) + " · "
                     + material.label, review: scoreEarReview(material), target: .scoreEar(material))
         }
+        items += pickingPractice.sessions.filter { $0.stage == .complete && pickingCurrent($0.material) }.map {
+            .init(
+                id: $0.key, title: $0.style.rawValue, context: $0.material.title + " · Picking return",
+                review: $0.review, target: .picking($0.id))
+        }
         items += triadPractice.sessions.filter { $0.stage == .complete && triadCurrent($0.material) }.map {
             .init(
                 id: $0.material.id, title: "Triads across the neck",
@@ -208,6 +215,8 @@ extension AppState {
             do { try resumeReharm(id, skill: skill) } catch { message = error.localizedDescription }
         case .tension(let id, let skill):
             do { try resumeTension(id, skill: skill) } catch { message = error.localizedDescription }
+        case .picking(let id):
+            do { try resumePicking(id, independent: true) } catch { message = error.localizedDescription }
         case .triads(let id): do { try resumeTriads(id, restart: true) } catch { message = error.localizedDescription }
         case .rehearsal(let key):
             do {

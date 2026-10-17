@@ -163,7 +163,7 @@ extension StorageIntegrationTests {
         let bytes = try JSONEncoder().encode(original)
         try bytes.write(to: url)
         let state = AppState(storageOverride: folder)
-        XCTAssertEqual(state.practiceState.schemaVersion, 15)
+        XCTAssertEqual(state.practiceState.schemaVersion, 16)
         XCTAssertEqual(state.history, original.history)
         XCTAssertEqual(state.journal, original.journal)
         XCTAssertEqual(state.learning, original.learning)
@@ -171,7 +171,7 @@ extension StorageIntegrationTests {
         XCTAssertTrue(state.save())
         XCTAssertEqual(try Data(contentsOf: url.appendingPathExtension("previous")), bytes)
         let saved = try JSONDecoder().decode(PracticeState.self, from: Data(contentsOf: url))
-        XCTAssertEqual(saved.schemaVersion, 15)
+        XCTAssertEqual(saved.schemaVersion, 16)
         XCTAssertEqual(AppState(storageOverride: folder).practiceState, state.practiceState)
     }
     @MainActor func testFuturePracticeSnapshotIsNotReplacedByLegacyFallback() throws {

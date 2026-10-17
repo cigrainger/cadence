@@ -236,3 +236,30 @@ final class MicrophoneTests: XCTestCase {
         }
     }
 }
+
+extension MicrophoneTests {
+    @MainActor func testObservationPreservesDeviceClockAndRejectsStoppedEpoch() async throws {
+        let input = MicrophoneFixture()
+        let microphone = Microphone(input: input, permission: { true })
+        var frames: [PerformanceObservation] = []
+        let subscription = microphone.observations.sink { frames.append($0) }
+        defer {
+            subscription.cancel()
+            microphone.stop()
+        }
+        await microphone.start()
+        let handler = try XCTUnwrap(input.handler)
+        await Self.emit(handler, midi: 69, rate: 48000, frames: 8192)
+        try await waitFor { frames.count == 1 }
+        XCTAssertEqual(frames[0].sampleTime, 0)
+        XCTAssertNil(frames[0].hostSeconds)
+        XCTAssertEqual(frames[0].sampleRate, 48000)
+        XCTAssertEqual(frames[0].frameCount, 8192)
+        XCTAssertEqual(frames[0].clippedFraction, 0)
+        XCTAssertGreaterThan(frames[0].rms, 0.1)
+        microphone.stop()
+        await Self.emit(handler, midi: 60)
+        try await Task.sleep(nanoseconds: 100_000_000)
+        XCTAssertEqual(frames.count, 1)
+    }
+}

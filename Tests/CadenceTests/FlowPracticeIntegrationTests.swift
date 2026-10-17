@@ -56,7 +56,7 @@ final class FlowPracticeIntegrationTests: XCTestCase {
         XCTAssertEqual(restored.currentRehearsal?.nextReview, due)
         XCTAssertNil(restored.currentRehearsal?.contextResult?.conditions.flowPulse)
         XCTAssertEqual(restored.currentRehearsal?.contextResult?.plan, restored.currentRehearsal?.opening)
-        XCTAssertEqual(restored.practiceState.schemaVersion, 15)
+        XCTAssertEqual(restored.practiceState.schemaVersion, 16)
         XCTAssertEqual(restored.currentRehearsal?.flowReflection, .mixed)
     }
     @MainActor func testActualStartUsesSavedTempoPulseAndPartnerAndLocksChanges() throws {

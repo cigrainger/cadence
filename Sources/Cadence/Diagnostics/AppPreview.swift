@@ -181,6 +181,12 @@ extension AppState {
                 message = error.localizedDescription
             }
         }
+        if preview && CommandLine.arguments.contains("--picking-preview") {
+            do { try PickingChecks.preview(self) } catch {
+                PickingDiagnostics.checks["built"] = false
+                message = error.localizedDescription
+            }
+        }
         if preview && CommandLine.arguments.contains("--triad-preview") {
             do { try TriadChecks.preview(state: self) } catch {
                 TriadDiagnostics.checks["built"] = false

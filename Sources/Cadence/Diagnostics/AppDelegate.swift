@@ -63,22 +63,10 @@ import WebKit
             }
             launchWindow.setContentSize(NSSize(width: width, height: height))
         }
-        // Let the existing sheet/scroll framing actions run first. Their delay
-        // does not establish notation readiness under concurrent launch load.
+        // Keep delayed sheet/scroll/edit actions ahead of capture, then wait on
+        // the exact renderer and domain assertions supplied by the verifier.
         DispatchQueue.main.asyncAfter(
-            deadline: .now()
-                + (CommandLine.arguments.contains("--song-ax")
-                    ? 30
-                    : CommandLine.arguments.contains("--reharm-preview")
-                        ? 8
-                        : CommandLine.arguments.contains("--tension-preview")
-                            ? 8
-                            : CommandLine.arguments.contains("editor")
-                                ? 10
-                                : CommandLine.arguments.contains("--practice-adaptive")
-                                    ? 8
-                                    : CommandLine.arguments.contains("studies")
-                                        || CommandLine.arguments.contains("library") ? 8 : 2)
+            deadline: .now() + SnapshotFraming.delay(arguments: CommandLine.arguments)
         ) {
             Task { @MainActor in
                 do {
