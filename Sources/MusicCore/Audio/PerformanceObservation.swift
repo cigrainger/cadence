@@ -71,7 +71,8 @@ public struct MonophonicTake: Codable, Equatable, Identifiable, Sendable {
         guard valid, orderedClock, usable.count >= 4, usable.count * 2 >= frames.count else { return nil }
         let offsets = usable.compactMap(\.frequency).map { 1200 * log2($0 / (440 * pow(2, Double(target - 69) / 12))) }
             .sorted()
-        return offsets[offsets.count / 2]
+        let middle = offsets.count / 2
+        return offsets.count.isMultiple(of: 2) ? (offsets[middle - 1] + offsets[middle]) / 2 : offsets[middle]
     }
     public var summary: String {
         guard valid else { return "Inconclusive: invalid observation data." }

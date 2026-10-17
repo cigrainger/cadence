@@ -124,3 +124,42 @@ final class PickingIntegrationTests: XCTestCase {
         XCTAssertEqual(state.pickingPractice.active?.review.lastInput, .selfReport)
     }
 }
+
+extension PickingIntegrationTests {
+    @MainActor func testShorterSelectionResetsFocusedJoinAndClampsLateControls() throws {
+        let state = try prepared()
+        let previous = state.pickingPractice.active!
+        state.pickingInput.join = 2
+        let piece = try XCTUnwrap(state.libraryPieces.first { $0.id == previous.material.pieceID })
+        try state.beginPicking(piece: piece, scope: .init(partID: "P1", staff: 1, from: 0, through: 1), style: .travis)
+        XCTAssertEqual(state.pickingInput.join, 0)
+        XCTAssertEqual(state.pickingInput.focusedBars(2), 0...1)
+        state.pickingInput.join = Int.max
+        XCTAssertEqual(state.pickingInput.focusedBars(2), 0...1)
+        state.pickingInput.join = Int.min
+        XCTAssertEqual(state.pickingInput.focusedBars(4), 0...1)
+        XCTAssertEqual(state.pickingInput.focusedBars(1), 0...0)
+        XCTAssertEqual(state.pickingInput.focusedBars(Int.min), 0...0)
+        state.pickingInput.join = 1
+        try state.resumePicking(previous.id, independent: false)
+        XCTAssertEqual(state.pickingInput.join, 0)
+    }
+    @MainActor func testAdaptedArrangementReturnsToItsSourceAndPrefersMatchingStyle() throws {
+        let state = try prepared()
+        let original = state.pickingPractice.active!
+        for _ in 0..<4 { state.pickingInput.submit(.tried, state: state) }
+        try state.savePickingArrangement(style: .classical, tempo: 72, backbeat: false)
+        let arrangement = state.editor.active
+        let piece = try XCTUnwrap(state.libraryPieces.first { $0.id == original.material.pieceID })
+        try state.beginPicking(
+            piece: piece, scope: .init(partID: "P1", staff: 1, from: 0, through: 1), style: .strumming)
+        try state.returnToPicking(from: arrangement)
+        XCTAssertEqual(state.pickingPractice.activeID, original.id)
+        try state.beginPicking(piece: piece, scope: original.material.scope, style: .classical)
+        let exact = state.pickingPractice.activeID
+        try state.resumePicking(original.id, independent: false)
+        try state.returnToPicking(from: arrangement)
+        XCTAssertEqual(state.pickingPractice.activeID, exact)
+        XCTAssertThrowsError(try state.returnToPicking(from: .guitarExample))
+    }
+}

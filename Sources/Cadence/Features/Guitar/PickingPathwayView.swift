@@ -35,7 +35,6 @@ struct PickingPathwayView: View {
     @State private var tempo = 72
     @State private var layer = "All notes"
     @State private var backbeat = false
-    @State private var join = 0
     @State private var taps = 0
     @State private var document: EditorDocument?
     @State private var selection: UUID?
@@ -266,7 +265,7 @@ struct PickingPathwayView: View {
                     if session.stage == .changes, session.material.chords.count > 1 {
                         HStack {
                             Stepper(
-                                "Join \(join + 1) → \(join + 2)", value: $join,
+                                "Join \(input.join + 1) → \(input.join + 2)", value: $input.join,
                                 in: 0...max(0, session.material.chords.count - 2))
                             Button("Hear this join") { play(join: true) }
                         }
@@ -325,11 +324,7 @@ struct PickingPathwayView: View {
             } else {
                 Button("Listen locally", systemImage: "mic") {
                     input.arm(state)
-                    Task {
-                        guard input.recording else { return }
-                        await microphone.start()
-                        if !microphone.listening { input.pause() }
-                    }
+                    Task { await input.startMicrophone(microphone) }
                 }
             }
             if let take = session.takes.last {
@@ -389,7 +384,8 @@ struct PickingPathwayView: View {
                 }
             }
         }
-        audio.play(document.playback(from: focused ? join : 0, through: focused ? join + 1 : document.barCount - 1))
+        let bars = focused ? input.focusedBars(document.barCount) : 0...(document.barCount - 1)
+        audio.play(document.playback(from: bars.lowerBound, through: bars.upperBound))
     }
     private func stop() {
         input.pause()

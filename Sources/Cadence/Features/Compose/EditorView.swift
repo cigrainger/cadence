@@ -106,15 +106,7 @@ struct EditorView: View {
                     Label("Accompaniment from “" + source.title + "”", systemImage: "hand.draw").font(.callout)
                     Spacer()
                     Button("Return to picking") {
-                        if let session = state.pickingPractice.sessions.first(where: {
-                            $0.material.id == source.id && $0.style == document.pickingStyle
-                        }) {
-                            do { try state.resumePicking(session.id, independent: false) } catch {
-                                message = error.localizedDescription
-                            }
-                        } else {
-                            state.showPicking()
-                        }
+                        do { try state.returnToPicking(from: document) } catch { message = error.localizedDescription }
                     }
                     Button("Open original") {
                         if let piece = state.libraryPieces.first(where: { $0.id == source.pieceID }) {

@@ -47,3 +47,16 @@ final class PerformanceObservationTests: XCTestCase {
         XCTAssertFalse(MonophonicTake(target: 45, frames: Array(repeating: frame(), count: 301)).valid)
     }
 }
+
+extension PerformanceObservationTests {
+    func testEvenMedianAveragesTheTwoMiddleUsableReadings() {
+        let offsets = [-40.0, -10, 20, 60]
+        let samples = offsets.enumerated().map { index, cents in
+            var value = frame(frequency: 110 * pow(2, cents / 1200))
+            value.sampleTime = Int64(index * 4096)
+            return value
+        }
+        let take = MonophonicTake(target: 45, frames: samples)
+        XCTAssertEqual(take.medianCents ?? 999, 5, accuracy: 0.001)
+    }
+}

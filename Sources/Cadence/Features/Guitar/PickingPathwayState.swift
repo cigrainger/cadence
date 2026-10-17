@@ -13,10 +13,18 @@ import MusicCore
     }
     @Published var pending: Pending?
     @Published var error: String?
+    @Published var join = 0
     @Published private(set) var frames: [PerformanceObservation] = []
     @Published private(set) var recording = false
     private var expected: PickingSession?
+    private var captureID = UUID()
+    func focusedBars(_ barCount: Int) -> ClosedRange<Int> {
+        guard (1...128).contains(barCount) else { return 0...0 }
+        let start = min(max(0, join), max(0, barCount - 2))
+        return start...min(barCount - 1, start + 1)
+    }
     func pause() {
+        captureID = UUID()
         recording = false
         expected = nil
     }
@@ -28,6 +36,15 @@ import MusicCore
         expected = s
         recording = true
         error = nil
+    }
+    func startMicrophone(_ microphone: Microphone) async {
+        guard recording else { return }
+        let token = captureID
+        await microphone.start(forTuner: true)
+        // A cancelled permission request must not pause a newer capture, even
+        // when it belongs to the same session and has not received audio yet.
+        guard token == captureID else { return }
+        if !microphone.listening { pause() }
     }
     func receive(_ frame: PerformanceObservation, state: AppState) {
         guard recording else { return }
@@ -75,6 +92,7 @@ import MusicCore
         } catch { self.error = error.localizedDescription }
     }
     func discard() {
+        join = 0
         pause()
         pending = nil
         frames = []
@@ -140,6 +158,17 @@ extension AppState {
         stopAllPlayback()
         pickingInput.discard()
         showPicking()
+    }
+    func returnToPicking(from document: EditorDocument) throws {
+        guard let source = document.pickingSource else {
+            throw MusicError.invalid("This composition has no picking source.")
+        }
+        let matching = pickingPractice.sessions.filter { $0.material.id == source.id }
+        guard let session = matching.first(where: { $0.style == document.pickingStyle }) ?? matching.first else {
+            throw MusicError.invalid(
+                "No saved picking pathway matches this arrangement. Choose its original piece in Learn to start again.")
+        }
+        try resumePicking(session.id, independent: false)
     }
     func savePickingArrangement(style: PickingStyle, tempo: Int, backbeat: Bool) throws {
         guard pickingInput.pending == nil, let session = pickingPractice.active,
