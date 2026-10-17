@@ -3,8 +3,8 @@
 
 import Foundation
 
-/// Keep the preferred workspace on larger screens, while allowing its first
-/// window to open on smaller displays. The workspace already scrolls its music.
+/// Keep the preferred workspace on larger screens and fit its initial geometry
+/// to smaller displays. The workspace already scrolls its music.
 struct WorkspaceWindowLayout {
     static let preferredMinimum = CGSize(width: 1120, height: 760)
     static let preferredInitial = CGSize(width: 1350, height: 980)

@@ -40,7 +40,7 @@ All first-party targets now use Swift 6 language mode, with Swift 6.2 as the min
 
 AIModelCatalog is a separate Sendable client for bounded public model metadata. It receives no credential. SavedRequest keeps request orchestration and commit on its owner actor. WebKit delegates use the SDK's actor/Sendable completion signature, and layout values are validated before integer conversion or UI mutation. A source-book digest also gates EPUB illustration excerpts.
 
-WorkspaceWindowLayout is pure window-sizing policy shared by the app and the graphical-host probe. Both the initial size and minimum fit the visible display; fixed oversized geometry must not prevent a first launch. The model and device owners are unchanged.
+WorkspaceWindowLayout is pure window-sizing policy shared by the app and the graphical-host probe. Both the initial size and minimum fit the visible display. Native verification gives presence flags explicit values: macOS also parses process arguments, and an unpaired flag before an output option can leave its path as an OS open request instead of presenting SwiftUI's initial window. This belongs to the launch driver, not feature or model ownership.
 
 The normal workspace opens its MIDI client before loading music or doing audio work and holds it until shutdown. Port/source disconnection does not dispose that client. Preview and isolated-storage states do not open a real client. The native self-check similarly holds one before audio work, and its virtual-input exercise disposes only a client it created. This avoids MIDIServer idle-exit invalidating an already-initialised framework connection during a listening-first session; see the [CoreMusic maintainer's reproduction](https://shakfu.github.io/coremusic/tutorials/midi_basics/).
 

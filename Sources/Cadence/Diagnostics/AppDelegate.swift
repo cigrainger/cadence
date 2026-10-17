@@ -50,7 +50,7 @@ import WebKit
         Darwin.exit(1)
     }
     private func scheduleSnapshot(_ launchWindow: NSWindow) {
-        snapshotProgress("window ready")
+        snapshotProgress("window ready: frame=\(launchWindow.frame), minimum=\(launchWindow.contentMinSize)")
         if let argument = CommandLine.arguments.firstIndex(of: "--width"),
             argument + 1 < CommandLine.arguments.count, let width = Double(CommandLine.arguments[argument + 1])
         {

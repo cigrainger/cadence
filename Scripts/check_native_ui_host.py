@@ -8,6 +8,7 @@ import plistlib
 import subprocess
 import sys
 import uuid
+from native_arguments import native_arguments
 
 root = Path(__file__).resolve().parents[1]
 output = root / '.verification/ui-host'
@@ -25,15 +26,11 @@ subprocess.run(['xcrun', 'swiftc', '-swift-version', '6', '-warnings-as-errors',
                 str(root / 'Sources/Cadence/App/WorkspaceWindowLayout.swift'),
                 '-o', str(macos / 'Cadence')], env=env, check=True, timeout=60)
 subprocess.run(['codesign', '--force', '--sign', '-', str(app)], check=True, capture_output=True)
-# The control records the old fixed geometry; it may succeed on a large display.
-# Only the actual screen-fitting policy is required to pass on every GUI host.
-for name, flags in [('legacy-geometry', ['--legacy-minimum']),
-                    ('workspace-without-inspector', ['--workspace-minimum']),
-                    ('workspace-with-inspector', ['--workspace-minimum', '--inspector']),
-                    ('gui-host', [])]:
-    result = subprocess.run([str(macos / 'Cadence'), *flags, '--snapshot', str(output / (name + '.json'))],
-                            env=env, capture_output=True, text=True, timeout=15)
-    print(name + ':\n' + result.stderr, flush=True)
-    if name == 'gui-host' and result.returncode:
-        sys.exit(result.returncode)
+# Include a presence flag before the output option: leaving it unpaired can
+# turn the output path into an OS open request and suppress the initial scene.
+result = subprocess.run([str(macos / 'Cadence'), *native_arguments(['--gui-probe', '--snapshot', output / 'gui-host.json'])],
+                        env=env, capture_output=True, text=True, timeout=15)
+print('gui-host:\n' + result.stderr, flush=True)
+if result.returncode:
+    sys.exit(result.returncode)
 print('SwiftUI screen-fitting preflight passed.', flush=True)

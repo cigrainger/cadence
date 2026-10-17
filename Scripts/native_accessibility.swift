@@ -66,7 +66,7 @@ guard executable.lastPathComponent == "Cadence", FileManager.default.isExecutabl
 }
 let process = Process()
 process.executableURL = executable
-process.arguments = ["--song-preview", "--song-ax", "--snapshot", snapshot.path, "--width", "1350", "--height", "1050"]
+process.arguments = ["--song-preview", "YES", "--song-ax", "YES", "--snapshot", snapshot.path, "--width", "1350", "--height", "1050"]
 try process.run()
 // An accessory preview can render while its AX tree is not registered. Activate
 // only our own child; never send input to the user's running Cadence or other apps.

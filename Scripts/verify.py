@@ -13,6 +13,7 @@ import subprocess
 import sys
 import time
 from build_inputs import source_digest
+from native_arguments import native_arguments
 from native_coverage import NativeCoverage, check_source_inventory, reset_unit_coverage
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -331,7 +332,7 @@ def run_preview(executable, output, env, scenario):
     if name == "song-accessibility":
         run(["swift", "-swift-version", "6", ROOT / "Scripts/native_accessibility.swift", executable, png], output / (name + ".log"), env, 60)
     else:
-        run([executable, "--snapshot", png, *flags], output / (name + ".log"), env, 60)
+        run([executable, *native_arguments(["--snapshot", png, *flags])], output / (name + ".log"), env, 60)
     require(png.is_file() and png.stat().st_size > 1000, f"Missing {name} image")
     checks = json.loads(sidecar.read_text())
     require_flags(checks, required, name)
@@ -423,12 +424,12 @@ def main():
             native_path = output / "native.json"
             native_path.unlink(missing_ok=True)
             audio_flags = ["--offline-audio"] if args.skip_audio_output else []
-            run([executable, "--selfcheck", native_path, *audio_flags], output / "native.log", env, 180)
+            run([executable, *native_arguments(["--selfcheck", native_path, *audio_flags])], output / "native.log", env, 180)
             native = json.loads(native_path.read_text())
             check_native(native, args.skip_audio_output)
             report["native"] = native
             instrumented_path = collection.folder / "native.json"
-            run([collection.executable, "--selfcheck", instrumented_path, *audio_flags], collection.folder / "native.log", instrumented_env, 180)
+            run([collection.executable, *native_arguments(["--selfcheck", instrumented_path, *audio_flags])], collection.folder / "native.log", instrumented_env, 180)
             instrumented_native = json.loads(instrumented_path.read_text())
             check_native(instrumented_native, args.skip_audio_output)
             report["instrumentedNative"] = instrumented_native
@@ -447,11 +448,11 @@ def main():
             for name in ("general", "midi", "about"):
                 png = output / ("settings-" + name + ".png")
                 png.unlink(missing_ok=True)
-                run([executable, "--settings", "--" + name + "-settings", "--snapshot", png],
+                run([executable, *native_arguments(["--settings", "--" + name + "-settings", "--snapshot", png])],
                     output / ("settings-" + name + ".log"), env, 30)
                 require(png.is_file() and png.stat().st_size > 1000, "Missing settings preview: " + name)
                 instrumented_png = collection.folder / ("settings-" + name + ".png")
-                run([collection.executable, "--settings", "--" + name + "-settings", "--snapshot", instrumented_png],
+                run([collection.executable, *native_arguments(["--settings", "--" + name + "-settings", "--snapshot", instrumented_png])],
                     collection.folder / ("settings-" + name + ".log"), instrumented_env, 30)
                 require(instrumented_png.is_file() and instrumented_png.stat().st_size > 1000, "Missing instrumented settings preview: " + name)
                 report["settingsPreviews"].append(name)
