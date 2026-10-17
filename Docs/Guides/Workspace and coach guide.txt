@@ -1,0 +1,72 @@
+CADENCE — YOUR MUSICAL WORKSPACE
+
+LEARN THE MUSIC YOU LOVE. MAKE IT YOUR OWN.
+
+Command-1 through Command-4 choose Learn, Library, Studio and Explore. Switching
+sections returns to the activity you last used there; it does not begin another
+session or create another score. These controls are in current source builds;
+the public 0.36.1 download predates them.
+
+LEARN
+Your pathway opens Make a song your own: hear a phrase, understand its changes,
+join the accompaniment, make an eight-bar version and return independently.
+Every chapter stays open. Open full score always opens the complete piece.
+
+Practice & review contains the practice room, exercises and spaced returns.
+Courses holds the smooth-changes pathway and its source-linked activities.
+Personal plans holds saved goal, song, style and piece-practice plans. AI can
+help assemble a plan; original examples and local piece exercises work offline.
+
+The sidebar pathway card and Your pathway return bar keep the flagship journey
+close when an activity takes you elsewhere. Back to Learn returns to that map
+when a flagship pathway is selected, otherwise to the practice room.
+
+LIBRARY
+Music separates Sheet music, My compositions and Examples. Opening a piece
+opens its full score in Studio; choose a practice passage afterward. Books &
+chapters holds EPUB/PDF sources and their reviewed lessons. A chapter activity
+can take you into Learn or Studio, with a return control to its source.
+
+Library keeps its search, collection, selected piece and notebook controls
+while you move elsewhere. An explicit Show in Library action clears conflicting
+filters so the requested piece is visible.
+
+STUDIO
+Write & arrange is the notation/tab editor previously called Compose. Rehearse
+is the full-score study workspace previously called Studies. Moving between
+sections keeps the selected event, passage and editor undo history in memory.
+An explicit Open full score still opens the whole piece.
+
+EXPLORE
+Theory contains the circle of fifths, keys, scales and modes. Chords & voicings
+connects chord tones with piano/guitar shapes and chord-change activities.
+Metronome & tuner keeps the timing and pitch tools nearby.
+
+THE COACH, BESIDE THE MUSIC
+Choose Coach in the header, use Shift-Command-K, or ask about a pathway chapter.
+The panel's context card names the music or activity. What will be included
+shows the supplied reference. Turn off Include this context to send only your
+question and recent conversation. Opening the panel never sends a request.
+
+Add your OpenRouter key and model in Settings, then explicitly choose Send.
+This uses your provider credits with ZDR required. Original books, PDFs and
+recordings are not included in these coaching requests.
+
+Moving elsewhere does not silently retarget a conversation. Use the music I’m
+viewing explicitly adopts the current context. Each context keeps its draft
+and recent conversation while Cadence is open. Closing the panel keeps a draft
+and lets an already submitted request finish. Stop request cancels it; work
+already sent may still be charged.
+
+Replies for a supported library passage are saved in that piece's notebook,
+with the original score version and bars. A failed save retains the received
+reply. Save received reply again performs only the local write. If its piece
+is gone, copy the reply before explicitly discarding it to free the coach.
+
+Typing in the question field pauses editor MIDI step entry and note shortcuts.
+Leave the field to work with the music again. The coach does not grade an unheard
+performance or replace the practice system's separate evidence.
+
+In a narrow window the chapter selector and activity stack vertically. Wider
+editing/reference workspaces can be panned horizontally beside the coach.
+Closing the panel gives the music the full workspace again.

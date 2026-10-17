@@ -118,14 +118,7 @@ extension AppState {
         return document.id
     }
     func changePDFScore(_ id: UUID, _ change: (inout EditorDocument) throws -> Void) throws {
-        guard !isPreview, let index = editor.documents.firstIndex(where: { $0.id == id }) else {
-            throw MusicError.invalid("This imported score is no longer available.")
-        }
-        var library = editor
-        var document = library.documents[index]
-        try change(&document)
-        library.documents[index] = try document.validated()
-        try libraryWorkspace.commitScores(library)
+        try libraryWorkspace.changePDFScore(id, change)
         pdfImportRevision += 1
     }
     func reviewPDFPage(scoreID: UUID, page: Int) {

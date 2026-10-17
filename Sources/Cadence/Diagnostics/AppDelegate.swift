@@ -5,7 +5,7 @@ import AppKit
 import SwiftUI
 import WebKit
 
-final class AppDelegate: NSObject, NSApplicationDelegate {
+@MainActor final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.appearance = NSAppearance(named: .aqua)
         let preview =
@@ -28,16 +28,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             }
             DispatchQueue.main.asyncAfter(
                 deadline: .now()
-                    + (CommandLine.arguments.contains("--reharm-preview")
-                        ? 8
-                        : CommandLine.arguments.contains("--tension-preview")
+                    + (CommandLine.arguments.contains("--song-ax")
+                        ? 30
+                        : CommandLine.arguments.contains("--reharm-preview")
                             ? 8
-                            : CommandLine.arguments.contains("editor")
-                                ? 10
-                                : CommandLine.arguments.contains("--practice-adaptive")
-                                    ? 8
-                                    : CommandLine.arguments.contains("studies")
-                                        || CommandLine.arguments.contains("library") ? 8 : 2)
+                            : CommandLine.arguments.contains("--tension-preview")
+                                ? 8
+                                : CommandLine.arguments.contains("editor")
+                                    ? 10
+                                    : CommandLine.arguments.contains("--practice-adaptive")
+                                        ? 8
+                                        : CommandLine.arguments.contains("studies")
+                                            || CommandLine.arguments.contains("library") ? 8 : 2)
             ) {
                 let settingsPreview = CommandLine.arguments.contains("--settings")
                 let window =
@@ -303,11 +305,24 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                             try? data.write(to: destination.deletingPathExtension().appendingPathExtension("json"))
                         }
                     }
+                    if !SongJourneyDiagnostics.checks.isEmpty {
+                        let sidecar = destination.deletingPathExtension().appendingPathExtension("json")
+                        var report =
+                            (try? Data(contentsOf: sidecar)).flatMap {
+                                try? JSONSerialization.jsonObject(with: $0) as? [String: Any]
+                            } ?? [:]
+                        report["songJourneyChecks"] = SongJourneyDiagnostics.checks
+                        if let data = try? JSONSerialization.data(
+                            withJSONObject: report, options: [.prettyPrinted, .sortedKeys])
+                        {
+                            try? data.write(to: sidecar)
+                        }
+                    }
                     // A preview sheet can keep Cocoa's modal loop alive after
                     // the files are saved. This process has no user state.
                     Darwin.exit(0)
                 }
-                func findWebs(_ view: NSView) -> [WKWebView] {
+                @MainActor func findWebs(_ view: NSView) -> [WKWebView] {
                     if let web = view as? WKWebView { return [web] }
                     return view.subviews.flatMap { findWebs($0) }
                 }

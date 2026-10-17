@@ -93,7 +93,7 @@ import MusicCore
             if CommandLine.arguments.contains("--adaptive-feedback") { play([53, 57, 60]) }
         }
         state.showAdaptiveSession = true
-        state.destination = .library
+        state.destination = .courses
         state.musicalPathwayStep = nil
         AdaptiveSessionDiagnostics.checks = checks
     }

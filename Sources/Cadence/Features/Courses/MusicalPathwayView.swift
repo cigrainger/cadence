@@ -4,21 +4,6 @@
 import MusicCore
 import SwiftUI
 
-struct CourseLibraryView: View {
-    @EnvironmentObject private var state: AppState
-    var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            if !state.showAdaptiveSession && (state.learningShelf != "Pathways" || state.musicalPathwayStep == nil) {
-                Picker("Learning library", selection: $state.learningShelf) {
-                    Text("Pathways").tag("Pathways")
-                    Text("Book chapters").tag("Book chapters")
-                }.pickerStyle(.segmented).labelsHidden().frame(width: 290)
-            }
-            if state.learningShelf == "Pathways" { MusicalPathwaysView() } else { BookChaptersView() }
-        }
-    }
-}
-
 struct MusicalPathwaysView: View {
     @EnvironmentObject private var state: AppState
     @State private var setup = CommandLine.arguments.contains("--smooth-setup")

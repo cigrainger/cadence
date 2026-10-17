@@ -1,0 +1,15 @@
+# Hands-on release matrix
+
+Record the app commit/version, macOS, hardware, connection, audio route, result and reproduction. Leave a row **not tested** until someone actually performs it. Native accessibility actions, virtual MIDI and silent rendering are separate automated evidence.
+
+| Journey | Setup and action | Observable result | Current evidence |
+| --- | --- | --- | --- |
+| USB piano | Roland FP-10: connect before launch; open a pathway; play/release starting and destination chords; unplug during capture; reconnect | One gesture per release, no stuck notes or invented answer after disconnect, useful device status, resumable practice | Virtual MIDI only; physical test needed |
+| MIDI timing | Calibrate; play the same short passage with speakers and headphones; repeat after changing the audio output | Calibration persists appropriately; note timing remains explainable; device change stops an active take safely | Virtual timestamps, local audio scheduling and background notification regressions; physical route test needed |
+| Microphone refusal | Fresh macOS permission state; explicitly start singing; deny access | Visible explanation and a usable instrument/on-screen alternative; no repeating permission loop or silent recording | Injected refusal, cancelled permission and stale-reply tests; actual OS permission test needed |
+| Microphone grant | Explicitly start singing, allow access; sing an interval; stop; change microphone/audio device | Local capture begins only on request, feedback is usable, stop/navigation ends capture | Synthetic background buffers, held pitch, silence, transcription and stale callback tests; actual microphone test needed |
+| Keyboard navigation | Begin pathway, inspect a chapter, answer a question, open the full piece, create/listen/save arrangement, return to map | Focus is visible and logical; all actions are reachable; labels and disabled reasons explain state; no keyboard trap | Native actions cover theory retry/support, the map, full score, unfinished arrangement, workspace navigation and coach draft retention; all 13 passed in both builds after unlocking. The full keyboard route still needs hands-on testing |
+| VoiceOver | Repeat that journey with VoiceOver, including MIDI disconnection and a failed save | Meaningful order, labels, selected states and error announcements; music has useful text context | Hands-on test needed |
+| Compact window/scaling | Repeat on laptop-sized display and another scaling setting; inspect import source and the course map | Controls remain reachable and text is legible; full score and return controls remain discoverable | Deterministic compact/large previews; physical display check needed |
+
+Use an isolated test data folder and original example scores for failure tests. Do not attach private books, a Keychain export, an API key or personal learning history to an issue. Report supported practice and independent recall separately. No successful compatibility result is inferred from the absence of a report.

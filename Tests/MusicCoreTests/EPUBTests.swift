@@ -167,9 +167,9 @@ final class EPUBTests: XCTestCase {
             data: bytes, filename: "book.epub", pageCount: 2, title: epub.title,
             epubSections: epub.sections.map(\.reference))
         let source = CourseSourceAnchor(book: book, from: 1, through: 1)
-        var calls = 0
+        let calls = RequestProbe()
         let client = CourseOutlineClient { request in
-            calls += 1
+            await calls.sent()
             let body = try XCTUnwrap(request.httpBody)
             let json = try XCTUnwrap(JSONSerialization.jsonObject(with: body) as? [String: Any])
             let serialized = String(decoding: body, as: UTF8.self)
@@ -191,7 +191,7 @@ final class EPUBTests: XCTestCase {
         }
         let reply = try await client.outline(
             pdf: Data(), source: source, book: book, instrument: .piano, apiKey: "fixture-key", epub: epub)
-        XCTAssertEqual(calls, 1)
+        await calls.assertCount(1)
         XCTAssertTrue(
             try reply.outline.chapter(source: source, book: book, instrument: .piano, origin: "test").lessons[0].source
                 .belongs(to: book))
@@ -200,7 +200,7 @@ final class EPUBTests: XCTestCase {
                 pdf: Data(), source: source, book: book, instrument: .piano, apiKey: "fixture-key")
             XCTFail()
         } catch {}
-        XCTAssertEqual(calls, 1)
+        await calls.assertCount(1)
     }
     func testOriginalBundledEPUBAndOptionalRealBook() throws {
         let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()

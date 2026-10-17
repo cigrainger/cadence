@@ -18,6 +18,7 @@ extension AppState {
         earInput.pause()
         scoreEarInput.pause()
         adaptiveInput.pause(held: midi.keyboard.downNotes)
+        songInput.pause()
         changesSession.pause(held: midi.keyboard.downNotes)
         if !keepingMetronome || !audio.isMetronome { audio.stop() }
         microphone.stop()
@@ -69,7 +70,7 @@ struct PlaybackBar: View {
             Button("Stop all", systemImage: "stop.fill", action: stop)
                 .controlSize(.small).disabled(!active)
                 .help("Stop playback, count-ins, microphone and recording (⌘.)")
-            Text("⌘1–8 to navigate").font(.system(size: 10)).foregroundStyle(.secondary)
+            Text("⌘1–4 to navigate").font(.system(size: 10)).foregroundStyle(.secondary)
         }
         .padding(.horizontal, 22).padding(.vertical, 7).background(Color.paper)
     }

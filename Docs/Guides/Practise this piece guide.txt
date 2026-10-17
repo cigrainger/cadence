@@ -32,7 +32,7 @@ supported same-session practice, even if it is accurate. The result and your
 place are saved atomically.
 
 4. RETURN LATER
-Practice → Bring it back offers the phrase tomorrow. Read from the full score
+Learn → Practice & review → Bring it back offers the phrase tomorrow. Read from the full score
 and play before listening or warming up the phrase. A first delayed pass with
 native MIDI timestamps is independent evidence. A cancelled/restarted pass,
 assistance or timestamp fallback is supported evidence, including after relaunch.
@@ -59,7 +59,7 @@ Every entrance lists individual pitches, errors and extra presses. Rhythm feedba
 bar positions. The right panel records pitch and timing separately. Printed
 score tempo stays original; practice uses the panel's tempo.
 
-Your sessions resume from Practice → Your music, in progress. Failed saves keep
+Your sessions resume from Learn → Practice & review → Your music, in progress. Failed saves keep
 the completed pass there for retry. A changed/deleted score or revoked PDF review
 cannot receive old results. Choose another phrase to select a different range;
 an existing range resumes its saved session and original tempo.

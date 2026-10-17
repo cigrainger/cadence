@@ -19,7 +19,7 @@ rhythmic accuracy.
 
 TAP A RHYTHM
 
-Practice → Rhythm → Tap it out offers four two-bar patterns: steady pulse,
+Learn → Practice & review → Rhythm → Tap it out offers four two-bar patterns: steady pulse,
 eighth-note subdivisions, rests, and offbeats. Every pattern stays available.
 Hear the pattern plays a count-in followed by the target taps over a quiet
 beat. The grid labels 1 & 2 & 3 & 4 &: a dot means tap and a dash means no new
@@ -97,7 +97,7 @@ musical changes require a fresh pass. Saved results are revalidated against the
 source before committing. There are at most 256 detailed current review records
 and 10,000 journal entries, matching the bounded local practice design.
 
-Practice → Return to the pulse shows due timed passages and rhythm patterns.
+Learn → Practice & review → Return to the pulse shows due timed passages and rhythm patterns.
 Misses return after 10 minutes; supported input after 20 minutes; clean due
 reviews progress through 1/3/7/14/30/60 days. Immediate repeats do not extend
 spacing. A review reopens its passage, hand, tempo, input and click setting.

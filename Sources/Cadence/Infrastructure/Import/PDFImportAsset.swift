@@ -20,6 +20,7 @@ import SwiftUI
         self.document = document
     }
     static func read(_ url: URL) async throws -> PDFImportAsset {
+        try Task.checkCancellation()
         let data = try await Task.detached(priority: .userInitiated) {
             let scope = url.startAccessingSecurityScopedResource()
             defer { if scope { url.stopAccessingSecurityScopedResource() } }

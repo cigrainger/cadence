@@ -41,7 +41,7 @@ one local operation. If saving fails, the result remains in memory: try saving
 again, or explicitly discard it. Leaving the view stops an unfinished pass;
 it does not count as a failure. Pending results survive navigation, not quitting.
 
-Practice → Return to the changes shows due reviews. A difficult pass returns
+Learn → Practice & review → Return to the changes shows due reviews. A difficult pass returns
 after 10 minutes; a clean supported pass after 20 minutes. A clean independent
 pass starts at one day, with later successful, due reviews increasing spacing.
 Immediate retries cannot stretch the interval. Each score revision, selection,

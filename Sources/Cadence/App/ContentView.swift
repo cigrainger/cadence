@@ -14,22 +14,29 @@ struct ContentView: View {
             Rectangle().fill(Color.line).frame(width: 1)
             VStack(spacing: 0) {
                 header
+                WorkspaceTabs()
                 Divider().overlay(Color.line)
-                if state.destination != .library, !(state.destination == .practice && state.practicePage != .exercises),
+                SongJourneyReturnBar()
+                if ![Destination.courses, .books].contains(state.destination),
+                    !(state.destination == .practice && state.practicePage != .exercises),
                     let location = state.courseReturn
                 {
                     CourseReturnBar(location: location)
                 }
                 GeometryReader { workspace in
                     ScrollViewReader { proxy in
-                        ScrollView {
+                        ScrollView([.horizontal, .vertical]) {
                             Group {
                                 switch state.destination {
                                 case .explore: ExploreView()
                                 case .chords: ChordsView()
                                 case .practice:
                                     PracticeWorkspaceView().environment(\.practiceViewportHeight, workspace.size.height)
-                                case .coach: CoachView()
+                                case .plans:
+                                    LearningPathwaysView(
+                                        discuss: { state.ask($0) }, generation: state.learningPlanRequest)
+                                case .courses: MusicalPathwaysView()
+                                case .books: BookChaptersView()
                                 case .studies: StudiesView(audio: state.audio)
                                 case .tools: PracticeToolsView(audio: state.audio, microphone: state.microphone)
                                 case .editor:
@@ -39,27 +46,32 @@ struct ContentView: View {
                                             systemImage: "externaldrive.badge.exclamationmark", description: Text(error)
                                         )
                                     } else {
-                                        EditorView(audio: state.audio, midi: state.midi)
+                                        EditorView(audio: state.audio, midi: state.midi, coach: state.contextCoach)
                                     }
-                                case .library: LibraryView()
+                                case .library: LibraryView(browser: state.libraryBrowser)
                                 }
-                            }.padding(22).frame(maxWidth: 1250).frame(maxWidth: .infinity).id("top")
+                            }.environment(\.workspaceWidth, contentWidth(workspace.size.width) - 44)
+                                .padding(22).frame(width: contentWidth(workspace.size.width))
+                                .frame(minWidth: workspace.size.width).id("top")
+                                .accessibilityElement(children: .contain)
+                                .accessibilityIdentifier("workspace.content." + state.destination.routeID)
                         }
-                        .onChange(of: state.practicePage) { _, _ in proxy.scrollTo("top", anchor: .top) }
-                        .onChange(of: state.destination) { _, _ in proxy.scrollTo("top", anchor: .top) }
-                        .onChange(of: state.musicalPathwayStep) { _, _ in proxy.scrollTo("top", anchor: .top) }
-                        .onChange(of: state.learningShelf) { _, _ in proxy.scrollTo("top", anchor: .top) }
-                        .onChange(of: state.showAdaptiveSession) { _, _ in proxy.scrollTo("top", anchor: .top) }
+                        .onAppear { proxy.scrollTo("top", anchor: .topLeading) }
+                        .onChange(of: state.practicePage) { _, _ in proxy.scrollTo("top", anchor: .topLeading) }
+                        .onChange(of: state.destination) { _, _ in proxy.scrollTo("top", anchor: .topLeading) }
+                        .onChange(of: state.musicalPathwayStep) { _, _ in proxy.scrollTo("top", anchor: .topLeading) }
+                        .onChange(of: state.showAdaptiveSession) { _, _ in proxy.scrollTo("top", anchor: .topLeading) }
                         .onChange(of: state.smoothPractice.active?.phase) { _, _ in
-                            if state.showAdaptiveSession { proxy.scrollTo("top", anchor: .top) }
+                            if state.showAdaptiveSession { proxy.scrollTo("top", anchor: .topLeading) }
                         }
                         .onChange(of: state.smoothPractice.active?.cursor) { _, _ in
-                            if state.showAdaptiveSession { proxy.scrollTo("top", anchor: .top) }
+                            if state.showAdaptiveSession { proxy.scrollTo("top", anchor: .topLeading) }
                         }
                         .onChange(of: state.instrumentFocus) { _, _ in
                             withAnimation { proxy.scrollTo("instruments", anchor: .top) }
                         }
-                        .onChange(of: state.coachFocus) { _, _ in withAnimation { proxy.scrollTo("top", anchor: .top) }
+                        .onChange(of: state.coachFocus) { _, _ in
+                            withAnimation { proxy.scrollTo("top", anchor: .topLeading) }
                         }
                         .onAppear {
                             if CommandLine.arguments.contains("--instruments") {
@@ -142,6 +154,7 @@ struct ContentView: View {
         .background(Color.canvas).foregroundStyle(Color.ink).tint(.moss).buttonStyle(.cadence).preferredColorScheme(
             .light
         )
+        .modifier(ContextCoachInspector(session: state.contextCoach))
         .sheet(isPresented: $state.showPDFImport) {
             PDFImportView().environmentObject(state).environmentObject(state.aiSettings)
         }
@@ -169,16 +182,37 @@ struct ContentView: View {
             Text(state.message ?? "")
         }
     }
+    private func contentWidth(_ available: CGFloat) -> CGFloat {
+        let flexible = state.destination == .practice && state.practicePage == .songJourney
+        return max(flexible ? 0 : 900, min(1250, available))
+    }
     private var sidebar: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 9) {
                 CadenceMark().foregroundStyle(Color.moss)
                 Text("cadence").font(.system(size: 26, weight: .medium, design: .serif))
             }.padding(.top, 19).padding(.bottom, 7)
-            Text("A place to make music.").font(.system(size: 11)).foregroundStyle(.secondary).padding(.bottom, 27)
-            navigationGroup("YOUR MUSIC", destinations: [.practice, .library, .editor, .studies])
-            navigationGroup("EXPLORE & PLAY", destinations: [.explore, .chords, .tools, .coach]).padding(.top, 22)
-            Spacer()
+            Text("Learn the music you love.").font(.system(size: 11)).foregroundStyle(.secondary).padding(.bottom, 27)
+            Eyebrow(text: "YOUR WORKSPACE").foregroundStyle(.secondary).padding(.leading, 11).padding(.bottom, 10)
+            workspaceNavigation
+            Spacer(minLength: 20)
+            Button {
+                state.showSongHome()
+            } label: {
+                VStack(alignment: .leading, spacing: 8) {
+                    Image(systemName: "point.topleft.down.to.point.bottomright.curvepath").foregroundStyle(Color.moss)
+                    Text("Make a song your own").font(.system(size: 14, weight: .medium, design: .serif))
+                    Text(state.selectedSongJourney?.material.title ?? "A little listening. Eight bars to keep.")
+                        .font(.system(size: 11)).foregroundStyle(.secondary).lineLimit(3)
+                    Label(
+                        state.selectedSongJourney == nil ? "Begin your pathway" : "Back to your pathway",
+                        systemImage: "arrow.right"
+                    )
+                    .font(.system(size: 10, weight: .medium)).foregroundStyle(Color.moss)
+                }.frame(maxWidth: .infinity, alignment: .leading).padding(13)
+                    .background(Color.paper.opacity(0.75), in: RoundedRectangle(cornerRadius: 12))
+            }.buttonStyle(.plain).accessibilityIdentifier("workspace.pathway")
+                .padding(.bottom, 16)
             SettingsLink {
                 HStack(spacing: 11) {
                     Image(systemName: "gearshape").font(.system(size: 15)).frame(width: 21)
@@ -202,35 +236,35 @@ struct ContentView: View {
             }.font(.system(size: 10)).padding(.horizontal, 12).padding(.bottom, 17)
         }.padding(.horizontal, 18).background(Color.sidebar)
     }
-    private func navigationGroup(_ title: String, destinations: [Destination]) -> some View {
-        VStack(alignment: .leading, spacing: 3) {
-            Eyebrow(text: title).foregroundStyle(.secondary).padding(.leading, 11).padding(.bottom, 8)
-            ForEach(destinations) { destination in
+    private var workspaceNavigation: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            ForEach(WorkspaceSection.allCases) { section in
                 Button {
-                    state.stopAllPlayback(keepingMetronome: true)
-                    state.navigate(to: destination)
+                    state.navigateWorkspace(section)
                 } label: {
                     HStack(spacing: 11) {
-                        Image(systemName: destination.icon).font(.system(size: 15)).frame(width: 21)
-                        Text(destination.rawValue).font(
-                            .system(size: 13, weight: state.destination == destination ? .semibold : .regular))
+                        Image(systemName: section.icon).font(.system(size: 17)).frame(width: 23)
+                        Text(section.rawValue).font(
+                            .system(size: 14, weight: state.workspace == section ? .semibold : .regular))
                         Spacer()
-                        if state.destination == destination { Circle().fill(Color.moss).frame(width: 4, height: 4) }
-                    }.padding(.horizontal, 11).padding(.vertical, 10).background(
-                        state.destination == destination ? Color.moss.opacity(0.10) : .clear,
-                        in: RoundedRectangle(cornerRadius: 7)
-                    ).contentShape(Rectangle())
-                }.buttonStyle(.plain).help(destination.rawValue)
+                        if state.workspace == section { Circle().fill(Color.moss).frame(width: 4, height: 4) }
+                    }.padding(.horizontal, 11).padding(.vertical, 13)
+                        .foregroundStyle(state.workspace == section ? Color.moss : Color.ink)
+                        .background(
+                            state.workspace == section ? Color.moss.opacity(0.10) : .clear,
+                            in: RoundedRectangle(cornerRadius: 9)
+                        ).contentShape(Rectangle())
+                }.buttonStyle(.plain).help(section.detail)
+                    .accessibilityIdentifier("workspace." + section.id.lowercased())
+                    .accessibilityAddTraits(state.workspace == section ? [.isSelected] : [])
             }
         }
     }
     private var header: some View {
         HStack(alignment: .center) {
             VStack(alignment: .leading, spacing: 3) {
-                Text(state.destination.rawValue).font(.system(size: 18, weight: .medium, design: .serif))
-                if state.destination != .practice {
-                    Text(state.destination.subtitle).font(.system(size: 11)).foregroundStyle(.secondary).lineLimit(1)
-                }
+                Text(state.workspace.rawValue).font(.system(size: 19, weight: .medium, design: .serif))
+                Text(state.workspace.detail).font(.system(size: 11)).foregroundStyle(.secondary).lineLimit(1)
             }
             Spacer(minLength: 20)
             if [.explore, .chords, .practice].contains(state.destination)
@@ -258,9 +292,7 @@ struct ContentView: View {
                     ).frame(width: 190)
                 }
             }
-            if state.destination == .practice && state.practicePage == .home {
-                Text("Listen · play · make it yours").font(.caption).foregroundStyle(.secondary)
-            }
+            ContextCoachButton(session: state.contextCoach)
         }.padding(.horizontal, 24).padding(.vertical, 9).frame(minHeight: 50)
     }
 }

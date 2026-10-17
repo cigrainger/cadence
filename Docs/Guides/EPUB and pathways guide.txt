@@ -2,7 +2,7 @@ CADENCE — BOOKS INTO MUSICAL PATHWAYS
 
 START WITH YOUR TWO BOOKS
 
-Open Library → Courses → Pathways → Use my books to begin. This pathway was
+Open Learn → Courses → Use my books to begin. This pathway was
 designed around How to write songs on keyboards and The Jazz Piano Book by
 Mark Levine. Choose your own lawfully held files in the file chooser.
 The app does not search your Downloads folder automatically.
@@ -83,7 +83,7 @@ without reimporting the books or making another model request.
 
 OTHER EPUB AND PDF CHAPTERS
 
-Library → Courses → Book chapters → Add a chapter accepts EPUB or PDF. EPUB is
+Library → Books & chapters → Add a chapter accepts EPUB or PDF. EPUB is
 the preferred reading source when its text and illustrations are available:
 contents, searchable sections and readable text survive without OCR. PDF is
 useful when exact printed layout is essential. Neither format makes printed
@@ -116,8 +116,8 @@ The exact book bytes and reading-order links are retained locally. Unsafe
 archive paths, duplicate entries, excessive expansion, malformed XML and custom
 entities are rejected. Source text cannot execute scripts or fetch remote pages.
 
-Course storage upgrades from format 1 to format 2 on save, preserving the previous
-bytes through the normal recovery mechanism. Practice and editable score formats
+Current course storage is format 3, including the song pathway. Formats 1–2
+migrate on save, preserving previous bytes through the recovery mechanism. Practice and editable score formats
 remain 4. Use this app version after upgrading; older versions do not understand
 EPUB sources and goal pathways.
 

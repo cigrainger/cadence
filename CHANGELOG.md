@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- Added “Make a song your own”: an opening check, connected listening/chord/groove activities, an eight-bar arrangement and an independent return.
+- Organised the app into Learn, Library, Studio and Explore, with a contextual coach, retained drafts and score position/undo across navigation.
+- Migrated all first-party targets to Swift 6 and strengthened course ownership, import cancellation, save-only recovery and device callback boundaries.
+- Added app-wide native execution coverage, regression gates and actual accessibility journeys alongside unit-only coverage.
+- Made the website’s G7/D♭7 comparison easier to hear with a fuller bass sound and a Bass only option.
+- Updated the workspace guides, learning screenshot and explicit hardware/accessibility testing limits.
+
 ## 0.36.1 — a clearer path into your music
 
 - Added local Developer ID signing, notarisation, stapling and verified release packaging. Credentials stay in the maintainer's Keychain; release metadata comes from the signed artifact.

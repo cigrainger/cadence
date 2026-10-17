@@ -42,7 +42,8 @@ struct PDFImportView: View {
         }
     }
     private var canRequest: Bool {
-        !opening && !queue.working && asset != nil && aiSettings.hasSavedKey && !state.isPreview
+        !opening && !queue.working && queue.pendingPage == nil && asset != nil && aiSettings.hasSavedKey
+            && !state.isPreview
     }
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
@@ -67,7 +68,7 @@ struct PDFImportView: View {
                     } else {
                         dismiss()
                     }
-                }.keyboardShortcut(.cancelAction)
+                }.keyboardShortcut(.cancelAction).disabled(queue.pendingPage != nil)
             }
             HStack(alignment: .top, spacing: 22) {
                 VStack(alignment: .leading, spacing: 12) {
@@ -108,7 +109,7 @@ struct PDFImportView: View {
                             if scoreID == nil { setup } else { progress }
                             ChoiceMenu(
                                 title: "Transcription model", selection: $model, options: PDFImportModel.allCases
-                            ) { $0.name }.disabled(queue.working)
+                            ) { $0.name }.disabled(queue.working || queue.pendingPage != nil)
                             Text(
                                 "Sol high is the default. Each request sends only one selected page, with a four-minute limit."
                             ).font(.caption).foregroundStyle(.secondary)
@@ -128,10 +129,19 @@ struct PDFImportView: View {
                                         ? "Blank includes the visible music on each selected page, up to 32 complete bars per page. Page ranges follow file order."
                                         : "Changing this text affects the selected page's next retry. Resume keeps the saved instructions for other pages."
                                 ).font(.caption).foregroundStyle(.secondary)
-                            }.disabled(queue.working)
+                            }.disabled(queue.working || queue.pendingPage != nil)
                             if let selectedRecord, !queue.working { pageDetails(selectedRecord) }
                             if let error = error ?? queue.error {
                                 Text(error).font(.caption).foregroundStyle(Color.clay).textSelection(.enabled)
+                            }
+                            if let page = queue.pendingPage {
+                                Text("The draft for page \(page) is held in this window. Save it before closing.").font(
+                                    .caption)
+                                HStack {
+                                    Button("Save received draft again") { queue.retrySave() }.buttonStyle(
+                                        .cadencePrimary)
+                                    Button("Discard received draft") { queue.discardReply() }
+                                }.controlSize(.small)
                             }
                             if !aiSettings.hasSavedKey && !state.isPreview {
                                 Text("Add your key in Settings → AI coach first.").font(.caption).foregroundStyle(
@@ -161,7 +171,8 @@ struct PDFImportView: View {
                                 }.controlSize(.small)
                                 Button("Open combined score", systemImage: "music.note.list") { review(page) }
                                     .buttonStyle(.cadencePrimary).disabled(
-                                        queue.working || (source?.importedPageCount ?? 0) == 0)
+                                        queue.working || queue.pendingPage != nil
+                                            || (source?.importedPageCount ?? 0) == 0)
                             }
                             Divider()
                             Text(
@@ -175,7 +186,7 @@ struct PDFImportView: View {
                 }.frame(width: 445)
             }
         }.padding(24).frame(width: 1040, height: 790).background(Color.canvas)
-            .interactiveDismissDisabled(queue.working || opening)
+            .interactiveDismissDisabled(queue.working || opening || queue.pendingPage != nil)
             .onAppear {
                 aiSettings.checkKeyIfNeeded()
                 restore()
@@ -245,7 +256,9 @@ struct PDFImportView: View {
                             page == item.page ? Color.moss.opacity(0.10) : Color.white.opacity(0.5),
                             in: RoundedRectangle(cornerRadius: 8))
                     }.buttonStyle(.plain)
-                    if item.barCount > 0 { Button("Review") { review(item.page) }.disabled(queue.working) }
+                    if item.barCount > 0 {
+                        Button("Review") { review(item.page) }.disabled(queue.working || queue.pendingPage != nil)
+                    }
                     Button(item.attempts == 0 ? "Import" : "Retry") {
                         let instruction = item.page == page ? passage : item.passage
                         page = item.page

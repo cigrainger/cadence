@@ -20,7 +20,7 @@ struct EarPathwayView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 22) {
             HStack {
-                Button("Practice home", systemImage: "arrow.left") { state.showPracticeHome() }.buttonStyle(.plain)
+                Button("Back to Learn", systemImage: "arrow.left") { state.showPracticeHome() }.buttonStyle(.plain)
                 Spacer()
                 Label(input.pending == nil ? "Your place is saved" : "Waiting to save", systemImage: "bookmark").font(
                     .caption

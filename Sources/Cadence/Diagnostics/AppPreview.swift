@@ -7,6 +7,21 @@ import MusicCore
 extension AppState {
     func configurePreview() {
         let preview = isPreview
+        if let argument = CommandLine.arguments.firstIndex(of: "--screen"), argument + 1 < CommandLine.arguments.count {
+            switch CommandLine.arguments[argument + 1] {
+            case "explore": destination = .explore
+            case "library": destination = .library
+            case "editor": destination = .editor
+            case "tools": destination = .tools
+            case "studies": destination = .studies
+            case "chords": destination = .chords
+            case "practice":
+                destination = .practice
+                practicePage = .exercises
+            case "coach": destination = .plans
+            default: break
+            }
+        }
         if preview && CommandLine.arguments.contains("--smooth-preview") {
             do { try SmoothPathwayChecks.preview(state: self) } catch {
                 SmoothPathwayDiagnostics.checks["previewBuilt"] = false
@@ -21,21 +36,6 @@ extension AppState {
         }
         if preview && CommandLine.arguments.contains("--course-preview") {
             try? CourseChecks.preview(state: self, ready: CommandLine.arguments.contains("--course-ready"))
-        }
-        if let argument = CommandLine.arguments.firstIndex(of: "--screen"), argument + 1 < CommandLine.arguments.count {
-            switch CommandLine.arguments[argument + 1] {
-            case "explore": destination = .explore
-            case "library": destination = .library
-            case "editor": destination = .editor
-            case "tools": destination = .tools
-            case "studies": destination = .studies
-            case "chords": destination = .chords
-            case "practice":
-                destination = .practice
-                practicePage = .exercises
-            case "coach": destination = .coach
-            default: break
-            }
         }
         if preview
             && (CommandLine.arguments.contains("--guided-practice-check")
@@ -128,13 +128,12 @@ extension AppState {
                 }
             }
             if CommandLine.arguments.contains("--study-coach") {
-                coachStudy = studies.active?.reference
-                coachPrompt = "How can I keep the bass ringing while playing this melody?"
-                destination = .coach
+                destination = .studies
+                ask("How can I keep the bass ringing while playing this melody?", study: studies.active?.reference)
             }
             if CommandLine.arguments.contains("--study-pathway") {
                 pendingStudyPathway = studies.active?.reference
-                destination = .coach
+                destination = .plans
             }
         }
         if preview && CommandLine.arguments.contains("--editor-focus") {
@@ -258,6 +257,27 @@ extension AppState {
             editor.replace(document)
             editor.activeID = document.id
             destination = .editor
+        }
+        if preview && CommandLine.arguments.contains("--conversation") { openContextCoach() }
+        if preview && CommandLine.arguments.contains("--song-preview") {
+            do { try SongJourneyChecks.preview(state: self) } catch {
+                SongJourneyDiagnostics.checks["built"] = false
+                message = error.localizedDescription
+            }
+        }
+        if preview && CommandLine.arguments.contains("--coach-panel") {
+            if CommandLine.arguments.contains("--coach-piece"), let journey = selectedSongJourney,
+                let piece = libraryPieces.first(where: { $0.id == journey.material.pieceID })
+            {
+                openLibraryPiece(piece)
+            }
+            openContextCoach()
+        }
+        if preview && CommandLine.arguments.contains("--workspace-editor-roundtrip"),
+            let journey = selectedSongJourney,
+            let piece = libraryPieces.first(where: { $0.id == journey.material.pieceID })
+        {
+            openLibraryPiece(piece)
         }
     }
 }

@@ -11,10 +11,7 @@ struct CourseLocation: Equatable {
 
 extension AppState {
     func course(_ id: UUID) throws -> CourseDefinition {
-        guard let value = courses.courses.first(where: { $0.id == id }) else {
-            throw MusicError.invalid("This chapter is no longer available.")
-        }
-        return value
+        try courseWorkspace.course(id)
     }
     func courseBook(_ course: CourseDefinition) throws -> CourseBook {
         guard let book = courses.books.first(where: { $0.id == course.chapter.source.bookID }) else {
@@ -30,18 +27,12 @@ extension AppState {
             book.fileID.uuidString + (book.isEPUB ? ".epub" : ".pdf"))
     }
     func commitCourses(_ copy: CourseLibrary) throws {
-        _ = try copy.validated()
-        if !isPreview { try stores.courses.save(copy) }
-        courses = copy
+        try courseWorkspace.commit(copy)
         saveErrors.removeValue(forKey: "courses")
     }
     func changeCourse(_ id: UUID, _ change: (inout CourseDefinition) throws -> Void) throws {
-        var copy = courses
-        guard let i = copy.courses.firstIndex(where: { $0.id == id }) else {
-            throw MusicError.invalid("This chapter is unavailable.")
-        }
-        try change(&copy.courses[i])
-        try commitCourses(copy)
+        try courseWorkspace.change(id, change)
+        saveErrors.removeValue(forKey: "courses")
     }
     @discardableResult func createCourse(
         asset: PDFImportAsset, title: String, author: String, edition: String, chapterTitle: String, from: Int,
@@ -96,16 +87,14 @@ extension AppState {
             musicalPathwaySelection = pathway.id
             musicalPathwayStep =
                 pathway.steps.first { $0.courseID == id && (lessonID == nil || $0.lessonID == lessonID) }?.id
-            learningShelf = "Pathways"
+            destination = .courses
         } else {
-            learningShelf = "Book chapters"
+            destination = .books
         }
         audio.stop()
         microphone.stop()
         courseSelection = id
         courseLessonSelection = lessonID
-        libraryCourses = true
-        destination = .library
     }
     func saveCourseLesson(courseID: UUID, lesson: CourseLesson) throws {
         var lesson = lesson
@@ -185,62 +174,11 @@ extension AppState {
         _ id: UUID, model: PDFImportModel, instrument: EditorInstrument,
         operation: @escaping () async throws -> CourseOutlineReply
     ) throws {
-        guard !courseOutline.busy, courseOutline.pending == nil else {
-            throw MusicError.invalid("Finish or save the current chapter reply first.")
-        }
-        let course = try course(id)
-        let book = try courseBook(course)
-        let source = course.chapter.source
-        let job = CourseOutlineJob(model: model.rawValue, previous: course.outlineJob)
-        try changeCourse(id) { $0.outlineJob = job }
-        courseOutline.run { [weak self] in
-            do {
-                return try await operation()
-            } catch {
-                if let self {
-                    try? self.changeCourse(id) { current in
-                        guard current.outlineJob?.id == job.id, current.outlineJob?.status == .reading else { return }
-                        current.outlineJob?.status = Task.isCancelled ? .stopped : .failed
-                        current.outlineJob?.error = String(error.localizedDescription.prefix(4000))
-                    }
-                }
-                throw error
-            }
-        } commit: { [weak self] reply in
-            guard let self else { return }
-            try self.changeCourse(id) { current in
-                guard current.outlineJob?.id == job.id, current.outlineJob?.status == .reading,
-                    current.chapter.identity == course.chapter.identity
-                else {
-                    throw MusicError.invalid(
-                        "This outline belongs to an earlier chapter. It has not replaced your current work.")
-                }
-                let proposal = try reply.outline.chapter(
-                    source: source, book: book, instrument: instrument, origin: "AI proposal · " + reply.model)
-                current.revise(proposal)
-                current.outlineJob?.status = .ready
-                current.outlineJob?.error = nil
-                if let cost = reply.costUSD {
-                    guard cost.isFinite, (0...10000).contains(cost) else {
-                        throw MusicError.invalid("Invalid reported request cost.")
-                    }
-                    current.outlineJob?.costUSD += cost
-                    current.outlineJob?.unpricedAttempts -= 1
-                }
-            }
-        }
+        try courseWorkspace.startOutline(id, model: model, instrument: instrument, operation: operation)
+        saveErrors.removeValue(forKey: "courses")
     }
     func stopCourseOutline(_ id: UUID) {
-        guard courseOutline.pending == nil else { return }
-        courseOutline.cancel()
-        do {
-            try changeCourse(id) {
-                if $0.outlineJob?.status == .reading {
-                    $0.outlineJob?.status = .stopped
-                    $0.outlineJob?.error = "Stopped. Work already sent may still be charged. No retry was made."
-                }
-            }
-        } catch { message = error.localizedDescription }
+        do { try courseWorkspace.stopOutline(id) } catch { message = error.localizedDescription }
     }
     /// Save the intended score ID before creating its independent score file. A
     /// failed score save can resume this same link; it cannot create paid duplicates.

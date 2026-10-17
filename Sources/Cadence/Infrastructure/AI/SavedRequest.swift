@@ -13,9 +13,11 @@ import Foundation
     @Published var error: String?
     private var job: Task<Void, Never>?
     private var token = UUID()
-    private var commit: ((Reply) throws -> Void)?
+    private var commit: (@MainActor (Reply) throws -> Void)?
 
-    func run(request: @escaping () async throws -> Reply, commit: @escaping (Reply) throws -> Void) {
+    func run(
+        request: @escaping @MainActor () async throws -> Reply, commit: @escaping @MainActor (Reply) throws -> Void
+    ) {
         guard !busy, pending == nil else { return }
         self.commit = commit
         token = UUID()
@@ -45,7 +47,7 @@ import Foundation
             }
         }
     }
-    func accept(_ reply: Reply, commit: @escaping (Reply) throws -> Void) {
+    func accept(_ reply: Reply, commit: @escaping @MainActor (Reply) throws -> Void) {
         guard !busy, pending == nil else { return }
         self.commit = commit
         pending = reply
@@ -73,5 +75,13 @@ import Foundation
         busy = false
         started = nil
         if pending == nil { commit = nil }
+    }
+    /// Explicit user recovery after copying an unsavable reply. This never
+    /// records completion or retries the request; cancellation alone keeps it.
+    func discardPending() {
+        guard !busy, pending != nil else { return }
+        pending = nil
+        commit = nil
+        error = nil
     }
 }

@@ -14,8 +14,18 @@ extension AppState {
         {
             let reportURL = URL(fileURLWithPath: CommandLine.arguments[argument + 1])
             var report: [String: Any] = [:]
+            // Open MIDI before audio work, and keep the client until every
+            // check ends. MIDIServer idling out can invalidate a process's
+            // already-initialised CoreMIDI connection before its first client.
+            let midiCheck = MIDIKeyboard(persistSelection: false)
+            midiCheck.start()
+            defer { midiCheck.shutdown() }
             do {
-                report = try await state.audio.verifyOutput()
+                let deviceOutput = !CommandLine.arguments.contains("--offline-audio")
+                let skipped =
+                    deviceOutput ? [] : ["audioOutput", "timedAudioScheduled", "metronomeOutput", "studyLoopOutput"]
+                report = try await state.audio.verifyOutput(deviceOutput: deviceOutput)
+                report["skippedChecks"] = skipped
                 let sampled = try SampledAudio.render(
                     lanes: GrooveArrangement(tempo: 160, loops: 1).lanes(), tempo: 160, endBeat: 20)
                 report["sampledBand"] =
@@ -26,10 +36,10 @@ extension AppState {
                 try EarPathwayChecks.preview(state: earState)
                 report["earPathway"] = EarPathwayDiagnostics.checks.values.allSatisfy { $0 }
                 EarPathwayDiagnostics.checks = [:]
-                report["timedAudioScheduled"] = try await TimedAudio().verifyScheduledOutput()
-                let midiCheck = MIDIKeyboard(persistSelection: false)
+                if deviceOutput { report["timedAudioScheduled"] = try await TimedAudio().verifyScheduledOutput() }
                 let midiReport = try await midiCheck.verifyVirtualInput()
                 for (key, value) in midiReport { report[key] = value }
+                report["midiClientRetained"] = midiCheck.clientIsOpen
                 let fixture = reportURL.deletingLastPathComponent().appendingPathComponent(
                     "cadence-fixture-\(UUID().uuidString)")
                 let original = AppState(storageOverride: fixture)
@@ -163,9 +173,9 @@ extension AppState {
                 let exactReference = loadedPractice.studies.active!.reference
                 loadedPractice.ask("Help with this passage", study: exactReference)
                 report["practiceCoachContext"] =
-                    loadedPractice.coachStudy == exactReference
+                    loadedPractice.contextCoach.context?.reference == exactReference.context
                     && exactReference.context.contains("Self-reported comfortable tempos: 67.5")
-                    && loadedPractice.destination == .coach
+                    && loadedPractice.contextCoach.presented
                 var changedScore = originalScore
                 try changedScore.setPitch(changedScore.events[0].id, midi: 61)
                 practiceState.editor.replace(changedScore)
@@ -180,8 +190,10 @@ extension AppState {
                     && practiceState.editorPassageFocus?.from == 1 && practiceState.editorPassageFocus?.through == 2
                 report["practiceToolsPersistence"] =
                     restored.metronome == original.metronome && restored.tuner == original.tuner
-                report["metronomeOutput"] = try await state.audio.verifyMetronomeOutput()
-                report["studyLoopOutput"] = try await state.audio.verifyStudyOutput()
+                if deviceOutput {
+                    report["metronomeOutput"] = try await state.audio.verifyMetronomeOutput()
+                    report["studyLoopOutput"] = try await state.audio.verifyStudyOutput()
+                }
                 report["solfegePreference"] = !restored.showSolfege
                 let preferenceURL = fixture.appendingPathComponent("preferences.json")
                 var legacy =
@@ -222,8 +234,9 @@ extension AppState {
                         "metronomeOutput", "practiceToolsMigration", "studyPathwayNavigation", "studyPersistence",
                         "studyLoopOutput", "persistence", "audioOutput", "pathwayPersistence",
                         "pathwayPracticeLink", "solfegePreference", "solfegePreferenceMigration",
-                        "intervalPracticeLink",
-                    ].allSatisfy { report[$0] as? Bool == true } && settingsChecks.values.allSatisfy { $0 }
+                        "intervalPracticeLink", "timedAudioScheduled", "virtualMIDITimestamps", "midiClientRetained",
+                    ].filter { !skipped.contains($0) }.allSatisfy { report[$0] as? Bool == true }
+                    && settingsChecks.values.allSatisfy { $0 }
                 try? FileManager.default.removeItem(at: fixture)
             } catch {
                 report["passed"] = false

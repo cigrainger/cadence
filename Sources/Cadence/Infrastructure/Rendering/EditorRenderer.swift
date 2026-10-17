@@ -115,21 +115,25 @@ struct EditorRenderer: NSViewRepresentable {
             } catch { parent.error = error.localizedDescription }
         }
         func userContentController(_ controller: WKUserContentController, didReceive message: WKScriptMessage) {
-            guard message.frameInfo.isMainFrame, let data = message.body as? [String: Any],
-                let kind = data["kind"] as? String
-            else { return }
+            guard let data = message.body as? [String: Any] else { return }
+            receive(data, isMainFrame: message.frameInfo.isMainFrame)
+        }
+        func receive(_ data: [String: Any], isMainFrame: Bool) {
+            guard isMainFrame, let kind = data["kind"] as? String else { return }
             if kind == "loaded" {
                 loaded = true
                 update()
             }
             if kind == "diagnostic" { EditorDiagnostics.latest = data }
             if kind == "ready" {
+                guard let layout = RendererLayout(data, defaultHeight: 260) else {
+                    parent.error = "The score renderer returned an invalid layout."
+                    return
+                }
                 EditorDiagnostics.latest = data
-                parent.height = min(100000, max(160, CGFloat(data["height"] as? Double ?? 260)))
+                parent.height = layout.height
                 parent.error = nil
-                let time = data["milliseconds"] as? Double ?? 0
-                let targets = data["targets"] as? Int ?? 0
-                parent.metrics = "\(Int(time.rounded())) ms · \(targets) selectable positions"
+                parent.metrics = "\(layout.milliseconds) ms · \(layout.targets) selectable positions"
                 position = ""
                 update()
                 if !exportedFixture, let index = CommandLine.arguments.firstIndex(of: "--vision-fixture"),
@@ -174,13 +178,14 @@ struct EditorRenderer: NSViewRepresentable {
                 parent.select(id)
             }
             if kind == "error" {
-                parent.error = data["message"] as? String ?? "This engine could not draw the score."
+                parent.error = String(
+                    (data["message"] as? String ?? "This engine could not draw the score.").prefix(2000))
                 EditorDiagnostics.latest = data
             }
         }
         func webView(
             _ webView: WKWebView, decidePolicyFor action: WKNavigationAction,
-            decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
+            decisionHandler: @escaping @MainActor @Sendable (WKNavigationActionPolicy) -> Void
         ) { decisionHandler(LocalDocumentPolicy.allows(action.request.url, entry: entryURL) ? .allow : .cancel) }
     }
 }

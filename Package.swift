@@ -1,4 +1,4 @@
-// swift-tools-version: 6.0
+// swift-tools-version: 6.2
 import PackageDescription
 
 let package = Package(
@@ -12,5 +12,5 @@ let package = Package(
         .testTarget(name: "MusicCoreTests", dependencies: ["MusicCore", "ZIPFoundation"]),
         .testTarget(name: "CadenceTests", dependencies: ["Cadence", "MusicCore"]),
     ],
-    swiftLanguageModes: [.v5]
+    swiftLanguageModes: [.v6]
 )

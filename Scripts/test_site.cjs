@@ -12,15 +12,19 @@ function fixture({ deferred = false, audio = true } = {}) {
     addEventListener(key, action) { this.events[key] = action; }
     click() { return this.events.click(); }
   }
-  for (const id of ['hear-demo','demo-status','middle-chord','middle-bass','middle-guide','voice-diagram','harmony-explanation']) elements.set('#' + id, new Element());
+  for (const id of ['hear-demo','demo-status','demo-bass-only','middle-chord','middle-bass','middle-guide','voice-diagram','harmony-explanation']) elements.set('#' + id, new Element());
   const buttons = ['original','substitute'].map(harmony => new Element({harmony}));
   const document = { hidden: false, querySelector: id => elements.get(id), querySelectorAll: id => id === '[data-harmony]' ? buttons : [], addEventListener: (name, fn) => listeners[name] = fn };
   class Audio {
-    constructor() { this.currentTime = 0; this.frequencies = []; this.closed = false; contexts.push(this); }
+    constructor() { this.currentTime = 0; this.frequencies = []; this.oscillators = []; this.closed = false; contexts.push(this); }
     resume() { return deferred ? new Promise(resolve => pending.push(resolve)) : Promise.resolve(); }
     close() { this.closed = true; return Promise.resolve(); }
-    createGain() { return { gain: { setValueAtTime(){}, linearRampToValueAtTime(){}, exponentialRampToValueAtTime(){} }, connect(){} }; }
-    createOscillator() { const item = {frequency: {value: 0}, connect(){}, stop(){}, start: () => this.frequencies.push(item.frequency.value)}; return item; }
+    createGain() { const ramps = []; return { gain: { ramps, setValueAtTime(){}, linearRampToValueAtTime(value){ ramps.push(value); }, exponentialRampToValueAtTime(){} }, connect(){} }; }
+    createPeriodicWave(real, imag) { return {real: Array.from(real), imag: Array.from(imag)}; }
+    createOscillator() {
+      const item = {frequency: {value: 0}, connect(gain){ item.output = gain; }, setPeriodicWave(wave){ item.wave = wave; }, stop(){}, start: () => this.frequencies.push(item.frequency.value)};
+      this.oscillators.push(item); return item;
+    }
   }
   const window = { AudioContext: audio ? Audio : undefined, addEventListener: (name, fn) => listeners[name] = fn };
   vm.runInNewContext(fs.readFileSync('site/assets/site.js','utf8'), {document, window,
@@ -43,6 +47,38 @@ test('original route restores G bass and B while retaining the same upper pitche
   assert.equal(f.elements.get('#middle-bass').textContent, 'G');
   assert.equal(f.elements.get('#middle-guide').textContent, 'B');
   assert.deepEqual(f.contexts[0].frequencies, [38,53,60,43,53,59,36,52,59].map(hz));
+});
+test('bass carries audible upper harmonics and is not buried beneath the guide tones', async () => {
+  const f = fixture(); await f.play.click();
+  const voices = f.contexts[0].oscillators;
+  for (const index of [0, 3, 6]) {
+    const bass = voices[index];
+    assert.ok(bass.wave.imag[1] > 0 && bass.wave.imag[2] > 0 && bass.wave.imag[3] > 0);
+    assert.equal(bass.wave.imag[0], 0);
+    assert.ok(bass.wave.real.every(coefficient => coefficient === 0));
+    assert.ok(bass.output.gain.ramps[0] > voices[index + 1].output.gain.ramps[0]);
+  }
+});
+test('bass-only comparison preserves D–G–C versus D–D♭–C and can restore full voicings', async () => {
+  const f = fixture(), toggle = f.elements.get('#demo-bass-only');
+  toggle.click(); await f.play.click();
+  assert.equal(toggle.attrs['aria-pressed'], 'true');
+  assert.deepEqual(f.contexts[0].frequencies, [38,43,36].map(hz));
+  f.buttons[1].click(); await f.play.click();
+  assert.equal(f.contexts[0].closed, true);
+  assert.deepEqual(f.contexts[1].frequencies, [38,37,36].map(hz));
+  assert.match(f.elements.get('#demo-status').textContent, /Playing bass: D → D♭ → C/);
+  toggle.click(); await f.play.click();
+  assert.equal(toggle.attrs['aria-pressed'], 'false');
+  assert.deepEqual(f.contexts[2].frequencies, [38,53,60,37,53,59,36,52,59].map(hz));
+});
+test('changing listening mode cancels a pending resume instead of starting stale audio', async () => {
+  const f = fixture({deferred:true}), playing = f.play.click();
+  f.elements.get('#demo-bass-only').click(); f.pending[0](); await playing;
+  assert.equal(f.contexts[0].closed, true);
+  assert.equal(f.contexts[0].frequencies.length, 0);
+  assert.equal(f.timers.size, 0);
+  assert.match(f.elements.get('#demo-status').textContent, /Selected bass/);
 });
 test('changing harmony stops sound and a pending audio resume cannot start stale notes', async () => {
   const f = fixture({deferred:true}); const playing = f.play.click();

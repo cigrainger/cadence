@@ -6,18 +6,18 @@ import CoreMIDI
 import Foundation
 import MusicCore
 
-struct MIDISourceChoice: Identifiable, Equatable {
+struct MIDISourceChoice: Identifiable, Equatable, Sendable {
     var id: Int32
     var endpoint: MIDIEndpointRef
     var name: String
 }
-struct MIDIUpdate {
+struct MIDIUpdate: Sendable {
     var message: MIDIMessage
     var keyboard: MIDIKeyboardState
     var timestamp: Double = PracticeClock.now()
     var arrivalTimestamp = false
 }
-struct MIDITimedWords {
+struct MIDITimedWords: Sendable {
     var words: [UInt32]
     var timestamp: Double
     var arrivalTimestamp: Bool
@@ -36,6 +36,7 @@ struct MIDITimedWords {
     private let persistSelection: Bool
     private var client: MIDIClientRef = 0, port: MIDIPortRef = 0, endpoint: MIDIEndpointRef = 0
     private var generation = 0
+    var clientIsOpen: Bool { client != 0 }
     init(preview: Bool = false, persistSelection: Bool = true) {
         self.preview = preview
         self.persistSelection = persistSelection
@@ -50,7 +51,7 @@ struct MIDITimedWords {
     func start() {
         guard !preview else { return }
         if client == 0 {
-            let status = MIDIClientCreateWithBlock("Cadence keyboard" as CFString, &client) { [weak self] _ in
+            let status = MIDIClientCreateWithBlock("Cadence keyboard" as CFString, &client) { @Sendable [weak self] _ in
                 DispatchQueue.main.async { self?.refresh() }
             }
             guard status == noErr else {
@@ -102,7 +103,7 @@ struct MIDITimedWords {
         let token = generation
         var newPort: MIDIPortRef = 0
         let status = MIDIInputPortCreateWithProtocol(client, "Cadence input" as CFString, MIDIProtocolID._1_0, &newPort)
-        { [weak self] list, _ in
+        { @Sendable [weak self] list, _ in
             let packets = Self.copyPackets(list)
             DispatchQueue.main.async {
                 guard let self, self.generation == token else { return }
@@ -192,16 +193,17 @@ struct MIDITimedWords {
     /// Actual CoreMIDI source → input-port callback, with no physical keyboard or sound.
     func verifyVirtualInput() async throws -> [String: Bool] {
         guard !preview else { return [:] }
+        let ownsClient = client == 0
         start()
+        guard client != 0 else { throw MusicError.invalid(error ?? "The MIDI test client did not start.") }
         var source: MIDIEndpointRef = 0
-        guard
-            MIDISourceCreateWithProtocol(
-                client, "Cadence isolated MIDI check" as CFString, MIDIProtocolID._1_0, &source) == noErr
-        else { throw MusicError.invalid("Could not create the MIDI test source.") }
+        let status = MIDISourceCreateWithProtocol(
+            client, "Cadence isolated MIDI check" as CFString, MIDIProtocolID._1_0, &source)
+        guard status == noErr else { throw MusicError.invalid("Could not create the MIDI test source (\(status)).") }
         defer {
             disconnect()
             MIDIEndpointDispose(source)
-            shutdown()
+            if ownsClient { shutdown() }
         }
         // Connect directly: never alter the user's selected source preference.
         var fixtureID: Int32 = 0

@@ -17,8 +17,8 @@ public struct OpenRouterPrivacy: Encodable {
 }
 
 /// Shared paid-request boundary. Prompts and response schemas remain task-specific.
-public struct OpenRouterTransport {
-    public typealias Send = (URLRequest) async throws -> (Data, HTTPURLResponse)
+public struct OpenRouterTransport: Sendable {
+    public typealias Send = @Sendable (URLRequest) async throws -> (Data, HTTPURLResponse)
     public static let timeoutSeconds: TimeInterval = 240
     public static var privacy: [String: Any] { OpenRouterPrivacy().dictionary }
     private let deadline: TimeInterval

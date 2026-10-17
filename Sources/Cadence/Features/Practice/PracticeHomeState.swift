@@ -7,7 +7,7 @@ import MusicCore
 /// Navigation is transient. Practice results and resumable sessions remain in
 /// their existing stores; the home screen never creates a second progress model.
 enum PracticePage {
-    case home, exercises, adaptive, ear, scoreEar, groove, playAlong, rehearsal, triads, tension, reharm
+    case home, exercises, adaptive, ear, scoreEar, groove, playAlong, rehearsal, triads, tension, reharm, songJourney
 }
 
 struct PracticeReviewItem: Identifiable {
@@ -46,12 +46,13 @@ extension AppState {
         return active.pathwayID == pathway.id && active.phase != .summary
     }
     func navigate(to destination: Destination) {
-        if destination == .practice { showPracticeHome() } else { self.destination = destination }
+        if self.destination != destination { stopAllPlayback(keepingMetronome: true) }
+        self.destination = destination
     }
     func showPracticeHome() {
         stopAllPlayback()
         showAdaptiveSession = false
-        practicePage = .home
+        practicePage = selectedSongJourney == nil ? .home : .songJourney
         destination = .practice
     }
     func openPractice(_ exercise: Exercise = .intervals, chords: Bool = false) {
@@ -67,9 +68,7 @@ extension AppState {
     func showPathways() {
         showAdaptiveSession = false
         musicalPathwayStep = nil
-        libraryCourses = true
-        learningShelf = "Pathways"
-        destination = .library
+        destination = .courses
     }
     func showAdaptiveWorkspace(inPractice: Bool) throws {
         guard let active = smoothPractice.active,
@@ -91,9 +90,7 @@ extension AppState {
             practicePage = .adaptive
             destination = .practice
         } else {
-            libraryCourses = true
-            learningShelf = "Pathways"
-            destination = .library
+            destination = .courses
         }
     }
     func returnToCourse(_ location: CourseLocation) {

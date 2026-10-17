@@ -46,7 +46,7 @@ struct ReharmPathwayView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             HStack {
-                Button("Practice home", systemImage: "arrow.left") { state.showPracticeHome() }.buttonStyle(.plain)
+                Button("Back to Learn", systemImage: "arrow.left") { state.showPracticeHome() }.buttonStyle(.plain)
                     .foregroundStyle(Color.moss)
                 Spacer()
                 Button(choosing ? "Back to study" : "Choose music") {

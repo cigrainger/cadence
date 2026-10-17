@@ -7,6 +7,13 @@ import XCTest
 @testable import Cadence
 
 final class PublicInteractionTests: XCTestCase {
+    @MainActor func testOfflineSynthesisDoesNotClaimADevicePlaybackCheck() async throws {
+        let report = try await AudioPlayer().verifyOutput(deviceOutput: false)
+        XCTAssertNil(report["audioOutput"])
+        XCTAssertEqual(report["expressionDynamics"] as? Bool, true)
+        XCTAssertEqual(report["expressionStaccato"] as? Bool, true)
+        XCTAssertEqual(try XCTUnwrap(report["synthFrequency"] as? Double), 440, accuracy: 1)
+    }
     @MainActor func testGlobalStopCancelsChordAndImprovisationPreparation() throws {
         let state = AppState(preview: true)
         defer {

@@ -229,7 +229,7 @@ extension StorageIntegrationTests {
     @MainActor func testLocalSaveRetryDoesNotRepeatRequestAndCancellationRejectsLateReply() async throws {
         let session = SavedRequest<String>()
         var calls = 0
-        var fail = true
+        let failure = WriteFailure()
         var saved: [String] = []
         session.run(
             request: {
@@ -237,13 +237,13 @@ extension StorageIntegrationTests {
                 return "paid reply"
             },
             commit: { value in
-                if fail { throw CocoaError(.fileWriteOutOfSpace) }
+                if failure.enabled { throw CocoaError(.fileWriteOutOfSpace) }
                 saved.append(value)
             })
         while session.busy { try await Task.sleep(nanoseconds: 1_000_000) }
         XCTAssertEqual(session.pending, "paid reply")
         XCTAssertNotNil(session.error)
-        fail = false
+        failure.enabled = false
         session.retrySave()
         session.retrySave()
         XCTAssertEqual(calls, 1)

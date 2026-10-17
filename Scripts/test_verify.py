@@ -1,9 +1,63 @@
 import unittest
-from verify import check_group, require_flags, summarize_coverage, test_counts
+from verify import check_group, check_native, record_combined_coverage, require_clean_swift, require_flags, summarize_coverage, test_counts, test_inputs_digest
+import copy
+from pathlib import Path
+import tempfile
 
 
 class VerificationTests(unittest.TestCase):
+    def test_combined_execution_cannot_rename_unit_coverage_or_shrink_its_denominator(self):
+        unit = {name: {'files': 2, 'lines': {'count': 100, 'covered': 12}} for name in ('MusicCore', 'Cadence')}
+        report = {'coverage': copy.deepcopy(unit), 'unitCoverage': copy.deepcopy(unit)}
+        combined = copy.deepcopy(unit)
+        for module in combined.values(): module['lines']['covered'] = 70
+        record_combined_coverage(report, combined)
+        self.assertEqual(report['coverage'], unit)
+        self.assertEqual(report['unitCoverage'], unit)
+        self.assertEqual(report['combinedCoverage'], combined)
+        for change in ('files', 'count', 'covered'):
+            invalid = copy.deepcopy(combined)
+            if change == 'files': invalid['Cadence']['files'] = 1
+            else: invalid['Cadence']['lines'][change] = 1
+            with self.assertRaises(RuntimeError): record_combined_coverage(report, invalid)
+    def test_sdk_boundary_warnings_are_gated_even_when_the_compiler_leaves_them_as_warnings(self):
+        root = Path('/fixture')
+        for folder in ('Sources/Cadence', 'Sources/MusicCore', 'Tests/CadenceTests'):
+            with self.assertRaises(RuntimeError):
+                require_clean_swift(f'/fixture/{folder}/A.swift:1:2: warning: actor access', root)
+        require_clean_swift('/fixture/.verification/checkouts/ZIPFoundation/Package.swift:2: warning: deployment', root)
+
+    def test_verification_binds_test_paths_as_well_as_contents(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            tests = root / 'Tests'
+            tests.mkdir()
+            path = tests / 'A.swift'
+            path.write_text('// original')
+            original = test_inputs_digest(root)
+            path.rename(tests / 'B.swift')
+            self.assertNotEqual(test_inputs_digest(root), original)
+    def test_ci_skips_are_explicit_and_cannot_hide_other_failures(self):
+        output = ["audioOutput", "timedAudioScheduled", "metronomeOutput", "studyLoopOutput"]
+        required = ["passed", "pdfBatchPassed", "libraryPassed", "piecePathwayPassed", "virtualMIDITimestamps", "midiClientRetained",
+                    "sampledBand", "bundledSoundBank", "earPathway", "expressionDynamics", "expressionStaccato"]
+        complete = {name: True for name in required + output}
+        complete["skippedChecks"] = []
+        check_native(complete, False)
+        with self.assertRaises(RuntimeError): check_native(complete, True)
+        offline = {name: True for name in required}
+        offline["skippedChecks"] = output
+        check_native(offline, True)
+        with self.assertRaises(RuntimeError): check_native(offline, False)
+        offline["audioOutput"] = True
+        with self.assertRaises(RuntimeError): check_native(offline, True)
+        offline.pop("audioOutput")
+        offline["virtualMIDITimestamps"] = False
+        with self.assertRaises(RuntimeError): check_native(offline, True)
+
     def test_missing_or_false_native_results_cannot_pass(self):
+        with self.assertRaisesRegex(RuntimeError, 'MIDI source.*-10830'):
+            check_native({"error": "MIDI source (-10830)", "passed": False}, False)
         for report in ({}, {"passed": False}, {"passed": 1}):
             with self.assertRaises(RuntimeError):
                 require_flags(report, ["passed"], "fixture")
@@ -47,3 +101,18 @@ class VerificationTests(unittest.TestCase):
         report = summarize_coverage({"data": [{"files": [{"filename": path, "summary": summary} for path in paths]}]})
         self.assertEqual(report["MusicCore"]["lines"], {"count": 10, "covered": 7, "percent": 70.0})
         self.assertEqual(report["Cadence"]["files"], 1)
+
+    def test_owner_and_workflow_gates_keep_views_in_whole_app_denominator(self):
+        summary = {kind: {"count": 10, "covered": 7} for kind in ("lines", "regions", "functions")}
+        app_paths = ["Infrastructure/Storage/PracticeWorkspace.swift", "Infrastructure/Storage/LibraryWorkspace.swift",
+                     "Infrastructure/Storage/CourseWorkspace.swift", "Infrastructure/Import/PDFImportQueue.swift",
+                     "Infrastructure/AI/SavedRequest.swift", "Features/Journey/SongJourneyState.swift",
+                     "Features/Journey/SongOpeningInput.swift", "Features/Journey/SongJourneyView.swift",
+                     "Diagnostics/SongJourneyChecks.swift"]
+        paths = ["/Sources/MusicCore/Fixture.swift"] + ["/Sources/Cadence/" + path for path in app_paths]
+        report = summarize_coverage({"data": [{"files": [{"filename": path, "summary": summary} for path in paths]}]})
+        self.assertEqual(report["Cadence"]["files"], 9)
+        self.assertEqual(report["Cadence"]["lines"]["count"], 90)
+        self.assertEqual(report["WorkspaceOwners"]["files"], 3)
+        self.assertEqual(report["LearningWorkflows"]["files"], 4)
+        self.assertEqual(report["LearningWorkflows"]["lines"]["percent"], 70.0)

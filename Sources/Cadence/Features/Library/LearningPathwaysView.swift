@@ -15,7 +15,8 @@ struct LearningPathwaysView: View {
     @State private var revision: LearningPathway?
     @State private var requestedStudy: StudyReference?
     @State private var changes = ""
-    @StateObject private var generation = SavedRequest<LearningPathway>()
+    @ObservedObject var generation: SavedRequest<LearningPathway>
+    @State private var completedID: UUID?
     private var busy: Bool { generation.busy }
     @State private var status = ""
     @State private var expandedSteps: Set<Int> = [0]
@@ -23,6 +24,14 @@ struct LearningPathwaysView: View {
 
     var body: some View {
         VStack(spacing: 18) {
+            if !ai.isReady {
+                HStack {
+                    Text("Personal plans use your chosen model. Add your key and model in Settings.")
+                        .font(.caption).foregroundStyle(.secondary)
+                    Spacer()
+                    SettingsLink { Label("Open Settings", systemImage: "gearshape") }
+                }.padding(14).background(Color.moss.opacity(0.06), in: RoundedRectangle(cornerRadius: 10))
+            }
             if !state.learning.pathways.isEmpty {
                 HStack(spacing: 12) {
                     ChoiceMenu(
@@ -60,7 +69,22 @@ struct LearningPathwaysView: View {
             if let error = state.learningStorageError { Text(error).font(.caption).foregroundStyle(Color.clay) }
         }
         .onAppear {
-            expandedSteps = [state.learning.activePathway?.nextStep ?? 0]
+            ai.checkKeyIfNeeded()
+            if let draft = state.learningPlanDraft {
+                showingBuilder = draft.showingBuilder
+                focus = draft.focus
+                target = draft.target
+                detail = draft.detail
+                revision = draft.revision
+                requestedStudy = draft.requestedStudy
+                changes = draft.changes
+                status = draft.status
+                expandedSteps = draft.expandedSteps
+                completedID = draft.completedID
+            } else {
+                expandedSteps = [state.learning.activePathway?.nextStep ?? 0]
+            }
+            finishGeneration()
             takeStudy()
             if state.isPreview && CommandLine.arguments.contains("--revise-pathway"),
                 let path = state.learning.activePathway
@@ -72,14 +96,21 @@ struct LearningPathwaysView: View {
         .onChange(of: state.learning.activePathway?.id) { _, _ in
             expandedSteps = [state.learning.activePathway?.nextStep ?? 0]
         }
-        .onDisappear { generation.cancel() }
-        .onChange(of: generation.completedID) { _, value in
-            guard value != nil else { return }
-            showingBuilder = false
-            revision = nil
-            expandedSteps = [0]
-            state.coachFocus += 1
+        .onDisappear {
+            state.learningPlanDraft = LearningPlanDraft(
+                showingBuilder: showingBuilder, focus: focus, target: target, detail: detail,
+                revision: revision, requestedStudy: requestedStudy, changes: changes, status: status,
+                expandedSteps: expandedSteps, completedID: completedID)
         }
+        .onChange(of: generation.completedID) { _, _ in finishGeneration() }
+    }
+    private func finishGeneration() {
+        guard let id = generation.completedID, id != completedID else { return }
+        completedID = id
+        showingBuilder = false
+        revision = nil
+        expandedSteps = [0]
+        state.coachFocus += 1
     }
     private var builder: some View {
         Card(

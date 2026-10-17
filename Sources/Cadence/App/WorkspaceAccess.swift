@@ -6,6 +6,10 @@ import MusicCore
 // Compatibility access for existing feature bindings. These are projections, not
 // duplicated state; new workflows can depend on the relevant workspace directly.
 extension AppState {
+    var courses: CourseLibrary {
+        get { courseWorkspace.library }
+        set { courseWorkspace.library = newValue }
+    }
     var history: PracticeProgress {
         get { practiceWorkspace.state.history }
         set { practiceWorkspace.state.history = newValue }

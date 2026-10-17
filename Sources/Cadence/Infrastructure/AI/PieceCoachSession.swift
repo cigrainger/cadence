@@ -11,7 +11,7 @@ enum PieceCoachReply {
 typealias PieceCoachSession = SavedRequest<PieceCoachReply>
 
 extension SavedRequest where Reply == PieceCoachReply {
-    func run(state: AppState, pieceID: String, request: @escaping () async throws -> PieceCoachReply) {
+    func run(state: AppState, pieceID: String, request: @escaping @MainActor () async throws -> PieceCoachReply) {
         guard state.libraryStorageError == nil else { return }
         run(request: request) { [state] reply in
             guard state.libraryPieces.contains(where: { $0.id == pieceID }) else {

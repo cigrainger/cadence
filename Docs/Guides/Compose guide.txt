@@ -4,7 +4,7 @@ guide.txt for spelling, slash chords, MusicXML, PDF review and preservation.
 
 CADENCE — COMPOSE
 
-Open Compose (Command-7). Quit an older running copy before opening this build.
+Open Studio → Write & arrange (Command-3). Quit an older running copy before opening this build.
 Existing scores and progress remain in ~/Library/Application Support/Cadence/.
 
 TRY THE TWO NEW STUDIES

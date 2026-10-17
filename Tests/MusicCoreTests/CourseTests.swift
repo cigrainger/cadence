@@ -140,7 +140,7 @@ final class CourseTests: XCTestCase {
         library.books = [book]
         library.courses = [.init(chapter: chapter)]
         var bad = library
-        bad.schemaVersion = 3
+        bad.schemaVersion = 4
         XCTAssertThrowsError(try bad.validated())
         bad = library
         bad.books.append(book)
@@ -290,7 +290,7 @@ final class CourseTests: XCTestCase {
                 XCTAssertEqual(
                     (content[1]["file"] as? [String: Any])?["file_data"] as? String,
                     "data:application/pdf;base64," + pdf.base64EncodedString())
-                return try self.response(request, outline: proposal, cost: 0.02)
+                return try Self.response(request, outline: proposal, cost: 0.02)
             }
             let reply = try await client.outline(
                 pdf: pdf, source: chapter.source, book: book, instrument: .piano, model: model, apiKey: "fixture-secret"
@@ -301,12 +301,13 @@ final class CourseTests: XCTestCase {
     }
     func testOutlineInvalidInputNeverSendsAndBadOutputDoesNotRetry() async throws {
         let (book, chapter) = fixture()
-        var calls = 0
+        let calls = RequestProbe()
+        var invalid = outline()
+        invalid.lessons[1].throughPage = 40
+        let bad = invalid
         let client = CourseOutlineClient { request in
-            calls += 1
-            var bad = self.outline()
-            bad.lessons[1].throughPage = 40
-            return try self.response(request, outline: bad, cost: 0.03)
+            await calls.sent()
+            return try Self.response(request, outline: bad, cost: 0.03)
         }
         for (data, key) in [
             (Data("%PDF-ok".utf8), ""), (Data("not a pdf".utf8), "key"),
@@ -318,19 +319,19 @@ final class CourseTests: XCTestCase {
                 XCTFail()
             } catch {}
         }
-        XCTAssertEqual(calls, 0)
+        await calls.assertCount(0)
         do {
             _ = try await client.outline(
                 pdf: Data("%PDF-ok".utf8), source: chapter.source, book: book, instrument: .piano, apiKey: "key")
             XCTFail()
         } catch { XCTAssertTrue(error.localizedDescription.contains("US$0.0300")) }
-        XCTAssertEqual(calls, 1)
+        await calls.assertCount(1)
     }
     func testOutlineFailureRedactsKeyAndTimeoutIsBounded() async throws {
         let (book, chapter) = fixture()
-        var calls = 0
+        let calls = RequestProbe()
         let client = CourseOutlineClient { request in
-            calls += 1
+            await calls.sent()
             return (
                 Data(#"{"error":{"message":"Rejected fixture-secret"}}"#.utf8),
                 HTTPURLResponse(url: request.url!, statusCode: 503, httpVersion: nil, headerFields: nil)!
@@ -345,7 +346,7 @@ final class CourseTests: XCTestCase {
             XCTAssertFalse(error.localizedDescription.contains("fixture-secret"))
             XCTAssertTrue(error.localizedDescription.contains("redacted"))
         }
-        XCTAssertEqual(calls, 1)
+        await calls.assertCount(1)
         let slow = CourseOutlineClient(deadline: 0.01) { _ in
             try await Task.sleep(nanoseconds: 1_000_000_000)
             throw CancellationError()
@@ -356,8 +357,9 @@ final class CourseTests: XCTestCase {
             XCTFail()
         } catch { XCTAssertTrue(error.localizedDescription.contains("not retried")) }
     }
-    private func response(_ request: URLRequest, outline: CourseOutline, cost: Double) throws -> (Data, HTTPURLResponse)
-    {
+    private static func response(_ request: URLRequest, outline: CourseOutline, cost: Double) throws -> (
+        Data, HTTPURLResponse
+    ) {
         let text = String(decoding: try JSONEncoder().encode(outline), as: UTF8.self)
         return (
             try JSONSerialization.data(withJSONObject: [

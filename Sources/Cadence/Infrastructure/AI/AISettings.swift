@@ -50,7 +50,7 @@ private enum Secrets {
 
 // Injectable storage lets the native self-check verify migration and failure paths
 // without reading or changing the user's credentials or preferences.
-struct AISettingsStore {
+@MainActor struct AISettingsStore {
     var readKey: () throws -> String
     var writeKey: (String) throws -> Void
     var readModel: () -> String
@@ -61,11 +61,10 @@ struct AISettingsStore {
         writeModel: { UserDefaults.standard.set($0, forKey: "openrouter-model") })
 }
 
-struct RouterModel: Decodable, Identifiable {
+struct RouterModel: Decodable, Identifiable, Equatable, Sendable {
     var id: String
     var name: String
 }
-private struct RouterModels: Decodable { var data: [RouterModel] }
 
 @MainActor final class AISettings: ObservableObject {
     @Published var model: String { didSet { if !isPreview { store.writeModel(model) } } }
@@ -77,10 +76,12 @@ private struct RouterModels: Decodable { var data: [RouterModel] }
     private var checkedKey = false
     private let isPreview: Bool
     private let store: AISettingsStore
+    private let catalog: AIModelCatalog
 
-    init(preview: Bool = false, store: AISettingsStore = .system) {
+    init(preview: Bool = false, store: AISettingsStore = .system, catalog: AIModelCatalog = .init()) {
         isPreview = preview
         self.store = store
+        self.catalog = catalog
         model = preview ? "" : store.readModel()
     }
     var isReady: Bool { hasSavedKey && !model.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
@@ -112,20 +113,12 @@ private struct RouterModels: Decodable { var data: [RouterModel] }
         return key
     }
     func loadModels() async {
-        guard !loadingModels else { return }
+        guard !isPreview, !loadingModels else { return }
         loadingModels = true
         modelStatus = ""
         defer { loadingModels = false }
         do {
-            let (data, response) = try await URLSession.shared.data(
-                from: URL(string: "https://openrouter.ai/api/v1/models")!)
-            try Task.checkCancellation()
-            guard (response as? HTTPURLResponse)?.statusCode == 200 else {
-                throw MusicError.invalid("Model list could not be loaded. You can still enter a model ID.")
-            }
-            models = try JSONDecoder().decode(RouterModels.self, from: data).data.sorted {
-                $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
-            }
+            models = try await catalog.load()
             modelStatus = "\(models.count) models available. Choose one to suit your budget."
         } catch is CancellationError { modelStatus = "Model loading cancelled." } catch {
             modelStatus = error.localizedDescription

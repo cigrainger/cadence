@@ -427,7 +427,7 @@ struct SpaceTapCapture: NSViewRepresentable {
         context.coordinator.tap = tap
     }
     static func dismantleNSView(_ view: NSView, coordinator: Coordinator) { coordinator.remove() }
-    final class Coordinator {
+    @MainActor final class Coordinator {
         weak var view: NSView?
         var enabled = false
         var tap: ((Double) -> Void)?
@@ -451,7 +451,7 @@ struct SpaceTapCapture: NSViewRepresentable {
             if let monitor { NSEvent.removeMonitor(monitor) }
             monitor = nil
         }
-        deinit { remove() }
+        isolated deinit { remove() }
     }
 }
 

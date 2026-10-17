@@ -38,7 +38,7 @@ import MusicCore
     func chord(_ notes: [Int]) {
         play(Score(tempo: 80, notes: notes.map { ScoreNote(midi: $0, start: 0, duration: 2) }))
     }
-    func verifyOutput() async throws -> [String: Any] {
+    func verifyOutput(deviceOutput: Bool = true) async throws -> [String: Any] {
         let samples = Self.render(Score(tempo: 120, notes: [ScoreNote(midi: 69, start: 0, duration: 1)]))
         guard let detection = PitchDetector.detect(Array(samples.prefix(4096)), sampleRate: 44100),
             abs(detection.frequency - 440) < 5
@@ -63,6 +63,12 @@ import MusicCore
         let dynamicGain = energy(loudSamples, 1000..<7000) / energy(quietSamples, 1000..<7000)
         let shortened = energy(shortSamples, 15000..<19000) < 0.00001 && energy(loudSamples, 15000..<19000) > 0.01
         guard dynamicGain > 4, shortened else { throw MusicError.invalid("Expression audio verification failed.") }
+        var report: [String: Any] = [
+            "expressionDynamics": dynamicGain > 4, "expressionStaccato": shortened,
+            "synthFrequency": detection.frequency, "calibratedReferenceTone": calibratedPitch.frequency,
+            "sampleRate": 44100.0,
+        ]
+        guard deviceOutput else { return report }
         guard let format = AVAudioFormat(standardFormatWithSampleRate: 44100, channels: 1),
             let silence = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: 4410)
         else { throw MusicError.invalid("No audio buffer.") }
@@ -75,11 +81,8 @@ import MusicCore
         try await Task.sleep(nanoseconds: 150_000_000)
         stop()
         guard running else { throw MusicError.invalid("Audio output did not start.") }
-        return [
-            "audioOutput": true, "expressionDynamics": dynamicGain > 4, "expressionStaccato": shortened,
-            "synthFrequency": detection.frequency, "calibratedReferenceTone": calibratedPitch.frequency,
-            "sampleRate": format.sampleRate,
-        ]
+        report["audioOutput"] = true
+        return report
     }
     func stop() {
         generation = UUID()
@@ -341,155 +344,5 @@ import MusicCore
             for index in 0..<fade { output[output.count - fade + index] *= Float(fade - index) / Float(fade) }
         }
         return output
-    }
-}
-
-@MainActor final class Microphone: ObservableObject {
-    let detections = PassthroughSubject<(DetectedPitch?, Double), Never>()
-    @Published var listening = false
-    @Published var pitch: DetectedPitch?
-    @Published var error: String?
-    @Published var recorded: [ScoreNote] = []
-    @Published var transcribing = false
-    private let engine = AVAudioEngine()
-    private let queue = DispatchQueue(label: "cadence.pitch", qos: .userInitiated)
-    private var started = Date()
-    private var tempo = 90.0
-    private var stableMidi: Int?
-    private var stableCount = 0
-    private var activeMidi: Int?
-    private var activeStart = 0.0
-    private var lastHeard = Date.distantPast
-    private var heldSince: Date?
-    private var heldMidi: Int?
-    @Published var heldPitch: Int?
-    private var epoch = UUID()
-    private var tapInstalled = false
-
-    func start(transcribe: Bool = false, tempo: Double = 90, forTuner: Bool = false) async {
-        stop()
-        error = nil
-        let pending = epoch
-        let allowed = await AVCaptureDevice.requestAccess(for: .audio)
-        guard pending == epoch, !Task.isCancelled else { return }
-        guard allowed else {
-            error = "Microphone access is off. Enable Cadence in System Settings → Privacy & Security → Microphone."
-            return
-        }
-        let input = engine.inputNode
-        let format = input.outputFormat(forBus: 0)
-        guard format.sampleRate > 0, format.channelCount > 0 else {
-            error = "No microphone input is available."
-            return
-        }
-        self.tempo = tempo
-        transcribing = transcribe
-        recorded = []
-        started = Date()
-        let token = epoch
-        let analysisRange = forTuner ? 25.0...4500.0 : 65.0...1300.0
-        input.installTap(onBus: 0, bufferSize: forTuner ? 8192 : 4096, format: format) { [weak self] buffer, _ in
-            guard let channel = buffer.floatChannelData?[0] else { return }
-            // Downsample with averaging to keep pitch analysis away from the audio callback.
-            let factor = max(1, Int(buffer.format.sampleRate / (forTuner ? 48000 : 12000)))
-            var samples: [Float] = []
-            let count = Int(buffer.frameLength)
-            if count >= factor {
-                for index in stride(from: 0, to: count - factor + 1, by: factor) {
-                    var sum: Float = 0
-                    for j in 0..<factor { sum += channel[index + j] }
-                    samples.append(sum / Float(factor))
-                }
-            }
-            let rate = buffer.format.sampleRate / Double(factor)
-            self?.queue.async { [weak self] in
-                let detection = PitchDetector.detect(samples, sampleRate: rate, frequencyRange: analysisRange)
-                Task { @MainActor in
-                    guard self?.epoch == token else { return }
-                    self?.receive(detection)
-                }
-            }
-        }
-        tapInstalled = true
-        do {
-            try engine.start()
-            listening = true
-        } catch {
-            stop()
-            self.error = "Microphone could not start: \(error.localizedDescription)"
-        }
-    }
-    func stop() {
-        if activeMidi != nil { finishNote(at: Date().timeIntervalSince(started) * tempo / 60) }
-        epoch = UUID()
-        if tapInstalled {
-            engine.inputNode.removeTap(onBus: 0)
-            tapInstalled = false
-        }
-        engine.stop()
-        listening = false
-        pitch = nil
-        heldPitch = nil
-        stableMidi = nil
-        activeMidi = nil
-        stableCount = 0
-        heldSince = nil
-        heldMidi = nil
-    }
-    func resetHold() {
-        heldSince = nil
-        heldMidi = nil
-        heldPitch = nil
-    }
-    private func receive(_ detection: DetectedPitch?) {
-        pitch = detection
-        detections.send((detection, PracticeClock.now()))
-        let now = Date()
-        let beat = now.timeIntervalSince(started) * tempo / 60
-        guard let detection, detection.confidence > 0.85 else {
-            if now.timeIntervalSince(lastHeard) > 0.18 {
-                finishNote(at: beat)
-                stableCount = 0
-                stableMidi = nil
-                resetHold()
-            }
-            return
-        }
-        lastHeard = now
-        let midi = detection.midi
-        if abs(detection.cents) < 35 {
-            if heldMidi != midi {
-                heldMidi = midi
-                heldSince = now
-                heldPitch = nil
-            }
-            if now.timeIntervalSince(heldSince ?? now) >= 0.65 { heldPitch = midi }
-        } else {
-            resetHold()
-        }
-        if stableMidi == midi {
-            stableCount += 1
-        } else {
-            stableMidi = midi
-            stableCount = 1
-        }
-        guard transcribing, stableCount >= 2 else { return }
-        if activeMidi != midi {
-            finishNote(at: beat)
-            activeMidi = midi
-            activeStart = max(0, beat - 0.1)
-        }
-    }
-    private func finishNote(at end: Double) {
-        guard transcribing, let midi = activeMidi else {
-            activeMidi = nil
-            return
-        }
-        let duration = end - activeStart
-        if duration > 0.12 {
-            let start = (activeStart * 4).rounded() / 4
-            recorded.append(ScoreNote(midi: midi, start: start, duration: max(0.25, (duration * 4).rounded() / 4)))
-        }
-        activeMidi = nil
     }
 }

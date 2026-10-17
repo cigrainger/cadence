@@ -1,8 +1,9 @@
 CADENCE — YOUR PRACTICE ROOM
 
-Cadence now opens in Practice. The sidebar groups your music separately from
-reference and tools; the existing Command-1 through Command-8 shortcuts keep
-their meanings. Command-3 returns to Practice home.
+Cadence opens in Learn → Your pathway. Choose Practice & review for the open
+practice room, focused activities and spaced reviews. Command-1 returns to the
+Learn section without resetting its current activity; Command-2 opens Library,
+Command-3 opens Studio and Command-4 opens Explore.
 
 If you have the smooth-changes pathway, its next session is one click away.
 An unfinished session resumes the same prompt, feedback and attempts. A pending

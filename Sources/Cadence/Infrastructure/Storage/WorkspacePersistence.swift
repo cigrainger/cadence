@@ -25,7 +25,7 @@ extension AppState {
     var practiceState: PracticeState { practiceWorkspace.state }
 
     func loadWorkspace() {
-        courses = stores.courses.load(default: CourseLibrary())
+        courseWorkspace.load()
         libraryWorkspace.load()
         practiceWorkspace.load()
         let prefs = stores.preferences.load(default: preferences)
@@ -53,7 +53,7 @@ extension AppState {
             do { try action() } catch { errors[name] = "Could not save \(name): " + error.localizedDescription }
         }
         attempt("practice") { try practiceWorkspace.save() }
-        attempt("courses") { try stores.courses.save(courses) }
+        attempt("courses") { try courseWorkspace.save() }
         attempt("preferences") { try stores.preferences.save(preferences) }
         attempt("studies") { try libraryWorkspace.saveStudies() }
         attempt("scores") { try libraryWorkspace.saveScores() }

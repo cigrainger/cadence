@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import Combine
+import Foundation
 import MusicCore
 
 /// The editable library and its metadata, independent of navigation, audio and AI.
@@ -22,6 +23,7 @@ import MusicCore
     var editorError: String? { storage.editor.loadError }
     var studyError: String? { storage.studies.loadError }
     var notebookError: String? { storage.notebook.loadError }
+    var acceptsImports: Bool { !ephemeral }
 
     func load() {
         editor = storage.editor.load(default: EditorLibrary())
@@ -51,9 +53,14 @@ import MusicCore
         }
         change(&record)
         copy.records[id] = record
-        _ = try copy.validated()
-        if !ephemeral { try storage.notebook.save(copy) }
-        notebook = copy
+        try commitNotebook(copy)
+    }
+
+    func commitNotebook(_ candidate: PieceNotebook) throws {
+        if let notebookError { throw MusicError.invalid(notebookError) }
+        _ = try candidate.validated()
+        if !ephemeral { try storage.notebook.save(candidate) }
+        notebook = candidate
     }
 
     func commitScores(_ candidate: EditorLibrary) throws {
@@ -61,6 +68,16 @@ import MusicCore
         _ = try candidate.validated()
         if !ephemeral { try storage.editor.save(candidate) }
         editor = candidate
+    }
+
+    func changePDFScore(_ id: UUID, _ change: (inout EditorDocument) throws -> Void) throws {
+        guard acceptsImports, let index = editor.documents.firstIndex(where: { $0.id == id }) else {
+            throw MusicError.invalid("This imported score is no longer available.")
+        }
+        var candidate = editor
+        try change(&candidate.documents[index])
+        candidate.documents[index] = try candidate.documents[index].validated()
+        try commitScores(candidate)
     }
 
     /// Commit before selecting a new composition; validation rejects duplicate identities.

@@ -150,12 +150,12 @@ final class MusicalPathwayTests: XCTestCase {
         let decoded = try JSONDecoder().decode(CourseLibrary.self, from: bytes).validated()
         XCTAssertNil(decoded.musicalPathways)
         XCTAssertTrue(decoded.books.isEmpty)
-        XCTAssertEqual(decoded.schemaVersion, 2)
+        XCTAssertEqual(decoded.schemaVersion, 3)
         let saved = try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(decoded)) as? [String: Any])
-        XCTAssertEqual(saved["schemaVersion"] as? Int, 2)
+        XCTAssertEqual(saved["schemaVersion"] as? Int, 3)
         XCTAssertThrowsError(
             try JSONDecoder().decode(
-                CourseLibrary.self, from: Data(#"{"schemaVersion":3,"books":[],"courses":[],"reflections":{}}"#.utf8)))
+                CourseLibrary.self, from: Data(#"{"schemaVersion":4,"books":[],"courses":[],"reflections":{}}"#.utf8)))
     }
     func testChangedIntroducedStudyReturnsForReviewAndForeignEvidenceCannotAdvanceIt() throws {
         let (_, route) = try fixture()

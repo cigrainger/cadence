@@ -130,9 +130,9 @@ final class LearningTests: XCTestCase {
             (200, #"{"choices":[{"finish_reason":"length","message":{"content":"Partial plan"}}]}"#),
             (200, #"{"choices":[{"message":{"content":null}}]}"#),
         ] {
-            var count = 0
+            let count = RequestProbe()
             let client = CoachClient { request in
-                count += 1
+                await count.sent()
                 return (
                     Data(body.utf8),
                     HTTPURLResponse(url: request.url!, statusCode: status, httpVersion: nil, headerFields: nil)!
@@ -142,7 +142,7 @@ final class LearningTests: XCTestCase {
                 _ = try await client.complete(messages: [], apiKey: "fixture", model: "fixture")
                 XCTFail("Invalid response must fail")
             } catch { XCTAssertFalse(error.localizedDescription.isEmpty) }
-            XCTAssertEqual(count, 1)
+            await count.assertCount(1)
         }
     }
     func testCancelledReplyIsNotReturned() async {

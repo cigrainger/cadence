@@ -9,6 +9,7 @@ struct PracticeWorkspaceView: View {
     var body: some View {
         switch state.practicePage {
         case .home: PracticeHomeView(input: state.adaptiveInput)
+        case .songJourney: SongJourneyView(input: state.songInput, midi: state.midi)
         case .reharm: ReharmPathwayView(input: state.reharmInput, transport: state.reharmTransport, midi: state.midi)
         case .tension: TensionPathwayView(input: state.tensionInput, audio: state.audio, midi: state.midi)
         case .triads: TriadPathwayView(input: state.triadInput, microphone: state.microphone, audio: state.audio)
@@ -16,7 +17,7 @@ struct PracticeWorkspaceView: View {
         case .playAlong:
             if let material = state.playAlongMaterial {
                 VStack(alignment: .leading, spacing: 16) {
-                    Button("Practice home", systemImage: "arrow.left") { state.showPracticeHome() }.buttonStyle(.plain)
+                    Button("Back to Learn", systemImage: "arrow.left") { state.showPracticeHome() }.buttonStyle(.plain)
                         .foregroundStyle(Color.moss)
                     PlayAlongView(material: material, session: state.playAlongSession, midi: state.midi)
                 }
@@ -30,7 +31,7 @@ struct PracticeWorkspaceView: View {
         case .adaptive: AdaptiveSessionView(input: state.adaptiveInput, midi: state.midi, audio: state.audio)
         case .exercises:
             VStack(alignment: .leading, spacing: 18) {
-                Button("Practice home", systemImage: "arrow.left") { state.showPracticeHome() }.buttonStyle(.plain)
+                Button("Back to Learn", systemImage: "arrow.left") { state.showPracticeHome() }.buttonStyle(.plain)
                     .foregroundStyle(Color.moss)
                 PracticeView(microphone: state.microphone, audio: state.audio)
             }
@@ -55,6 +56,7 @@ struct PracticeHomeView: View {
                     Button("All exercises", systemImage: "square.grid.2x2") { state.openPractice() }.controlSize(.large)
                 }
                 PendingPlayAlongView(session: state.playAlongSession)
+                SongJourneyWelcomeView()
                 RehearsalResumeView(session: state.rehearsalSession)
                 ScoreEarSavedView()
                 TensionHomeCard()

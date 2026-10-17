@@ -35,8 +35,11 @@ import WebKit
                     }
                 }
                 CommandMenu("Navigate") {
-                    ForEach(Array(Destination.allCases.enumerated()), id: \.offset) { index, destination in
-                        Button(destination.rawValue) { state.navigate(to: destination) }.keyboardShortcut(
+                    Button("Ask the coach") { state.openContextCoach() }.keyboardShortcut(
+                        "k", modifiers: [.command, .shift])
+                    Divider()
+                    ForEach(Array(WorkspaceSection.allCases.enumerated()), id: \.offset) { index, section in
+                        Button(section.rawValue) { state.navigateWorkspace(section) }.keyboardShortcut(
                             KeyEquivalent(Character(String(index + 1))))
                     }
                 }

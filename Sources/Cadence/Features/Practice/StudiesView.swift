@@ -447,10 +447,8 @@ struct StudyWorkspace: View {
                         study: state.guidedReference(study))
                 }
                 Button("Create a pathway", systemImage: "sparkles") {
-                    state.coachStudy = nil
                     state.pendingStudyPathway = state.guidedReference(study)
-                    state.coachPrompt = ""
-                    state.destination = .coach
+                    state.destination = .plans
                     state.coachFocus += 1
                 }
                 if !state.learning.pathways.isEmpty {
@@ -465,8 +463,7 @@ struct StudyWorkspace: View {
             if let path = state.learning.pathways.first(where: { $0.id == study.pathwayID }) {
                 Button("Open pathway: " + path.outline.title, systemImage: "arrow.up.right") {
                     state.learning.activePathwayID = path.id
-                    state.coachPrompt = ""
-                    state.destination = .coach
+                    state.destination = .plans
                 }
                 if path.study != study.reference {
                     Text(
