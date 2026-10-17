@@ -77,11 +77,12 @@ struct ScoreRenderer: NSViewRepresentable {
                 previousFeedback = nil
                 previousFocus = ""
                 web.callAsyncJavaScript(
-                    "await window.loadStudy(xml,partID,from,through,durations,feedbackRoom)",
+                    "await window.loadStudy(xml,partID,from,through,durations,feedbackRoom,verifyCursor)",
                     arguments: [
                         "xml": study.document.originalXML, "partID": study.partID, "from": study.from,
                         "through": study.through, "durations": study.selectedMeasures.map(\.duration),
                         "feedbackRoom": parent.feedbackRoom,
+                        "verifyCursor": CommandLine.arguments.contains("--snapshot"),
                     ], in: nil, in: .page
                 ) { [weak self] result in
                     if case .failure(let failure) = result { self?.parent.error = failure.localizedDescription }
@@ -166,14 +167,6 @@ struct ScoreRenderer: NSViewRepresentable {
                 ScoreRendererDiagnostics.latest = data
                 parent.height = layout.height
                 parent.error = nil
-                if CommandLine.arguments.contains("--snapshot") {
-                    web?.callAsyncJavaScript("return window.verifyStudyCursor()", arguments: [:], in: nil, in: .page) {
-                        result in
-                        if case .success(let value) = result, let checks = value as? [String: Any] {
-                            for (key, value) in checks { ScoreRendererDiagnostics.latest[key] = value }
-                        }
-                    }
-                }
             }
             if kind == "error" {
                 parent.error = String((data["message"] as? String ?? "The score could not be displayed.").prefix(2000))

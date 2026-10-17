@@ -374,7 +374,7 @@ def main():
     try:
         run([sys.executable, "-m", "unittest", "discover", "-s", ROOT / "Scripts", "-p", "test_*.py"],
             output / "workflow-tests.log", env, 30)
-        run(["node", "--test", "Scripts/test_site.cjs"], output / "site-tests.log", env, 30)
+        run(["node", "--test", "Scripts/test_site.cjs", "Scripts/test_score.cjs"], output / "site-tests.log", env, 30)
         run(["swift", "--version"], output / "toolchain.log", env, 30)
         report["toolchain"] = (output / "toolchain.log").read_text().strip()
         report["swiftLanguageMode"] = 6
@@ -419,6 +419,9 @@ def main():
             first_launch = output / "first-launch"
             first_launch.mkdir(exist_ok=True)
             report["firstLaunchPreview"] = run_preview(executable, first_launch, env, native_scenarios()[0])
+            # Check score/cursor readiness before the long workflow suite.
+            report["scoreRendererPreview"] = run_preview(
+                executable, first_launch, env, next(case for case in native_scenarios() if case[0] == "flow"))
             collection = NativeCoverage.prepare(ROOT, output, coverage_path, app, env, run)
             instrumented_env = collection.environment(env)
             native_path = output / "native.json"

@@ -31,8 +31,8 @@ function passageXML(xml,partID,from,through) {
   [...part.getElementsByTagName('print')].forEach(e=>e.remove());
   return new XMLSerializer().serializeToString(document);
 }
-window.loadStudy = async function(xml,partID,from,through,durations=[],feedbackRoom=false) {
-  currentStudy=[xml,partID,from,through,durations,feedbackRoom];barDurations=durations;
+window.loadStudy = async function(xml,partID,from,through,durations=[],feedbackRoom=false,verifyCursor=false) {
+  currentStudy=[xml,partID,from,through,durations,feedbackRoom,verifyCursor];barDurations=durations;
   const token=++requested;
   positions=[]; cursorStep=0;
   try {
@@ -71,7 +71,10 @@ window.loadStudy = async function(xml,partID,from,through,durations=[],feedbackR
     const feedbackChecks=window.setStudyFeedback(feedbackMarks);
     const focusChecks=window.setStudyFocus(...focusRange,true);
     const height=Math.ceil(document.getElementById('score').scrollHeight);
-    post({...feedbackChecks,...focusChecks,kind:'ready',height,svgCount:document.querySelectorAll('svg').length,bars:through-from+1,
+    // Keep preview assertions with the render they checked. A later native
+    // callback can race a resize and lose its results to the next ready report.
+    const cursorChecks=verifyCursor?window.verifyStudyCursor():{};
+    post({...feedbackChecks,...focusChecks,...cursorChecks,kind:'ready',height,svgCount:document.querySelectorAll('svg').length,bars:through-from+1,
       cursorPositions:positions.map(p=>({bar:p.bar,offset:p.offset})),offline:true});
     if(pendingPosition) window.positionStudy(...pendingPosition);
   } catch(error) { post({kind:'error',message:String(error.message||error)}); }
