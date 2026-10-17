@@ -33,6 +33,8 @@ jobs:
         run: python3 Scripts/check_advisories.py
   tests:
     runs-on: macos-15
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -48,5 +50,6 @@ jobs:
           path: |
             .verification/*.json
             .verification/*.log
-          if-no-files-found: warn
+          if-no-files-found: error
+          include-hidden-files: true
           retention-days: 14
