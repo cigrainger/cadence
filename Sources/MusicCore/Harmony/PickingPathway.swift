@@ -15,6 +15,33 @@ public enum PickingStyle: String, Codable, CaseIterable, Sendable {
         }
     }
 }
+extension PickingStyle {
+    /// Relative gestures over a voicing: one definition feeds selection,
+    /// notation, tab and sound. Silent strums retain their rhythmic slots.
+    fileprivate func steps(_ strings: [Int]) -> [(targets: [Int], cue: String?)] {
+        guard strings.count >= 4 else { return [] }
+        let bass = strings[0]
+        let alternate = strings[1]
+        let upper = Array(strings.suffix(3))
+        switch self {
+        case .classical:
+            return zip(
+                [[bass], [upper[0]], [upper[1]], [upper[2]], [upper[1]], [upper[0]], [upper[1]], [upper[2]]],
+                ["p", "i", "m", "a", "m", "i", "m", "a"]
+            ).map { ($0, $1) }
+        case .travis:
+            return zip(
+                [[bass, upper[1]], [upper[2]], [alternate], [upper[1]], [bass], [upper[2]], [alternate], [upper[1]]],
+                ["p + m", "a", "p", "m", "p", "a", "p", "m"]
+            ).map { ($0, $1) }
+        case .strumming:
+            return (0..<8).map { slot in
+                let targets = [1, 4].contains(slot) ? [] : (slot % 2 == 0 ? strings : Array(strings.suffix(3)))
+                return (targets, targets.isEmpty ? nil : (slot % 2 == 0 ? "↓" : "↑"))
+            }
+        }
+    }
+}
 public enum PickingStage: String, Codable, CaseIterable, Sendable {
     case hear, muted, chord, changes, create, independent, complete
     public var title: String {
@@ -67,8 +94,9 @@ public struct PickingMaterial: Codable, Equatable, Sendable {
             guard let step = plan.steps.last(where: { $0.bar <= bar }) else {
                 throw MusicError.invalid("Add a chord symbol at the start of this passage.")
             }
-            let options = try step.chord.target(.complete).guitarVoicings(tuning: tuning, capo: capo).filter {
-                $0.frets.filter { $0 >= 0 }.count >= 4
+            let target = try step.chord.target(.complete)
+            let options = target.guitarVoicings(tuning: tuning, capo: capo).filter {
+                Self.validShape($0.frets, target: target, tuning: tuning, capo: capo)
             }
             guard let shape = options.first else {
                 throw MusicError.invalid(
@@ -95,17 +123,22 @@ public struct PickingMaterial: Codable, Equatable, Sendable {
             tuning.pitches.count == 6, tuning.pitches.allSatisfy({ (24...88).contains($0) }), (0...9).contains(capo)
         else { return false }
         return zip(chords, frets).allSatisfy { symbol, shape in
-            guard symbol.valid, let chord = try? ChordRealization(symbol), let target = try? chord.target(.complete),
-                shape.count == 6,
-                shape.allSatisfy({ (-1...12).contains($0) }), shape.filter({ $0 >= 0 }).count >= 4
-            else { return false }
-            let pitches = shape.enumerated().filter { $0.element >= 0 }.map {
-                tuning.pitches[$0.offset] + capo + $0.element
-            }
-            return target.judge(pitches).correct
-                && pitches.allSatisfy { (21...108).contains($0) }
+            guard symbol.valid, let target = try? ChordRealization(symbol).target(.complete) else { return false }
+            return Self.validShape(shape, target: target, tuning: tuning, capo: capo)
         }
     }
+    private static func validShape(_ shape: [Int], target: ChangesTarget, tuning: Tuning, capo: Int) -> Bool {
+        guard shape.count == 6, shape.allSatisfy({ (-1...12).contains($0) }) else { return false }
+        let strings = shape.indices.filter { shape[$0] >= 0 }
+        guard strings.count >= 4 else { return false }
+        let pitches = strings.map { tuning.pitches[$0] + capo + shape[$0] }
+        guard target.judge(pitches).correct, pitches.allSatisfy({ (21...108).contains($0) }) else { return false }
+        return PickingStyle.allCases.allSatisfy { style in
+            Set(style.steps(strings).flatMap(\.targets).map { mod(tuning.pitches[$0] + capo + shape[$0]) })
+                == target.pitchClasses
+        }
+    }
+
     public func current(in piece: LibraryPiece) -> Bool {
         guard valid, piece.id == pieceID, piece.fingerprint == fingerprint,
             let source = try? ChangesSource(
@@ -138,30 +171,10 @@ public struct PickingMaterial: Codable, Equatable, Sendable {
             let index = oneChord ? 0 : bar
             let shape = frets[index]
             let strings = shape.indices.filter { shape[$0] >= 0 }
-            let bass = strings[0]
-            let alternate = strings[1]
-            let upper = Array(strings.suffix(3))
             document.harmonies.append(.init(bar: bar, symbol: chords[index]))
-            for slot in 0..<8 {
-                let targets: [Int]
-                let cue: String?
-                switch style {
-                case .classical:
-                    targets =
-                        [[bass], [upper[0]], [upper[1]], [upper[2]], [upper[1]], [upper[0]], [upper[1]], [upper[2]]][
-                            slot]
-                    cue = ["p", "i", "m", "a", "m", "i", "m", "a"][slot]
-                case .travis:
-                    targets =
-                        [
-                            [bass, upper[1]], [upper[2]], [alternate], [upper[1]], [bass], [upper[2]], [alternate],
-                            [upper[1]],
-                        ][slot]
-                    cue = ["p + m", "a", "p", "m", "p", "a", "p", "m"][slot]
-                case .strumming:
-                    targets = [1, 4].contains(slot) ? [] : (slot % 2 == 0 ? strings : Array(strings.suffix(3)))
-                    cue = targets.isEmpty ? nil : (slot % 2 == 0 ? "↓" : "↑")
-                }
+            for (slot, step) in style.steps(strings).enumerated() {
+                let targets = step.targets
+                let cue = step.cue
                 var event = EditorEvent(
                     bar: bar, rhythm: .init(240),
                     pitches: targets.map {

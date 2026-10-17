@@ -76,6 +76,7 @@ extension SnapshotRequirementsTests {
                 SnapshotFraming.delay(arguments: ["--snapshot-requirements", "r.json", flag]), 3.5)
         }
         XCTAssertEqual(SnapshotFraming.delay(arguments: ["--song-ax"]), 30)
+        XCTAssertEqual(SnapshotFraming.delay(arguments: ["--settings"]), 2)
         XCTAssertEqual(SnapshotFraming.delay(arguments: ["--snapshot", "manual.png"]), 10)
     }
 }

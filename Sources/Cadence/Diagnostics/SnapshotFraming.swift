@@ -9,6 +9,7 @@ import Foundation
 enum SnapshotFraming {
     static func delay(arguments: [String]) -> Double {
         if arguments.contains("--song-ax") { return 30 }
+        if arguments.contains("--settings") { return 2 }
         guard arguments.contains("--snapshot-requirements") else { return 10 }
         let actions: Set<String> = [
             "--reharm-detail", "--band-preview", "--study-bottom", "--practice-bottom", "--study-instrument",

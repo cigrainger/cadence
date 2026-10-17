@@ -165,3 +165,23 @@ extension PickingTests {
         XCTAssertNil(document.pickingSource)
     }
 }
+
+extension PickingTests {
+    func testEveryStylePreservesTheWrittenJazzColourTones() throws {
+        var score = try EditorDocument.blank(instrument: .guitar, bars: 4, meter: .init(4, 4))
+        score.harmonies = try ["Dm7", "G7", "Cmaj7", "Am7"].enumerated().map {
+            try .init(bar: $0.offset, symbol: .parse($0.element))
+        }
+        let material = try PickingMaterial(
+            piece: .init(source: .score(score)), scope: .init(partID: "P1", staff: 1, from: 0, through: 3),
+            tuning: .presets[0], capo: 0)
+        for style in PickingStyle.allCases {
+            let document = try material.document(style: style)
+            for bar in 0..<4 {
+                let actual = Set(document.inBar(bar, staff: 1).flatMap(\.pitches).map { mod($0.midi) })
+                let target = try ChordRealization(material.chords[bar]).target(.complete).pitchClasses
+                XCTAssertEqual(actual, target, "\(style.rawValue), bar \(bar + 1)")
+            }
+        }
+    }
+}
