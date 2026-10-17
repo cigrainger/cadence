@@ -7,10 +7,18 @@ import copy
 from pathlib import Path
 import tempfile
 import threading
-from verify import paired_native_checks
+from verify import paired_native_checks, preview_parallelism, native_scenarios
 
 
 class VerificationTests(unittest.TestCase):
+    def test_accessibility_and_editor_navigation_stay_serial(self):
+        scenarios = {case[0]: case for case in native_scenarios()}
+        for name in ('song-accessibility', 'workspace-editor-return'):
+            self.assertEqual(preview_parallelism(scenarios[name], 2), 1)
+        for name in ('song-pathway', 'flow', 'editor-piano'):
+            self.assertEqual(preview_parallelism(scenarios[name], 2), 2)
+            self.assertEqual(preview_parallelism(scenarios[name], 1), 1)
+
     def test_parallel_captures_overlap_and_keep_each_result(self):
         barrier = threading.Barrier(2, timeout=2)
         def capture(value):

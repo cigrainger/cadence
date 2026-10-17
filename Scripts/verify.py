@@ -16,6 +16,7 @@ import time
 from build_inputs import source_digest
 from native_arguments import native_arguments
 from native_coverage import NativeCoverage, check_source_inventory, reset_unit_coverage
+from swift_build_config import SWIFT_TEST_FLAGS
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -367,6 +368,12 @@ def paired_native_checks(production, instrumented, jobs):
         return first.result(), second.result()
 
 
+def preview_parallelism(scenario, requested):
+    # Navigation round trips deliberately tear down and recreate WebKit views.
+    # Keep their lifecycle check serial even when static captures overlap.
+    return 1 if scenario[0] == 'song-accessibility' or '--workspace-editor-roundtrip' in scenario[1] else requested
+
+
 def run_settings_preview(executable, output, env, name):
     png = output / ("settings-" + name + ".png")
     png.unlink(missing_ok=True)
@@ -413,7 +420,7 @@ def main():
              "-typecheck", ROOT / "Scripts/native_accessibility.swift"], output / "accessibility-typecheck.log", env, 60)
         reset_unit_coverage(scratch)
         run(["swift", "test", "--package-path", ROOT, "--scratch-path", scratch,
-             "--disable-sandbox", "--enable-code-coverage", "-Xswiftc", "-warnings-as-errors"], output / "tests.log", env, 900)
+             "--disable-sandbox", *SWIFT_TEST_FLAGS], output / "tests.log", env, 900)
         report["tests"] = test_counts((output / "tests.log").read_text())
         require_clean_swift((output / "tests.log").read_text())
         exports = list(scratch.glob("**/codecov/Cadence.json"))
@@ -481,7 +488,7 @@ def main():
                 production, instrumented = paired_native_checks(
                     lambda: run_preview(executable, output, env, scenario),
                     lambda: run_preview(collection.executable, collection.folder, instrumented_env, scenario),
-                    1 if name == "song-accessibility" else args.preview_jobs)
+                    preview_parallelism(scenario, args.preview_jobs))
                 report["previews"][name] = production
                 report["instrumentedPreviews"][name] = instrumented
                 report["previewPairSeconds"][name] = round(time.monotonic() - pair_started, 3)

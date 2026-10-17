@@ -62,8 +62,8 @@ jobs:
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: .verification/build
-          key: swift-v1-${{ steps.cache-key.outputs.key }}-${{ github.sha }}
-          restore-keys: swift-v1-${{ steps.cache-key.outputs.key }}-
+          key: swift-v2-${{ steps.cache-key.outputs.key }}-${{ github.sha }}
+          restore-keys: swift-v2-${{ steps.cache-key.outputs.key }}-
       - name: Restore byte-identical source timestamps
         run: python3 Scripts/swift_build_cache.py restore
       - name: Test Swift 6, native workflows and whole-app coverage
@@ -94,6 +94,8 @@ jobs:
             .verification/first-launch/*.json
             .verification/first-launch/*.log
             .verification/native-coverage/**/manifest.json
+            .verification/native-coverage/**/*.log
+            .verification/native-coverage/**/*.json
             .verification/native-coverage/**/combined.json
             .verification/native-coverage/**/html/**
           if-no-files-found: error

@@ -14,6 +14,7 @@ class SwiftBuildCacheTests(unittest.TestCase):
         root = Path(folder)
         for name in ('Package.swift', 'Package.resolved', 'build.sh', 'Scripts/verify.py',
                      'Scripts/native_coverage.py', 'Scripts/swift_build_cache.py',
+                     'Scripts/swift_build_config.py',
                      'Sources/Cadence/A.swift', 'Tests/CadenceTests/A.swift'):
             path = root / name
             path.parent.mkdir(parents=True, exist_ok=True)
@@ -74,6 +75,11 @@ class SwiftBuildCacheTests(unittest.TestCase):
                 self.assertNotEqual(fingerprint(root), first)
                 (root / 'build.sh').write_text('original')
                 self.assertEqual(fingerprint(root), first)
+                (root / 'Scripts/verify.py').write_text('new screenshot scheduling')
+                self.assertEqual(fingerprint(root), first)
+                (root / 'Scripts/swift_build_config.py').write_text('new unit compiler flags')
+                self.assertNotEqual(fingerprint(root), first)
+                (root / 'Scripts/swift_build_config.py').write_text('original')
                 other, _ = self.fixture(root / 'other-checkout')
                 self.assertNotEqual(fingerprint(other), first)
             with patch('swift_build_cache.subprocess.check_output', return_value='SDK B'):

@@ -45,11 +45,24 @@ Suggested first exercise: play or sing a short, clean monophonic phrase at a com
 
 Spotify's [Basic Pitch](https://github.com/spotify/basic-pitch) is a candidate for an offline transcription experiment: it supports polyphony and pitch bends, works best on one instrument at a time, and includes a Core ML conversion. That is not evidence of teacher-level grading accuracy or a turnkey Swift live-analysis integration. Benchmark its model/runtime and postprocessing, latency, memory and licensing before adding it to the bundle. Compare against the existing lightweight detector for monophonic tasks; do not add a large runtime solely because a model is available.
 
-## More instruments through capabilities
+## Specialist instrument support through shared foundations
 
 Separate the instrument someone practises from the score editor's current piano/guitar layout. A practice profile can describe sounding range, written-to-sounding transposition, tuning/reference pitch and supported inputs. Activities request capabilities: single-note pitch, rhythmic attack, MIDI polyphony, guitar string/fret positions or piano hand roles. Unsupported activities explain what input they need.
 
-Flute, violin, bass and voice could share appropriate listening, theory, rhythm and single-note exercises. A drum needs onset/rhythm assessment rather than pitched-note grading. Guitar fingering, piano hands, bowing and embouchure remain distinct. Start with one additional instrument and a real musician before claiming general instrument support; changing the instrument label is not a validated teaching method.
+The destination is specialist teaching and reference tools for more instruments. Shared activities and capabilities provide the route towards that goal. Each instrument should eventually have its own playable vocabulary, technique, repertoire and learning pathways, rather than only a label on generic exercises.
+
+| Family | Reference and visual tools | Specialist pathway direction |
+| --- | --- | --- |
+| Ukulele | Re-entrant/linear tunings, chord voicings, scales and a four-string fretboard | Strumming, fingerpicking, chord melody and accompaniment |
+| Mandolin | Fifths tuning, paired courses, voicings, scales and position shapes | Picking, tremolo, double stops and stylistic accompaniment |
+| Banjo | Instrument/variant-specific tunings, drone-string behaviour, voicings and scales | Rolls, picking patterns, clawhammer and drone-aware arranging |
+| Bass | Four-/five-string tunings, scale/chord-tone maps and register-aware notation | Root/fifth foundations, groove, approaches, walking lines and composing basslines through changes |
+| Violin and other bowed strings | Positions, fingering, written/sounding range and intonation references | Shifting, bowing, articulation, double stops and phrase shaping |
+| Brass and woodwinds | Written/sounding transposition, range, fingering or slide-position references | Breath, articulation, register changes, phrasing and instrument-specific repertoire |
+
+Progression: first make the existing tuning/fretboard/voicing assumptions explicit; then ship and validate ukulele as the first complete extension. Reuse an appropriate fretted-string foundation for mandolin and bass, with a dedicated bassline-construction curriculum. Support banjo's variants and short drone string deliberately. Add bowed and wind families with their own references, specialist contributors and reviewed exercises. Validate each instrument before claiming its techniques are supported; acoustic pitch detection alone does not establish specialist instruction. These stages can grow through community contributions as well as first-party work.
+
+Flute, violin, bass and voice can also share appropriate listening, theory, rhythm and single-note exercises along the way. A drum needs onset/rhythm assessment rather than pitched-note grading. Existing piano hand coordination and guitar fingering retain their specialist treatment as the family grows.
 
 ## Validation before grading claims
 

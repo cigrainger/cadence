@@ -34,8 +34,8 @@ def fingerprint(root=ROOT):
     identity = [str(root.resolve()), os.environ.get('ImageVersion', '')]
     identity += [subprocess.check_output(command, text=True).strip() for command in commands]
     identity += [digest(root / name) for name in
-                 ('Package.swift', 'Package.resolved', 'build.sh', 'Scripts/verify.py',
-                  'Scripts/native_coverage.py', 'Scripts/swift_build_cache.py')]
+                 ('Package.swift', 'Package.resolved', 'build.sh',
+                  'Scripts/swift_build_config.py', 'Scripts/swift_build_cache.py')]
     return hashlib.sha256(json.dumps(identity).encode()).hexdigest()
 
 
