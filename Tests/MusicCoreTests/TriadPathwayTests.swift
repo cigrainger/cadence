@@ -200,10 +200,14 @@ final class TriadPathwayTests: XCTestCase {
         for midi in [40, 48, 55, 64, 72] {
             let rate = 12000.0
             let frequency = 440 * pow(2, Double(midi - 69) / 12)
-            let samples: [Float] = (0..<2048).map { i in
+            let samples: [Float] = (0..<2048).map { (i: Int) -> Float in
                 let t = Double(i) / rate
                 let phase = 2 * Double.pi * frequency * t
-                return Float(exp(-3 * t) * (0.4 * sin(phase) + 0.2 * sin(2 * phase) + 0.1 * sin(3 * phase)))
+                let fundamental: Double = 0.4 * sin(phase)
+                let secondHarmonic: Double = 0.2 * sin(2.0 * phase)
+                let thirdHarmonic: Double = 0.1 * sin(3.0 * phase)
+                let envelope: Double = exp(-3.0 * t)
+                return Float(envelope * (fundamental + secondHarmonic + thirdHarmonic))
             }
             let pitch = try XCTUnwrap(PitchDetector.detect(samples, sampleRate: rate))
             XCTAssertEqual(pitch.midi, midi)
