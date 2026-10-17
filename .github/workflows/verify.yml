@@ -13,6 +13,8 @@ jobs:
   repository:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    outputs:
+      native: ${{ steps.scope.outputs.native }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -24,6 +26,9 @@ jobs:
         with:
           node-version: '24'
           package-manager-cache: false
+      - name: Select app or website/documentation verification
+        id: scope
+        run: python3 Scripts/ci_scope.py
       - run: python3 Scripts/check_repository.py
       - run: python3 -m unittest discover -s Scripts -p 'test_*.py'
       - name: Check first-party JavaScript syntax
@@ -37,6 +42,8 @@ jobs:
       - name: Check known dependency advisories
         run: python3 Scripts/check_advisories.py
   tests:
+    needs: repository
+    if: needs.repository.outputs.native == 'true'
     runs-on: macos-15
     env:
       DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
