@@ -108,9 +108,11 @@ public struct ChordSymbol: Codable, Equatable, Sendable {
     public var label: String {
         if kind == .none { return "N.C." }
         let additions = degrees.filter { !$0.hidden }.map(\.label)
-        return (root?.name ?? "") + (kindText ?? kind.suffix)
-            + (additions.isEmpty ? "" : "(" + additions.joined(separator: ",") + ")")
-            + (bass.map { "/" + $0.name } ?? "")
+        var text = root?.name ?? ""
+        text += kindText ?? kind.suffix
+        if !additions.isEmpty { text += "(" + additions.joined(separator: ",") + ")" }
+        if let bass { text += "/" + bass.name }
+        return text
     }
     public var valid: Bool {
         func pitch(_ p: Pitch) -> Bool { (0..<7).contains(p.letter) && (-2...2).contains(p.accidental) }

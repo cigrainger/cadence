@@ -165,12 +165,20 @@ public struct PathwayOutline: Codable, Equatable, Sendable {
         return self
     }
     public var context: String {
-        "\(title). \(summary)\nAssumptions and source limits: \(sourceNotes)\n"
-            + steps.enumerated().map { index, step in
-                "Step \(index+1): \(step.title). \(step.focus). Session: "
-                    + step.activities.map { "\($0.title) (\($0.minutes) min): \($0.instructions)" }.joined(
-                        separator: "; ") + ". Application: \(step.application). Ready when: \(step.readyWhen)."
-            }.joined(separator: "\n") + "\nQuestions to clarify: " + questions.joined(separator: "; ")
+        var result = "\(title). \(summary)\nAssumptions and source limits: \(sourceNotes)\n"
+        var descriptions: [String] = []
+        for (index, step) in steps.enumerated() {
+            let activities: [String] = step.activities.map { activity in
+                "\(activity.title) (\(activity.minutes) min): \(activity.instructions)"
+            }
+            var description = "Step \(index + 1): \(step.title). \(step.focus). Session: "
+            description += activities.joined(separator: "; ")
+            description += ". Application: \(step.application). Ready when: \(step.readyWhen)."
+            descriptions.append(description)
+        }
+        result += descriptions.joined(separator: "\n")
+        result += "\nQuestions to clarify: " + questions.joined(separator: "; ")
+        return result
     }
 }
 

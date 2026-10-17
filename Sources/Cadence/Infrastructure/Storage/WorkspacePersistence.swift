@@ -12,6 +12,9 @@ extension AppState {
         ]
         .compactMap { $0 } + saveErrors.keys.sorted().compactMap { saveErrors[$0] }
     }
+    var storageStatus: String {
+        storageWarnings.isEmpty ? "Stored on this Mac" : "Some work is not saved"
+    }
     var practiceState: PracticeState {
         PracticeState(
             history: history, journal: journal, learning: learning, smooth: smoothPractice, ear: earPractice,

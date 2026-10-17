@@ -18,6 +18,7 @@ final class StorageIntegrationTests: XCTestCase {
             let state = AppState(storageOverride: folder)
             XCTAssertFalse(state.save())
             XCTAssertFalse(state.storageWarnings.isEmpty)
+            XCTAssertEqual(state.storageStatus, "Some work is not saved")
             XCTAssertEqual(try Data(contentsOf: url), original)
         }
     }
@@ -34,6 +35,7 @@ extension StorageIntegrationTests {
         let folder = try fixture()
         let state = AppState(storageOverride: folder)
         XCTAssertTrue(state.save())
+        XCTAssertEqual(state.storageStatus, "Stored on this Mac")
         let url = folder.appendingPathComponent("practice-state.json")
         try FileManager.default.removeItem(at: url)
         try FileManager.default.createDirectory(at: url, withIntermediateDirectories: false)
