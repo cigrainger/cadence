@@ -217,6 +217,9 @@ extension AppState {
                 original.useLearningTool(.singIntervals)
                 report["intervalPracticeLink"] =
                     original.destination == .practice && original.practiceExercise == .intervals
+                let spaceTapChecks = try SpaceTapChecks.run()
+                report["spaceTapChecks"] = spaceTapChecks
+                report["spaceTapPassed"] = spaceTapChecks.values.allSatisfy { $0 }
                 let settingsChecks = try SettingsSelfCheck.run()
                 report["settings"] = settingsChecks
                 report["passed"] =
@@ -235,6 +238,7 @@ extension AppState {
                         "studyLoopOutput", "persistence", "audioOutput", "pathwayPersistence",
                         "pathwayPracticeLink", "solfegePreference", "solfegePreferenceMigration",
                         "intervalPracticeLink", "timedAudioScheduled", "virtualMIDITimestamps", "midiClientRetained",
+                        "spaceTapPassed",
                     ].filter { !skipped.contains($0) }.allSatisfy { report[$0] as? Bool == true }
                     && settingsChecks.values.allSatisfy { $0 }
                 try? FileManager.default.removeItem(at: fixture)

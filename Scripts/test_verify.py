@@ -39,7 +39,7 @@ class VerificationTests(unittest.TestCase):
             self.assertNotEqual(test_inputs_digest(root), original)
     def test_ci_skips_are_explicit_and_cannot_hide_other_failures(self):
         output = ["audioOutput", "timedAudioScheduled", "metronomeOutput", "studyLoopOutput"]
-        required = ["passed", "pdfBatchPassed", "libraryPassed", "piecePathwayPassed", "virtualMIDITimestamps", "midiClientRetained",
+        required = ["passed", "pdfBatchPassed", "libraryPassed", "piecePathwayPassed", "virtualMIDITimestamps", "midiClientRetained", "spaceTapPassed",
                     "sampledBand", "bundledSoundBank", "earPathway", "expressionDynamics", "expressionStaccato"]
         complete = {name: True for name in required + output}
         complete["skippedChecks"] = []
@@ -54,6 +54,20 @@ class VerificationTests(unittest.TestCase):
         offline.pop("audioOutput")
         offline["virtualMIDITimestamps"] = False
         with self.assertRaises(RuntimeError): check_native(offline, True)
+
+    def test_window_keyboard_checks_remain_required_when_device_output_is_skipped(self):
+        required = ["passed", "pdfBatchPassed", "libraryPassed", "piecePathwayPassed", "virtualMIDITimestamps",
+                    "midiClientRetained", "sampledBand", "bundledSoundBank", "earPathway",
+                    "expressionDynamics", "expressionStaccato"]
+        report = {name: True for name in required}
+        report["skippedChecks"] = ["audioOutput", "timedAudioScheduled", "metronomeOutput", "studyLoopOutput"]
+        with self.assertRaisesRegex(RuntimeError, 'spaceTapPassed'):
+            check_native(report, True)
+        report["spaceTapPassed"] = False
+        with self.assertRaisesRegex(RuntimeError, 'spaceTapPassed'):
+            check_native(report, True)
+        report["spaceTapPassed"] = True
+        check_native(report, True)
 
     def test_missing_or_false_native_results_cannot_pass(self):
         with self.assertRaisesRegex(RuntimeError, 'MIDI source.*-10830'):

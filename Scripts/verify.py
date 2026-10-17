@@ -42,7 +42,7 @@ def check_native(report, skip_audio_output):
             "Native self-check skipped unexpected work")
     require(not skip_audio_output or all(name not in report for name in output),
             "Skipped audio checks cannot also claim device results")
-    required = ["passed", "pdfBatchPassed", "libraryPassed", "piecePathwayPassed", "virtualMIDITimestamps", "midiClientRetained",
+    required = ["passed", "pdfBatchPassed", "libraryPassed", "piecePathwayPassed", "virtualMIDITimestamps", "midiClientRetained", "spaceTapPassed",
                 "sampledBand", "bundledSoundBank", "earPathway", "expressionDynamics", "expressionStaccato"]
     require_flags(report, required + ([] if skip_audio_output else output), "native app")
 
