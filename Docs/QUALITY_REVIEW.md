@@ -21,7 +21,7 @@ Review scope: preparing 0.36.0 for public source distribution. This is an engine
 
 On the final relocated source, **501 MusicCore tests and 191 Cadence integration tests passed**. Two opt-in timing tests are normally skipped and were run separately. Ten Python tests cover the verification/report and repository policy tools. Swift formatting and first-party JavaScript syntax checks passed. The only observed compiler warning came from ZIPFoundation's upstream watchOS deployment declaration, not Cadence's macOS source.
 
-Measured line coverage: **MusicCore 94.93%; Cadence 10.94%**. The latter excludes much of the UI from direct unit execution. The repeatable workflow supplements it with native preview assertions, renderer editing checks and offline audio rendering. All 123 native workflow scenarios passed, followed by checks of the final packaged app and its General/MIDI/About panels. Screenshot evidence is local/generated, not committed user data.
+Measured line coverage: **MusicCore 94.93%; Cadence 10.94%**. The whole-app denominator includes views and diagnostics, much of which the unit run does not execute. The repeatable workflow supplements it with native preview assertions, renderer editing checks and offline audio rendering. All 123 native workflow scenarios passed, followed by checks of the final packaged app and its General/MIDI/About panels. Screenshot evidence is local/generated, not committed user data.
 
 Two debug-build timing observations on this arm64 Mac (macOS 27.0.1, Apple Swift 6.4): 128-bar score/MusicXML round trip averaged approximately **83 ms**; generating dominant-seventh guitar voicings across all roots averaged approximately **185 ms**. These are local observations, not universal response-time promises or comparative speedup claims.
 
@@ -36,8 +36,25 @@ The website uses the same identity and real original-fixture app imagery. Deskto
 ## Remaining limits
 
 - Physical keyboards, microphone permission flows, device switching, VoiceOver and Intel builds still need dedicated release testing. Virtual MIDI and rendered audio are not substitutes.
-- Ad hoc signing is not notarisation. The current app is not isolated by App Sandbox.
+- The 0.36.0 build was ad-hoc signed. The 0.36.1 release below is Developer ID signed and notarised. The app is not isolated by App Sandbox.
 - OSMD's prebuilt bundle lacks a resolved transitive lockfile. The inventory lists 13 unknown bundled versions and explicitly marks the graph incomplete. Supplied upstream source enables inspection; bit-identical upstream rebuilding is not claimed.
 - AppState and several activity views remain large. Extract stable owners when changing them, retaining tested boundaries; avoid a generic exercise framework that erases musical differences.
 - AI response collection still relies on URLSession and provider limits before task-specific parsing; the new persisted-file cap is not a general network-memory bound.
 - Automated checks cannot establish the musical accuracy of arbitrary AI transcriptions or validate the pedagogy with actual learners. Keep original sources, review steps and independent attempts central.
+
+
+## 0.36.1 follow-up
+
+Library and practice state now have observable owners independent of devices and navigation. AppState's existing feature bindings project into those owners instead of storing duplicate snapshots. Practice evidence and its schedule publish once, after a successful atomic write. Library commits reject missing pieces even if historical notes remain; a late AI response cannot amend a removed piece. New composition creation does not select an unsaved score on a failed write. The pathway installation regression verifies its first save survives a restart without relying on a second installation or global save.
+
+The owner tests cover successful restart, failed writes/conflicts without publication, invalid input, corrupt originals, future schemas, legacy snapshots, ephemeral previews, duplicate IDs, collection limits and observation forwarding. The two new owners have a separate 85% coverage floor. Whole-app coverage remains around 11%; this work does not establish broad UI coverage. Next coverage work should exercise actual learner journeys, permission refusal, input disconnection and cancelled imports rather than increasing a percentage with trivial view tests.
+
+The release pipeline supports Developer ID signing, Keychain-backed notarisation, resuming pending submissions, stapling and Gatekeeper assessment. It rejects incorrect certificates, missing runtime/timestamps, debugger entitlements and unstapled public artifacts. A build-input digest prevents packaging a stale binary beside newer source. Credentials and certificate exports are not checked into the repository or copied into GitHub secrets.
+
+The homepage now explains the score → focused practice → independent return journey. Its harmony example shows the bass separately and uses B/C♭ according to the selected chord. Silent controller tests verify the visible and sounding pitches, audio cancellation/races and unavailable audio. A reproducible 1280×640 social preview shares the app's existing identity.
+
+Validation for 0.36.1: **501 MusicCore tests, 204 Cadence native-state tests, 20 Python tests and seven website controller tests passed**. Measured line coverage is **94.94% for MusicCore, 11.02% for the complete Cadence target, and 97.89% for the two workspace owners**. The app-wide denominator is unchanged; the owner coverage gate is additional, not a replacement.
+
+Apple accepted the arm64 Developer ID build on 17 October 2026. Its stapled ticket, code signature and Gatekeeper assessment passed, as did the signed app’s native self-check. Public-source and history scans found no leaks. The repository social preview was uploaded and verified in GitHub settings.
+
+The final full verification passed all **123 native workflow scenarios**, the General/MIDI/About settings previews, renderer editing and virtual MIDI checks, offline audio checks, and comparison of 25 bundled resources. Physical devices, microphone permissions and VoiceOver were not exercised by this run. No paid model requests were made.

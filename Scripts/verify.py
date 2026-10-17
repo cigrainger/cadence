@@ -66,6 +66,15 @@ def summarize_coverage(document):
             totals[kind] = {"count": count, "covered": covered,
                             "percent": round(100 * covered / count, 2) if count else 0}
         result[module] = {"files": len(files), **totals}
+    # Keep the complete app denominator, while separately gating the new save boundaries.
+    owners = [file for data in document["data"] for file in data["files"]
+              if any(file["filename"].endswith('/Sources/Cadence/Infrastructure/Storage/' + name)
+                     for name in ("PracticeWorkspace.swift", "LibraryWorkspace.swift"))]
+    if owners:
+        count = sum(file["summary"]["lines"]["count"] for file in owners)
+        covered = sum(file["summary"]["lines"]["covered"] for file in owners)
+        result["WorkspaceOwners"] = {"files": len(owners), "lines": {"count": count, "covered": covered,
+            "percent": round(100 * covered / count, 2) if count else 0}}
     return result
 
 
@@ -113,6 +122,7 @@ def main():
     try:
         run([sys.executable, "-m", "unittest", "discover", "-s", ROOT / "Scripts", "-p", "test_*.py"],
             output / "workflow-tests.log", env, 30)
+        run(["node", "--test", "Scripts/test_site.cjs"], output / "site-tests.log", env, 30)
         # Remove old exports only: a failed run cannot reuse last week's coverage.
         for path in scratch.glob("**/codecov/Cadence.json"):
             path.unlink()
@@ -128,6 +138,9 @@ def main():
         (output / "coverage-summary.json").write_text(json.dumps(report["coverage"], indent=2) + "\n")
         # This is a regression floor for the core, not a claim about the whole UI.
         require(report["coverage"]["MusicCore"]["lines"]["percent"] >= 90, "MusicCore line coverage dropped below 90%")
+        owners = report["coverage"].get("WorkspaceOwners", {})
+        require(owners.get("files") == 2 and owners["lines"]["percent"] >= 85,
+                "Library/practice workspace coverage is missing or below 85%")
         if not args.tests_only:
             app = output / "Cadence.app"
             if app.exists():

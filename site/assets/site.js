@@ -3,6 +3,13 @@
 (() => {
   const play = document.querySelector('#hear-demo');
   const status = document.querySelector('#demo-status');
+  // The score labels and sounding voicings share this data, including enharmonic spelling.
+  const routes = {
+    original: { chord: 'G7', bass: 'G', guide: 'B', notes: [43, 53, 59],
+      explanation: 'G falls a fifth to C. Above it, B stays put and F resolves to E.' },
+    substitute: { chord: 'D♭7', bass: 'D♭', guide: 'C♭', notes: [37, 53, 59],
+      explanation: 'D♭ falls a semitone to C. C♭ is the same piano key as B; the upper voices sound unchanged.' }
+  };
   let harmony = 'original', context, timer, playing = false, generation = 0;
   const finish = () => {
     clearTimeout(timer); playing = false;
@@ -10,10 +17,16 @@
   };
   const stop = () => { generation++; if (context) { context.close().catch(() => {}); context = null; } finish(); };
   document.querySelectorAll('[data-harmony]').forEach(button => button.addEventListener('click', () => {
+    const selected = routes[button.dataset.harmony];
+    if (!selected) return;
     stop(); harmony = button.dataset.harmony;
     document.querySelectorAll('[data-harmony]').forEach(item => item.setAttribute('aria-pressed', String(item === button)));
-    document.querySelector('#middle-chord').textContent = harmony === 'original' ? 'G7' : 'D♭7';
-    status.textContent = harmony === 'original' ? 'G moves down a fifth to C. Listen to the bass.' : 'D♭ moves down a semitone to C. The upper notes stay the same.';
+    document.querySelector('#middle-chord').textContent = selected.chord;
+    document.querySelector('#middle-bass').textContent = selected.bass;
+    document.querySelector('#middle-guide').textContent = selected.guide;
+    document.querySelector('#voice-diagram').setAttribute('aria-label', `Upper voices: C to ${selected.guide} to B, and F to F to E.`);
+    document.querySelector('#harmony-explanation').textContent = selected.explanation;
+    status.textContent = `Selected Dm7 → ${selected.chord} → Cmaj7. Press play to compare.`;
   }));
   if (play) play.addEventListener('click', async () => {
     if (playing) { stop(); status.textContent = 'Stopped.'; return; }
@@ -26,7 +39,7 @@
       if (request !== generation) return;
       play.textContent = '■ Stop'; play.setAttribute('aria-label', 'Stop the demonstration');
       status.textContent = harmony === 'original' ? 'Playing Dm7 → G7 → Cmaj7.' : 'Playing Dm7 → D♭7 → Cmaj7.';
-      const chords = [[38, 53, 60], [harmony === 'original' ? 43 : 37, 53, 59], [36, 52, 59]];
+      const chords = [[38, 53, 60], routes[harmony].notes, [36, 52, 59]];
       const bus = context.createGain(); bus.gain.value = .22; bus.connect(context.destination);
       chords.forEach((notes, i) => notes.forEach((note, voice) => {
         const oscillator = context.createOscillator(), gain = context.createGain(), start = context.currentTime + .08 + i * 1.35;

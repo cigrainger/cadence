@@ -7,7 +7,7 @@
 Hear an idea. Imagine it. Find it under your fingers. Make something of your own.
 Cadence connects scores, listening, instrument practice and composition, with separate evidence for **hearing, explaining, playing and creating**. No paid lessons, advertising, streak penalties or account required. Optional AI uses your own OpenRouter account and credits.
 
-[Download the public preview](https://github.com/cigrainger/cadence/releases/tag/v0.36.0) · [User guide](https://cigrainger.github.io/cadence/docs/) · [Project website](https://cigrainger.github.io/cadence/) · [Contribute](CONTRIBUTING.md)
+[Download the public preview](https://github.com/cigrainger/cadence/releases/tag/v0.36.1) · [User guide](https://cigrainger.github.io/cadence/docs/) · [Project website](https://cigrainger.github.io/cadence/) · [Contribute](CONTRIBUTING.md)
 
 ![Cadence's harmony studio, with the full score and guided activities](site/assets/studio.png)
 
@@ -24,13 +24,13 @@ This is an early public release. AI transcription is fallible and needs review. 
 
 ## Install
 
-The first published binary is for **Apple silicon, macOS 14 or later**. Download the app ZIP and verify its SHA-256 against the release's `SHA256SUMS.txt`, then extract and move Cadence to Applications. Releases include matching source, dependency records and notes.
+The published binary is for **Apple silicon, macOS 14 or later**. Download the app ZIP and verify its SHA-256 against the release's `SHA256SUMS.txt`, then extract and move Cadence to Applications. Releases include matching source, dependency records and notes.
 
-The preview is **ad hoc signed, not Apple notarised**. macOS may block a downloaded app. Use Apple's normal Privacy & Security review process only if you trust this source; no command that disables Gatekeeper is required or recommended. You can also build locally. Intel builds are not yet release-tested.
+The **0.36.1 app ZIP is Developer ID signed and Apple notarised**, with a stapled ticket. macOS still shows its normal first-open confirmation for a downloaded app. Earlier 0.36.0 downloads were ad hoc signed. Intel builds are not yet release-tested; local builds remain available.
 
 ## Build from source
 
-Requires macOS 14+, Xcode with a Swift 6 toolchain, Python 3.11+ for verification/site tooling, and Node.js for JavaScript syntax checks. No Xcode project or npm install is needed for the app. SwiftPM fetches the exact ZIPFoundation version in `Package.resolved`.
+Requires macOS 14+, Xcode with a Swift 6 toolchain, Python 3.11+ for verification/site tooling, and Node.js 24+ for website interaction checks. No Xcode project or npm install is needed for the app. SwiftPM fetches the exact ZIPFoundation version in `Package.resolved`.
 
 ```sh
 git clone https://github.com/cigrainger/cadence.git
@@ -39,7 +39,7 @@ cd cadence
 open dist/Cadence.app
 ```
 
-`CADENCE_BUILD_DIR` and `CADENCE_APP_PATH` optionally select the build cache and output bundle. The build stages a fresh bundle; it only replaces an output recognised as Cadence.
+`CADENCE_BUILD_DIR` and `CADENCE_APP_PATH` optionally select the build cache and output bundle. Local builds default to ad-hoc signing; maintainers use the [signing and notarisation guide](Docs/RELEASING.md) for public downloads. The build stages a fresh bundle; it only replaces an output recognised as Cadence.
 
 ```sh
 python3 Scripts/check_repository.py

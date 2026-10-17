@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Cadence contributors
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+import Combine
 import MusicCore
 import SwiftUI
 
@@ -82,7 +83,6 @@ struct Preferences: Codable, Equatable {
     @Published var capo = 0
     @Published var leftHanded = false
     @Published var showDegrees = false
-    @Published var history = PracticeProgress()
     @Published var showRewards = true
     @Published var showSolfege = true
     @Published var comparison: Scale?
@@ -91,11 +91,9 @@ struct Preferences: Codable, Equatable {
     @Published var coachPrompt = ""
     @Published var coachFocus = 0
     @Published var coachLines: [ChatLine] = []
-    @Published var learning = LearningLibrary()
     var learningStorageError: String? { stores.practiceError }
     @Published var libraryLearning = false
     @Published var pathwaySession: PathwayPracticeSession?
-    @Published var studies = StudyLibrary()
     @Published var importingStudy = false
     @Published var coachStudy: StudyReference?
     @Published var pendingStudyPathway: StudyReference?
@@ -106,13 +104,8 @@ struct Preferences: Codable, Equatable {
     let timedSession = TimedPracticeSession()
     let playAlongSession = PlayAlongSession()
     let rehearsalSession = PieceRehearsalSession()
-    @Published var rehearsals = PieceRehearsalBook()
-    @Published var pianoTakes = PianoTakeBook()
-    @Published var triadPractice = TriadPractice()
     let triadInput = TriadInput()
-    @Published var tensionPractice = TensionPractice()
     let tensionInput = TensionInput()
-    @Published var reharmPractice = ReharmPractice()
     let reharmInput = ReharmInput()
     let reharmTransport = ReharmTransport()
     @Published var rehearsalPieceID: String?
@@ -120,19 +113,14 @@ struct Preferences: Codable, Equatable {
     @Published var playAlongMaterial: ScoreEarMaterial?
     @Published var metronome = MetronomeSettings()
     @Published var tuner = TunerSettings()
-    @Published var editor = EditorLibrary()
-    @Published var notebook = PieceNotebook()
     @Published var librarySelection: String?
     @Published var libraryCourses = false
     @Published var courses = CourseLibrary()
     @Published var learningShelf = "Pathways"
     @Published var musicalPathwaySelection: UUID?
     @Published var musicalPathwayStep: UUID?
-    @Published var earPractice = EarPractice()
     let earInput = EarSessionInput()
-    @Published var scoreEarPractice = ScoreEarPractice()
     let scoreEarInput = EarSessionInput(library: true)
-    @Published var smoothPractice = SmoothPractice()
     @Published var showAdaptiveSession = false
     let adaptiveInput = AdaptiveSessionInput()
     var previewBooks: [UUID: BookAsset] = [:]
@@ -143,7 +131,6 @@ struct Preferences: Codable, Equatable {
     var libraryStorageError: String? { stores.notebook.loadError }
     @Published var editorPassageFocus: EditorPassageFocus?
     @Published var studyWholePiece = false
-    @Published var journal = PracticeJournal()
     @Published var showPDFImport = false
     @Published var pdfImportScoreID: UUID?
     @Published var pdfReviewPage: Int?
@@ -154,6 +141,9 @@ struct Preferences: Codable, Equatable {
     let aiSettings: AISettings
     let audio = AudioPlayer()
     let microphone = Microphone()
+    let practiceWorkspace: PracticeWorkspace
+    let libraryWorkspace: LibraryWorkspace
+    private var workspaceObservations = Set<AnyCancellable>()
     let stores: WorkspaceStorage
     var storage: URL { stores.directory }
     @Published var saveErrors: [String: String] = [:]
@@ -169,29 +159,21 @@ struct Preferences: Codable, Equatable {
         let support = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
         stores = WorkspaceStorage(
             directory: storageOverride ?? support.appendingPathComponent("Cadence", isDirectory: true))
+        practiceWorkspace = PracticeWorkspace(storage: stores, ephemeral: preview)
+        libraryWorkspace = LibraryWorkspace(storage: stores, ephemeral: preview)
         if !preview { loadWorkspace() }
         configurePreview()
+        // Forward only persisted draft changes; transport ticks keep their own observers.
+        practiceWorkspace.objectWillChange.sink { [weak self] _ in self?.objectWillChange.send() }
+            .store(in: &workspaceObservations)
+        libraryWorkspace.objectWillChange.sink { [weak self] _ in self?.objectWillChange.send() }
+            .store(in: &workspaceObservations)
     }
-    var libraryPieces: [LibraryPiece] { LibraryPiece.catalog(scores: editor.documents, studies: studies.studies) }
-    func pieceRecord(_ piece: LibraryPiece) -> PieceRecord {
-        notebook.records[piece.id] ?? PieceRecord(kind: piece.defaultKind)
-    }
-    func reconcileLibrary() {
-        guard libraryStorageError == nil else { return }
-        notebook.reconcile(libraryPieces)
-    }
+    var libraryPieces: [LibraryPiece] { libraryWorkspace.pieces }
+    func pieceRecord(_ piece: LibraryPiece) -> PieceRecord { libraryWorkspace.record(for: piece) }
+    func reconcileLibrary() { libraryWorkspace.reconcile() }
     func changePiece(_ id: String, _ change: (inout PieceRecord) -> Void) throws {
-        guard libraryStorageError == nil else { throw MusicError.invalid(libraryStorageError!) }
-        var copy = notebook
-        copy.reconcile(libraryPieces)
-        guard var record = copy.records[id] else {
-            throw MusicError.invalid("This piece is no longer available in the library.")
-        }
-        change(&record)
-        copy.records[id] = record
-        _ = try copy.validated()
-        if !isPreview { try stores.notebook.save(copy) }
-        notebook = copy
+        try libraryWorkspace.changePiece(id, change)
     }
     func showLibraryPiece(_ id: String) {
         libraryCourses = false
@@ -233,9 +215,7 @@ struct Preferences: Codable, Equatable {
             }
             var doc = try EditorDocument.blank(instrument: instrument)
             doc.title = "Untitled \(instrument.rawValue.lowercased())"
-            editor.documents.append(doc)
-            editor.activeID = doc.id
-            reconcileLibrary()
+            try libraryWorkspace.addComposition(doc)
             librarySelection = "score:" + doc.id.uuidString
             destination = .editor
             save()
@@ -253,153 +233,12 @@ struct Preferences: Codable, Equatable {
         doc.id = UUID()
         doc.title = String((doc.title + " · my version").prefix(120))
         doc.pdfSource = nil
-        editor.documents.append(doc)
-        editor.activeID = doc.id
-        reconcileLibrary()
-        do { try changePiece("score:" + doc.id.uuidString) { $0.kind = .composition } } catch {
+        do { try libraryWorkspace.addComposition(doc) } catch {
             message = error.localizedDescription
+            return
         }
         destination = .editor
         save()
-    }
-    func sourcePDFURL(_ source: PDFScoreSource) -> URL? {
-        if isPreview && CommandLine.arguments.contains("--course-preview") { return PDFImportExamples.url("chapter") }
-        if isPreview && CommandLine.arguments.contains("--library-preview") { return PDFImportExamples.url("guitar") }
-        if isPreview && CommandLine.arguments.contains("--pdf-batch-preview") {
-            let url = FileManager.default.temporaryDirectory.appendingPathComponent(
-                "cadence-preview-\(source.fileID).pdf")
-            if !FileManager.default.fileExists(atPath: url.path), let asset = try? PDFBatchChecks.asset() {
-                try? asset.data.write(to: url)
-            }
-            return url
-        }
-        if isPreview
-            && (CommandLine.arguments.contains("--pdf-review-check")
-                || CommandLine.arguments.contains("--pdf-batch-preview"))
-        {
-            if let i = CommandLine.arguments.firstIndex(of: "--pdf-source"), i + 1 < CommandLine.arguments.count {
-                return URL(fileURLWithPath: CommandLine.arguments[i + 1])
-            }
-            return PDFImportExamples.url(editor.active.instrument == .guitar ? "guitar" : "piano")
-        }
-        let url = storage.appendingPathComponent("PDF Sources", isDirectory: true).appendingPathComponent(
-            source.fileID.uuidString + ".pdf")
-        return FileManager.default.fileExists(atPath: url.path) ? url : nil
-    }
-    func acceptPDFImport(_ reply: PDFTranscriptionReply, asset: PDFImportAsset, page: Int, instrument: EditorInstrument)
-        throws
-    {
-        if let editorStorageError { throw MusicError.invalid(editorStorageError) }
-        guard !isPreview, (1...asset.pageCount).contains(page), editor.documents.count < 100 else {
-            throw MusicError.invalid("Cadence keeps up to 100 editable scores. This draft has not been saved.")
-        }
-        let draft = try reply.transcription.makeDocument(instrument: instrument)
-        let existing = editor.documents.compactMap(\.pdfSource).first { old in
-            guard old.filename == asset.filename, let url = sourcePDFURL(old),
-                (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) == asset.data.count
-            else { return false }
-            return (try? Data(contentsOf: url)) == asset.data
-        }
-        let source = PDFScoreSource(
-            fileID: existing?.fileID ?? UUID(), filename: asset.filename, page: page, model: reply.model,
-            costUSD: reply.costUSD, warnings: draft.warnings)
-        var document = draft.document
-        document.pdfSource = source
-        document = try document.validated()
-        let folder = storage.appendingPathComponent("PDF Sources", isDirectory: true)
-        let sourceURL = folder.appendingPathComponent(source.fileID.uuidString + ".pdf")
-        var library = editor
-        library.documents.append(document)
-        library.activeID = document.id
-        library.engine = "OpenSheetMusicDisplay"
-        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-        if existing == nil { try asset.data.write(to: sourceURL, options: .atomic) }
-        do { try stores.editor.save(library) } catch {
-            if existing == nil { try? FileManager.default.removeItem(at: sourceURL) }
-            throw error
-        }
-        audio.stop()
-        microphone.stop()
-        editor = library
-        destination = .editor
-    }
-    func createPDFBatch(
-        asset: PDFImportAsset, pages: [Int], instrument: EditorInstrument, model: PDFImportModel, passage: String,
-        documentID: UUID = UUID(), sourceID: UUID? = nil
-    ) throws -> UUID {
-        if let editorStorageError { throw MusicError.invalid(editorStorageError) }
-        guard !isPreview, editor.documents.count < 100, !pages.isEmpty, pages.count <= 16,
-            pages.allSatisfy({ (1...asset.pageCount).contains($0) }), Set(pages).count == pages.count
-        else { throw MusicError.invalid("Choose up to 16 pages. Cadence keeps up to 100 editable scores.") }
-        let existing = editor.documents.compactMap(\.pdfSource).first { old in
-            guard old.filename == asset.filename, let url = sourcePDFURL(old),
-                (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) == asset.data.count
-            else { return false }
-            return (try? Data(contentsOf: url)) == asset.data
-        }
-        if let sourceID {
-            let saved = storage.appendingPathComponent("PDF Sources").appendingPathComponent(
-                sourceID.uuidString + ".pdf")
-            guard (try? Data(contentsOf: saved)) == asset.data else {
-                throw MusicError.invalid("The book PDF changed or is unavailable. Restore its original source.")
-            }
-        }
-        guard !editor.documents.contains(where: { $0.id == documentID }) else {
-            throw MusicError.invalid("This exercise score already exists.")
-        }
-        var source = PDFScoreSource(
-            fileID: sourceID ?? existing?.fileID ?? UUID(), filename: asset.filename, page: pages[0],
-            model: model.rawValue, costUSD: 0)
-        source.pages = pages.sorted().map { PDFImportPage(page: $0, model: model.rawValue, passage: passage) }
-        var document = try EditorDocument.blank(instrument: instrument, bars: 1)
-        document.id = documentID
-        document.title = String((asset.filename as NSString).deletingPathExtension.prefix(120))
-        document.pdfSource = source
-        document = try document.validated()
-        let folder = storage.appendingPathComponent("PDF Sources", isDirectory: true)
-        let url = folder.appendingPathComponent(source.fileID.uuidString + ".pdf")
-        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-        if existing == nil && sourceID == nil { try asset.data.write(to: url, options: .atomic) }
-        var library = editor
-        library.documents.append(document)
-        library.activeID = document.id
-        library.engine = "OpenSheetMusicDisplay"
-        do { try stores.editor.save(library) } catch {
-            if existing == nil && sourceID == nil { try? FileManager.default.removeItem(at: url) }
-            throw error
-        }
-        audio.stop()
-        microphone.stop()
-        editor = library
-        destination = .editor
-        pdfImportScoreID = document.id
-        pdfImportRevision += 1
-        return document.id
-    }
-    func changePDFScore(_ id: UUID, _ change: (inout EditorDocument) throws -> Void) throws {
-        guard !isPreview, let index = editor.documents.firstIndex(where: { $0.id == id }) else {
-            throw MusicError.invalid("This imported score is no longer available.")
-        }
-        var library = editor
-        var document = library.documents[index]
-        try change(&document)
-        library.documents[index] = try document.validated()
-        try stores.editor.save(library)
-        editor = library
-        pdfImportRevision += 1
-    }
-    func reviewPDFPage(scoreID: UUID, page: Int) {
-        editor.activeID = scoreID
-        destination = .editor
-        pdfReviewPage = page
-        showPDFImport = false
-    }
-    var practicedConceptCount: Int { Set(history.cards.keys).union(journal.attempts.map(\.activityID)).count }
-    var practicedDayCount: Int {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        return Set(history.days).union(journal.attempts.map { formatter.string(from: $0.date) }).count
     }
     var preferences: Preferences {
         Preferences(

@@ -1,10 +1,11 @@
 # Verification
 
-Run from the repository root on macOS with Xcode/Swift 6 and Python 3.11+. CI selects Xcode 26.3 explicitly; local builds honour DEVELOPER_DIR. The formatter omits the multiline-string reflow option because older and newer Swift toolchains encode its default differently.
+Run from the repository root on macOS with Xcode/Swift 6 and Python 3.11+ and Node.js 24+. CI selects Xcode 26.3 explicitly; local builds honour DEVELOPER_DIR. The formatter omits the multiline-string reflow option because older and newer Swift toolchains encode its default differently.
 
 ```sh
 python3 Scripts/check_repository.py
 python3 -m unittest discover -s Scripts -p 'test_*.py'
+node --test Scripts/test_site.cjs
 ./verify.sh --tests-only
 ./verify.sh
 ```
@@ -13,9 +14,9 @@ The first command checks public-repository hygiene, vendor hashes, license polic
 
 ## What tests establish
 
-Core tests cover musical happy paths and meaningful failure/adversarial cases: invalid pitches/notation, archive traversal and oversized entries, unsupported transcription, injected provider errors, persistence conflict/corruption, stale reviews, assisted versus independent evidence, MIDI timing and cancellation. Native state tests check save/retry and feature integration. Original fixtures keep the workflow independent of paid models or private books.
+Core tests cover musical happy paths and meaningful failure/adversarial cases: invalid pitches/notation, archive traversal and oversized entries, unsupported transcription, injected provider errors, persistence conflict/corruption, stale reviews, assisted versus independent evidence, MIDI timing and cancellation. Native state tests check save/retry and feature integration. Owner tests cover disk conflicts, corruption, failed commits without publication, missing pieces with retained notes, size/identity limits, legacy snapshots and observation forwarding. Signing tests reject development certificates, missing timestamps/runtime, debugger entitlements, failed notarisation and missing tickets. Website controller tests run real code with silent fake audio and cover visible/sounding pitch agreement, cancellation while audio resumes, stop, completion and unavailable sound. Original fixtures keep the workflow independent of paid models or private books.
 
-Coverage is measured separately for **MusicCore** and the **Cadence app**. The core has a 90% line-coverage regression floor. A high core figure is not whole-app UI coverage. Native screenshot checks complement state tests; they do not replace VoiceOver, physical-instrument or human musical review.
+Coverage is measured separately for **MusicCore** and the **Cadence app**. The core has a 90% line-coverage regression floor. The two workspace owners have a separate 85% line-coverage regression floor. The whole-app figure retains every application source file, including views and diagnostics: a high owner/core figure is not whole-app UI coverage. Native screenshot checks complement state tests; they do not replace VoiceOver, physical-instrument or human musical review.
 
 ## Before release
 

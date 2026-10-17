@@ -200,7 +200,7 @@ extension AppState {
                 throw MusicError.invalid(
                     "Add music to your composition, listen back and describe a choice before finishing with it.")
             }
-            if !isPreview { try stores.editor.save(editor) }
+            try libraryWorkspace.saveScores()
             score = document
         }
         try changeAdaptiveSession {

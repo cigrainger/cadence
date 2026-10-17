@@ -14,7 +14,7 @@ Cadence is a Swift package with a native SwiftUI/AppKit application and a portab
 | `Cadence/App` and `Design` | Composition root, navigation, shared visual controls | Hidden feature-specific scoring rules |
 | `Cadence/Diagnostics` | Isolated previews and executable native checks | A user's library, key or microphone |
 
-The feature folders group files by ownership. This is not a new framework or a claim that every file has become small. `AppState` still coordinates several repositories and workflows; extracting stable owners incrementally is preferable to replacing it with one generic session abstraction.
+The feature folders group files by ownership. This is not a new framework or a claim that every file has become small. `AppState` is the composition/navigation boundary. `LibraryWorkspace` owns scores, studies and their notebook; `PracticeWorkspace` owns the single practice snapshot. `WorkspaceAccess` provides temporary writable projections for existing feature bindings, without a second copy of the data. Course state and activity orchestration still need incremental extraction; there is no generic exercise framework.
 
 ## Score and source ownership
 
@@ -30,7 +30,7 @@ Hearing, explaining, playing and creating are separate evidence dimensions. Assi
 
 ## Persistence and failure
 
-`JSONFileStore` validates sizes, keeps atomic save/backup semantics and preserves unreadable originals. A failed write leaves pending work visible for retry. AppState exposes storage warnings; the sidebar never claims “saved” simply because the app is open. Repositories should stage, validate and commit a value before reporting success.
+`JSONFileStore` validates sizes, keeps atomic save/backup semantics and preserves unreadable originals. A failed write leaves pending work visible for retry. AppState exposes storage warnings; the sidebar never claims “saved” simply because the app is open. Repositories stage, validate and commit a value before reporting success. `PracticeWorkspace.commit` publishes one snapshot after the evidence and review schedule have been written together. `LibraryWorkspace` makes explicit score/notebook commits transactional, rejects late results for removed pieces, and leaves ordinary editing drafts visible if saving fails. The two owners are testable without audio, MIDI, Keychain or a view tree. Their observation is forwarded by AppState for existing bindings; transport clocks remain independently observed.
 
 ## External boundaries
 
@@ -38,4 +38,4 @@ AI requests use `OpenRouterRequest`/`OpenRouterTransport` with an endpoint allow
 
 ## Next architectural work
 
-As features evolve, extract cohesive library, practice and course owners from AppState when there is a tested boundary. Add UI/accessibility automation around the most common learner journeys. Improve the renderer's transitive version provenance before claiming a complete dependency graph. Keep migrations and old-workspace fixtures with every persisted schema change.
+Next, extract course ownership and cancellable import orchestration behind tested boundaries. Convert feature callers from compatibility projections to focused owners as each workflow changes. Separate persisted drafts from transient activity state before enabling Swift 6 strict concurrency. Add UI/accessibility automation around the most common learner journeys. Improve the renderer's transitive version provenance before claiming a complete dependency graph. Keep migrations and old-workspace fixtures with every persisted schema change.

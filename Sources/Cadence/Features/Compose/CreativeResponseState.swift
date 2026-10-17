@@ -40,9 +40,7 @@ extension AppState {
         return scoreID
     }
     func commitScores(_ copy: EditorLibrary) throws {
-        _ = try copy.validated()
-        if !isPreview { try stores.editor.save(copy) }
-        editor = copy
+        try libraryWorkspace.commitScores(copy)
         reconcileLibrary()
         saveErrors.removeValue(forKey: "scores")
     }

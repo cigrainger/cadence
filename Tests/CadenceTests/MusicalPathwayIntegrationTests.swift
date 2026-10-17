@@ -71,6 +71,20 @@ final class MusicalPathwayIntegrationTests: XCTestCase {
         XCTAssertEqual(state.pieceRecord(LibraryPiece(source: .score(state.editor.active))).kind, .composition)
         XCTAssertEqual(state.courseReturn?.lessonID, pathway.steps.last?.lessonID)
     }
+    @MainActor func testFirstPathwayInstallPersistsEveryExerciseBeforeRestart() throws {
+        let state = try state()
+        _ = try install(state)
+        let ids = Set(state.courses.courses.flatMap(\.exercises).map(\.scoreID))
+        XCTAssertFalse(ids.isEmpty)
+        // No second install or global save: the first operation must be durable itself.
+        let reopened = AppState(storageOverride: state.storage)
+        defer { reopened.midi.shutdown() }
+        XCTAssertTrue(ids.isSubset(of: Set(reopened.editor.documents.map(\.id))))
+        for id in ids {
+            let piece = try XCTUnwrap(reopened.libraryPieces.first { $0.id == "score:" + id.uuidString })
+            XCTAssertEqual(reopened.pieceRecord(piece).kind, .sheetMusic)
+        }
+    }
     @MainActor func testApprovalAndVirtualMIDIProduceExactSourceSpacedEvidence() throws {
         let state = try state()
         let pathway = try install(state)

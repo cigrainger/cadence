@@ -167,7 +167,7 @@ extension AppState {
             guard let ending = tensionEnding(pending.expected), ending.events.contains(where: { !$0.isRest }) else {
                 throw MusicError.invalid("Write some music in your alternative ending before saving the reflection.")
             }
-            if !isPreview { try stores.editor.save(editor) }
+            try libraryWorkspace.saveScores()
             evidence?.scoreID = ending.id
         }
         if let evidence { snapshot.journal.append(evidence) }

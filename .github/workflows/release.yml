@@ -54,9 +54,9 @@ jobs:
         with:
           name: release-assets
           path: release
-      - name: Create reviewable draft with source, checksums and notes
+      - name: Create draft awaiting locally notarised assets
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
           RELEASE_TAG: ${{ github.ref_name }}
-        run: gh release create "$RELEASE_TAG" release/* --verify-tag --draft --prerelease --title "Cadence $RELEASE_TAG" --notes-file release/RELEASE-NOTES.md
+        run: gh release create "$RELEASE_TAG" --verify-tag --draft --prerelease --title "Cadence $RELEASE_TAG" --notes-file release/RELEASE-NOTES.md

@@ -303,7 +303,7 @@ extension AppState {
             }
         }
         // The score edits must be durable before the course claims they were reviewed.
-        if !isPreview { try stores.editor.save(editor) }
+        try libraryWorkspace.saveScores()
         try changeCourse(courseID) { current in
             guard let i = current.exercises.firstIndex(where: { $0.id == link.id }) else {
                 throw MusicError.invalid("The exercise link changed.")

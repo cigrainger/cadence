@@ -107,9 +107,7 @@ import MusicCore
             score.id = link.scoreID
             editor.documents.append(score)
         }
-        _ = try editor.validated()
-        if !state.isPreview { try state.stores.editor.save(editor) }
-        state.editor = editor
+        try state.libraryWorkspace.commitScores(editor)
         state.reconcileLibrary()
     }
     static func preview(state: AppState, ready: Bool) throws {
