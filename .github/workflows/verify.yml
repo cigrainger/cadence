@@ -52,6 +52,8 @@ jobs:
           package-manager-cache: false
       - name: Check Swift formatting
         run: xcrun swift-format lint --strict --configuration .swift-format --recursive Sources Tests
+      - name: Verify the native graphical host
+        run: python3 Scripts/check_native_ui_host.py
       - name: Test Swift 6, native workflows and whole-app coverage
         run: ./verify.sh --skip-accessibility --skip-audio-output
       - name: Keep verification evidence
@@ -61,6 +63,8 @@ jobs:
           name: cadence-verification
           path: |
             .verification/*.json
+            .verification/ui-host/*.json
+            .verification/ui-host/*.log
             .verification/*.log
             .verification/native-coverage/**/manifest.json
             .verification/native-coverage/**/combined.json

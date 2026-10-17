@@ -41,7 +41,7 @@ import Foundation
         let configuration = NSWorkspace.OpenConfiguration()
         configuration.createsNewApplicationInstance = true
         configuration.allowsRunningApplicationSubstitution = false
-        configuration.activates = false
+        configuration.activates = true
         configuration.addsToRecentItems = false
         configuration.promptsUserIfNeeded = false
         configuration.arguments = arguments
