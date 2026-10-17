@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Local release checks. No API keys, paid model requests or microphone access."""
 import argparse
+from concurrent.futures import ThreadPoolExecutor
 import datetime
 import hashlib
 import json
@@ -348,6 +349,33 @@ def run_preview(executable, output, env, scenario):
     return checks
 
 
+def paired_native_checks(production, instrumented, jobs):
+    """Overlap only two isolated captures; always join both owned processes.
+
+    Each callback has its own app process, storage, logs and profile destination.
+    Device self-checks and accessibility actions must not enter this helper with
+    jobs=2: they deliberately own global input/focus resources.
+    """
+    require(jobs in (1, 2), "Native preview concurrency must be one or two")
+    if jobs == 1:
+        return production(), instrumented()
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        first = pool.submit(production)
+        second = pool.submit(instrumented)
+        # Exiting the executor joins the other bounded check even on failure.
+        # A failed capture must never leave an app running in the background.
+        return first.result(), second.result()
+
+
+def run_settings_preview(executable, output, env, name):
+    png = output / ("settings-" + name + ".png")
+    png.unlink(missing_ok=True)
+    run([executable, *native_arguments(["--settings", "--" + name + "-settings", "--snapshot", png])],
+        output / ("settings-" + name + ".log"), env, 30)
+    require(png.is_file() and png.stat().st_size > 1000, "Missing settings preview: " + name)
+    return name
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--tests-only", action="store_true", help="Skip desktop/audio/renderer checks; suitable for headless CI")
@@ -355,6 +383,8 @@ def main():
     parser.add_argument("--skip-audio-output", action="store_true", help="Record live output-device checks as skipped on CI; still render audio offline and test virtual MIDI")
     parser.add_argument("--output", type=Path, default=ROOT / ".verification", help="Logs, reports, previews and staged app")
     parser.add_argument("--scratch", type=Path, help="Reusable Swift build cache (defaults to OUTPUT/build)")
+    parser.add_argument("--preview-jobs", type=int, choices=(1, 2), default=1,
+                        help="Overlap isolated production/instrumented captures; device and accessibility checks stay serial")
     args = parser.parse_args()
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=True)
@@ -367,6 +397,7 @@ def main():
     report = {"passed": False, "mode": "tests-only" if args.tests_only else "full",
               "startedAt": datetime.datetime.now(datetime.timezone.utc).isoformat(),
               "paidRequests": 0, "physicalMIDI": False, "microphone": False}
+    report["previewJobs"] = args.preview_jobs
     (output / "summary.json").write_text(json.dumps(report, indent=2) + "\n")
     started = time.time()
     inputs = source_digest()
@@ -443,21 +474,23 @@ def main():
                 scenarios = [case for case in scenarios if case[0] != "song-accessibility"]
             report["previews"] = {}
             report["instrumentedPreviews"] = {}
+            report["previewPairSeconds"] = {}
             for scenario in scenarios:
                 name = scenario[0]
-                report["previews"][name] = run_preview(executable, output, env, scenario)
-                report["instrumentedPreviews"][name] = run_preview(collection.executable, collection.folder, instrumented_env, scenario)
+                pair_started = time.monotonic()
+                production, instrumented = paired_native_checks(
+                    lambda: run_preview(executable, output, env, scenario),
+                    lambda: run_preview(collection.executable, collection.folder, instrumented_env, scenario),
+                    1 if name == "song-accessibility" else args.preview_jobs)
+                report["previews"][name] = production
+                report["instrumentedPreviews"][name] = instrumented
+                report["previewPairSeconds"][name] = round(time.monotonic() - pair_started, 3)
             report["settingsPreviews"] = []
             for name in ("general", "midi", "about"):
-                png = output / ("settings-" + name + ".png")
-                png.unlink(missing_ok=True)
-                run([executable, *native_arguments(["--settings", "--" + name + "-settings", "--snapshot", png])],
-                    output / ("settings-" + name + ".log"), env, 30)
-                require(png.is_file() and png.stat().st_size > 1000, "Missing settings preview: " + name)
-                instrumented_png = collection.folder / ("settings-" + name + ".png")
-                run([collection.executable, *native_arguments(["--settings", "--" + name + "-settings", "--snapshot", instrumented_png])],
-                    collection.folder / ("settings-" + name + ".log"), instrumented_env, 30)
-                require(instrumented_png.is_file() and instrumented_png.stat().st_size > 1000, "Missing instrumented settings preview: " + name)
+                paired_native_checks(
+                    lambda: run_settings_preview(executable, output, env, name),
+                    lambda: run_settings_preview(collection.executable, collection.folder, instrumented_env, name),
+                    args.preview_jobs)
                 report["settingsPreviews"].append(name)
             compared = 0
             for folder in ("ScoreViewer", "EditorViewer", "ImportExamples", "SoundBanks", "Brand"):

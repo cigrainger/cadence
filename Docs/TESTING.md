@@ -1,6 +1,6 @@
 # Verification
 
-Run from the repository root on macOS with Xcode/Swift 6.2 or later, Python 3.11+ and Node.js 24+. CI selects Xcode 26.3, Python 3.13 and Node.js 24 explicitly; setup actions are pinned to immutable revisions and dependency caching is disabled. Local builds honour DEVELOPER_DIR. All first-party targets use Swift 6 language mode. Test and release builds treat warnings as errors; the verifier also rejects first-party SDK-boundary warnings that the compiler leaves as warnings. The formatter omits the multiline-string reflow option because older and newer Swift toolchains encode its default differently.
+Run from the repository root on macOS with Xcode/Swift 6.2 or later, Python 3.11+ and Node.js 24+. CI selects Xcode 26.3, Python 3.13 and Node.js 24 explicitly; actions are pinned to immutable revisions. Local builds honour DEVELOPER_DIR. All first-party targets use Swift 6 language mode. Test and release builds treat warnings as errors; the verifier also rejects first-party SDK-boundary warnings that the compiler leaves as warnings. The formatter omits the multiline-string reflow option because older and newer Swift toolchains encode its default differently.
 
 ```sh
 python3 Scripts/check_repository.py
@@ -8,10 +8,17 @@ python3 -m unittest discover -s Scripts -p 'test_*.py'
 node --test Scripts/test_site.cjs Scripts/test_score.cjs
 ./verify.sh --tests-only
 ./verify.sh --skip-accessibility --skip-audio-output  # macOS CI with WindowServer
+./verify.sh --skip-accessibility --skip-audio-output --preview-jobs 2  # paired isolated captures
 ./verify.sh
 ```
 
 The first command checks public-repository hygiene (including new nonignored files), vendor hashes, license policy, dependency pins, package-wide Swift 6 mode and website links, and generates `.verification/cadence.cdx.json`. Gitleaks is a separate gate (`Scripts/scan_secrets.sh`). The full native workflow builds a fresh release app and stages a separate instrumented debug app from the matching unit-test build. It verifies both with the same deterministic scenarios, ad hoc signatures, renderer assertions and original fixtures. It produces logs, JSON assertions and screenshots in `.verification`, not Git. It fails on a missing or stale report.
+
+## Iteration time
+
+CI overlaps each isolated production/instrumented preview pair, at most two app processes at once. Each retains its own in-memory preview state, process group, output files and coverage destination. The next scenario waits for both; an exception still joins the other bounded process. Device self-checks, first-launch checks and accessibility actions remain serial because they own input/focus resources. Both builds still execute every scenario. `--preview-jobs 1` is the default for local diagnosis; `summary.json` records the selected concurrency and each pair's wall time.
+
+Swift compilation is cached only within a fingerprint covering the runner image, OS build, architecture, Xcode/Swift versions, checkout path, dependency pins and build-driver configuration. A source manifest restores timestamps only for byte-identical files, avoiding a full rebuild merely because checkout refreshed their dates. Changed files keep their fresh timestamps and Swift's incremental dependency checks still run. No saved cache represents a passing test run: unit tests, native checks, signatures, resource comparisons and source inventories execute again. Raw profiles and unit coverage exports are removed before cache upload and independently before every unit run. Only `.verification/build` is cached, never Keychain, environment files, user music, application state or native coverage evidence. Cache absence is a normal cold build; GitHub's branch-scoped caches keep pull-request writes out of the default branch's cache scope. Do not broaden the restore prefix across toolchain or build-flag changes.
 
 ## What tests establish
 

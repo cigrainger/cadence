@@ -54,8 +54,33 @@ jobs:
         run: xcrun swift-format lint --strict --configuration .swift-format --recursive Sources Tests
       - name: Verify the native graphical host
         run: python3 Scripts/check_native_ui_host.py
+      - name: Identify compatible Swift build cache
+        id: cache-key
+        run: echo "key=$(python3 Scripts/swift_build_cache.py fingerprint)" >> "$GITHUB_OUTPUT"
+      - name: Restore compiler work
+        id: swift-cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .verification/build
+          key: swift-v1-${{ steps.cache-key.outputs.key }}-${{ github.sha }}
+          restore-keys: swift-v1-${{ steps.cache-key.outputs.key }}-
+      - name: Restore byte-identical source timestamps
+        run: python3 Scripts/swift_build_cache.py restore
       - name: Test Swift 6, native workflows and whole-app coverage
-        run: ./verify.sh --skip-accessibility --skip-audio-output
+        id: verification
+        run: ./verify.sh --skip-accessibility --skip-audio-output --preview-jobs 2
+      # A native failure need not throw away successful compilation. Caches
+      # never replace fresh tests, profiles, source inventories or native gates.
+      - name: Prepare compiler cache without coverage results
+        id: prepare-cache
+        if: always() && !cancelled() && steps.swift-cache.outputs.cache-hit != 'true' && hashFiles('.verification/unit-coverage-summary.json') != ''
+        run: python3 Scripts/swift_build_cache.py record
+      - name: Save compiler work
+        if: always() && !cancelled() && steps.prepare-cache.outcome == 'success'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .verification/build
+          key: ${{ steps.swift-cache.outputs.cache-primary-key }}
       - name: Keep verification evidence
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

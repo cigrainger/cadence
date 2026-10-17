@@ -6,9 +6,43 @@ from verify import run, check_group, check_native, record_combined_coverage, req
 import copy
 from pathlib import Path
 import tempfile
+import threading
+from verify import paired_native_checks
 
 
 class VerificationTests(unittest.TestCase):
+    def test_parallel_captures_overlap_and_keep_each_result(self):
+        barrier = threading.Barrier(2, timeout=2)
+        def capture(value):
+            barrier.wait()
+            return value
+        self.assertEqual(paired_native_checks(lambda: capture('production'), lambda: capture('instrumented'), 2),
+                         ('production', 'instrumented'))
+
+    def test_serial_captures_do_not_overlap_and_failure_stops_the_next_launch(self):
+        calls = []
+        def first():
+            calls.append('production')
+            raise RuntimeError('capture failed')
+        with self.assertRaisesRegex(RuntimeError, 'capture failed'):
+            paired_native_checks(first, lambda: calls.append('instrumented'), 1)
+        self.assertEqual(calls, ['production'])
+        with self.assertRaises(RuntimeError):
+            paired_native_checks(lambda: None, lambda: None, 3)
+
+    def test_parallel_failure_joins_the_other_capture_before_returning(self):
+        barrier = threading.Barrier(2, timeout=2)
+        joined = threading.Event()
+        def first():
+            barrier.wait()
+            raise RuntimeError('capture failed')
+        def second():
+            barrier.wait()
+            joined.set()
+        with self.assertRaisesRegex(RuntimeError, 'capture failed'):
+            paired_native_checks(first, second, 2)
+        self.assertTrue(joined.is_set())
+
     def test_timeout_samples_only_the_check_child_and_still_terminates_if_sampling_fails(self):
         for sample_error in (None, OSError("sample unavailable"), subprocess.TimeoutExpired("sample", 10)):
             with self.subTest(sample_error=sample_error), tempfile.TemporaryDirectory() as folder:
