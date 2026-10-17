@@ -382,7 +382,68 @@ def paired_native_checks(production, instrumented, jobs):
 def preview_parallelism(scenario, requested):
     # Navigation round trips deliberately tear down and recreate WebKit views.
     # Keep their lifecycle check serial even when static captures overlap.
-    return 1 if scenario[0] == 'song-accessibility' or '--workspace-editor-roundtrip' in scenario[1] else requested
+    return 1 if scenario[0] == 'song-accessibility' or '--workspace-editor-roundtrip' in scenario[1] else min(requested, 2)
+
+
+def native_scenario_batches(scenarios, jobs):
+    """Only static captures overlap across scenarios; focus-sensitive work is a barrier."""
+    require(jobs in (1, 2, 4), "Native preview concurrency must be one, two or four")
+    batch = []
+    for scenario in scenarios:
+        if preview_parallelism(scenario, jobs) == 1:
+            if batch:
+                yield batch
+                batch = []
+            yield [scenario]
+        else:
+            batch.append(scenario)
+            if len(batch) == (2 if jobs == 4 else 1):
+                yield batch
+                batch = []
+    if batch:
+        yield batch
+
+
+def checked_native_scenarios(scenarios, production, instrumented, jobs):
+    scenarios = list(scenarios)
+    require(len({case[0] for case in scenarios}) == len(scenarios),
+            "Native scenario names must be unique before concurrent capture")
+
+    def capture(scenario):
+        started = time.monotonic()
+        first, second = paired_native_checks(
+            lambda: production(scenario), lambda: instrumented(scenario), preview_parallelism(scenario, jobs))
+        return scenario[0], first, second, round(time.monotonic() - started, 3)
+
+    for batch in native_scenario_batches(scenarios, jobs):
+        if len(batch) == 1:
+            yield capture(batch[0])
+        else:
+            with ThreadPoolExecutor(max_workers=2) as pool:
+                pending = [pool.submit(capture, case) for case in batch]
+                # Join both bounded pairs before yielding or propagating failure.
+                # No scene may outlive a failed batch or overlap a serial barrier.
+                results, failures = [], []
+                for future in pending:
+                    try:
+                        results.append(future.result())
+                    except Exception as error:
+                        failures.append(error)
+            yield from results
+            if failures:
+                raise failures[0]
+
+
+def record_native_matrix(report, scenarios, production, instrumented, jobs):
+    report.update(previews={}, instrumentedPreviews={}, previewPairSeconds={})
+    started = time.monotonic()
+    try:
+        for name, first, second, seconds in checked_native_scenarios(scenarios, production, instrumented, jobs):
+            report["previews"][name] = first
+            report["instrumentedPreviews"][name] = second
+            report["previewPairSeconds"][name] = seconds
+    finally:
+        report["previewMatrixSeconds"] = round(time.monotonic() - started, 3)
 
 
 def run_settings_preview(executable, output, env, name):
@@ -401,8 +462,8 @@ def main():
     parser.add_argument("--skip-audio-output", action="store_true", help="Record live output-device checks as skipped on CI; still render audio offline and test virtual MIDI")
     parser.add_argument("--output", type=Path, default=ROOT / ".verification", help="Logs, reports, previews and staged app")
     parser.add_argument("--scratch", type=Path, help="Reusable Swift build cache (defaults to OUTPUT/build)")
-    parser.add_argument("--preview-jobs", type=int, choices=(1, 2), default=1,
-                        help="Overlap isolated production/instrumented captures; device and accessibility checks stay serial")
+    parser.add_argument("--preview-jobs", type=int, choices=(1, 2, 4), default=1,
+                        help="Maximum isolated app captures: 4 overlaps two static pairs; device and focus-sensitive checks stay serial")
     args = parser.parse_args()
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=True)
@@ -494,25 +555,16 @@ def main():
             if args.skip_accessibility:
                 report["skippedNativeScenarios"] = ["song-accessibility"]
                 scenarios = [case for case in scenarios if case[0] != "song-accessibility"]
-            report["previews"] = {}
-            report["instrumentedPreviews"] = {}
-            report["previewPairSeconds"] = {}
-            for scenario in scenarios:
-                name = scenario[0]
-                pair_started = time.monotonic()
-                production, instrumented = paired_native_checks(
-                    lambda: run_preview(executable, output, env, scenario),
-                    lambda: run_preview(collection.executable, collection.folder, instrumented_env, scenario),
-                    preview_parallelism(scenario, args.preview_jobs))
-                report["previews"][name] = production
-                report["instrumentedPreviews"][name] = instrumented
-                report["previewPairSeconds"][name] = round(time.monotonic() - pair_started, 3)
+            record_native_matrix(
+                report, scenarios, lambda scenario: run_preview(executable, output, env, scenario),
+                lambda scenario: run_preview(collection.executable, collection.folder, instrumented_env, scenario),
+                args.preview_jobs)
             report["settingsPreviews"] = []
             for name in ("general", "midi", "about"):
                 paired_native_checks(
                     lambda: run_settings_preview(executable, output, env, name),
                     lambda: run_settings_preview(collection.executable, collection.folder, instrumented_env, name),
-                    args.preview_jobs)
+                    min(args.preview_jobs, 2))
                 report["settingsPreviews"].append(name)
             compared = 0
             for folder in ("ScoreViewer", "EditorViewer", "ImportExamples", "SoundBanks", "Brand"):

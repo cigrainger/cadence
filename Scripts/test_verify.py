@@ -213,3 +213,123 @@ class VerificationTests(unittest.TestCase):
         self.assertEqual(report["WorkspaceOwners"]["files"], 3)
         self.assertEqual(report["LearningWorkflows"]["files"], 4)
         self.assertEqual(report["LearningWorkflows"]["lines"]["percent"], 70.0)
+
+class NativeMatrixSchedulingTests(unittest.TestCase):
+    @staticmethod
+    def case(name, flags=()):
+        return (name, list(flags), [], None, [])
+
+    def test_static_batches_drain_around_focus_sensitive_scenarios(self):
+        from verify import native_scenario_batches
+        cases = [self.case('a'), self.case('b'), self.case('navigation', ['--workspace-editor-roundtrip']),
+                 self.case('c'), self.case('d'), self.case('song-accessibility'), self.case('e')]
+        self.assertEqual([[case[0] for case in batch] for batch in native_scenario_batches(cases, 4)],
+                         [['a', 'b'], ['navigation'], ['c', 'd'], ['song-accessibility'], ['e']])
+        for jobs in (1, 2):
+            self.assertTrue(all(len(batch) == 1 for batch in native_scenario_batches(cases, jobs)))
+        self.assertEqual(preview_parallelism(cases[0], 4), 2)
+        self.assertEqual(preview_parallelism(cases[2], 4), 1)
+
+    def test_four_captures_overlap_and_keep_their_results_in_scenario_order(self):
+        from verify import checked_native_scenarios
+        barrier = threading.Barrier(4, timeout=3)
+        second_case_done = threading.Event()
+        completed = []
+        lock = threading.Lock()
+        def capture(case, build):
+            barrier.wait()
+            if case[0] == 'b':
+                with lock:
+                    completed.append(build)
+                    if len(completed) == 2: second_case_done.set()
+            else:
+                self.assertTrue(second_case_done.wait(3))
+            return (case[0], build)
+        results = list(checked_native_scenarios([self.case('a'), self.case('b')],
+                       lambda case: capture(case, 'production'), lambda case: capture(case, 'instrumented'), 4))
+        self.assertEqual([(name, first, second) for name, first, second, _ in results],
+                         [('a', ('a', 'production'), ('a', 'instrumented')),
+                          ('b', ('b', 'production'), ('b', 'instrumented'))])
+
+    def test_serial_scene_has_no_other_capture_alive(self):
+        from verify import checked_native_scenarios
+        lock = threading.Lock()
+        active = {}
+        finished = []
+        barrier = threading.Barrier(4, timeout=3)
+        def capture(case):
+            with lock:
+                if case[0] == 'navigation':
+                    self.assertFalse(active)
+                    self.assertEqual(sum(name in ('a', 'b') for name in finished), 4)
+                elif case[0] == 'c':
+                    self.assertEqual(finished.count('navigation'), 2)
+                self.assertNotIn('navigation', active.values())
+                active[threading.get_ident()] = case[0]
+            if case[0] in ('a', 'b'): barrier.wait()
+            with lock:
+                del active[threading.get_ident()]
+                finished.append(case[0])
+            return case[0]
+        cases = [self.case('a'), self.case('b'), self.case('navigation', ['--workspace-editor-roundtrip']), self.case('c')]
+        self.assertEqual(len(list(checked_native_scenarios(cases, capture, capture, 4))), 4)
+        self.assertFalse(active)
+
+    def test_failed_pair_joins_all_four_captures_and_does_not_launch_the_next_batch(self):
+        from verify import checked_native_scenarios
+        barrier = threading.Barrier(4, timeout=3)
+        finished = set()
+        lock = threading.Lock()
+        def capture(case, build):
+            barrier.wait()
+            with lock: finished.add((case[0], build))
+            if case[0] == 'a' and build == 'production': raise RuntimeError('fixture failed')
+            return case[0]
+        with self.assertRaisesRegex(RuntimeError, 'fixture failed'):
+            list(checked_native_scenarios([self.case('a'), self.case('b'), self.case('must-not-launch')],
+                 lambda case: capture(case, 'production'), lambda case: capture(case, 'instrumented'), 4))
+        self.assertEqual(finished, {('a', 'production'), ('a', 'instrumented'), ('b', 'production'), ('b', 'instrumented')})
+
+    def test_duplicate_names_and_invalid_limits_fail_before_launch(self):
+        from verify import checked_native_scenarios
+        for cases, jobs in [([self.case('a'), self.case('a')], 4), ([self.case('a')], 3)]:
+            with self.assertRaises(RuntimeError):
+                list(checked_native_scenarios(cases, lambda _: self.fail('unexpected launch'),
+                                            lambda _: self.fail('unexpected launch'), jobs))
+
+    def test_failed_later_batch_retains_completed_results_and_matrix_wall_time(self):
+        from verify import record_native_matrix
+        report = {'existing': 'kept'}
+        def capture(case):
+            if case[0] == 'b': raise RuntimeError('later failure')
+            return case[0]
+        with self.assertRaisesRegex(RuntimeError, 'later failure'):
+            record_native_matrix(report, [self.case('a'), self.case('b')], capture, capture, 1)
+        self.assertEqual(report['previews'], {'a': 'a'})
+        self.assertEqual(report['instrumentedPreviews'], {'a': 'a'})
+        self.assertEqual(set(report['previewPairSeconds']), {'a'})
+        self.assertGreaterEqual(report['previewMatrixSeconds'], 0)
+        self.assertEqual(report['existing'], 'kept')
+
+    def test_four_process_failure_retains_the_other_successful_pair_after_draining(self):
+        from verify import record_native_matrix
+        for broken in ('a', 'b'):
+            with self.subTest(broken=broken):
+                barrier = threading.Barrier(4, timeout=3)
+                finished = set()
+                lock = threading.Lock()
+                def capture(case, build):
+                    barrier.wait()
+                    with lock: finished.add((case[0], build))
+                    if case[0] == broken and build == 'production': raise RuntimeError('pair failed')
+                    return (case[0], build)
+                report = {}
+                with self.assertRaisesRegex(RuntimeError, 'pair failed'):
+                    record_native_matrix(report, [self.case('a'), self.case('b'), self.case('not-launched')],
+                        lambda case: capture(case, 'production'), lambda case: capture(case, 'instrumented'), 4)
+                kept = 'b' if broken == 'a' else 'a'
+                self.assertEqual(report['previews'], {kept: (kept, 'production')})
+                self.assertEqual(report['instrumentedPreviews'], {kept: (kept, 'instrumented')})
+                self.assertEqual(set(report['previewPairSeconds']), {kept})
+                self.assertEqual(len(finished), 4)
+                self.assertGreaterEqual(report['previewMatrixSeconds'], 0)
