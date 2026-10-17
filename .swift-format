@@ -27,7 +27,6 @@
     "shouldGroupImports": true
   },
   "prioritizeKeepingFunctionOutputTogether": false,
-  "reflowMultilineStringLiterals": "never",
   "respectsExistingLineBreaks": true,
   "rules": {
     "AllPublicDeclarationsHaveDocumentation": false,

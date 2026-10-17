@@ -60,6 +60,34 @@ struct EditorView: View {
         ]
     }
     var body: some View {
+        playbackLifecycle
+            .sheet(isPresented: $showTheory) {
+                VStack(alignment: .leading, spacing: 16) {
+                    HStack {
+                        Text("Score analysis").font(.title2)
+                        Spacer()
+                        Button("Done") { showTheory = false }
+                    }
+                    ScrollView {
+                        ScoreAnalysisPanel(
+                            piece: .init(source: .score(document)),
+                            scope: .init(partID: "P1", staff: 1, from: pageStart, through: pageEnd))
+                    }
+                }.padding(24).frame(width: 940, height: 780).background(Color.paper)
+            }
+            .sheet(isPresented: $showHarmony) {
+                EditorHarmonyView(
+                    document: document, selected: selected, harmony: document.harmonies.first { $0.id == harmonyID },
+                    save: { item in try apply { try $0.setHarmony(item) } },
+                    remove: { id in try apply { $0.removeHarmony(id) } })
+            }
+            .alert("Compose", isPresented: Binding(get: { message != nil }, set: { if !$0 { message = nil } })) {
+                Button("OK") { message = nil }
+            } message: {
+                Text(message ?? "")
+            }
+    }
+    private var editorContent: some View {
         VStack(alignment: .leading, spacing: 16) {
             toolbar
             Button("Score analysis", systemImage: "pencil.and.outline") {
@@ -84,144 +112,130 @@ struct EditorView: View {
                 standardWorkspace
             }
         }
-        .onAppear {
-            reviewSource = document.pdfSource != nil
-            if state.isPreview && CommandLine.arguments.contains("--pdf-review-check") {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1) { pdfReviewChecks() }
+    }
+
+    private var documentLifecycle: some View {
+        editorContent
+            .onAppear(perform: prepareEditorAppearance)
+            .onChange(of: state.editor.active.id) { _, _ in
+                audio.stop()
+                reviewSource = document.pdfSource != nil
+                session.reset()
+                wholePiece = true
+                rangeFrom = 0
+                rangeThrough = min(3, document.barCount - 1)
+                entryOctave = document.instrument == .guitar ? 3 : 4
+                select(document.events[0].id)
+                applyOpeningFocus()
             }
-            if needsOSMD { state.editor.engine = "OpenSheetMusicDisplay" }
-            if state.isPreview && CommandLine.arguments.contains("--midi-entry-check") { showMIDI = true }
-            entryOctave = document.instrument == .guitar ? 3 : 4
-            if (document.responseSource != nil || document.triadSource != nil || document.tensionSource != nil)
-                && document.events.allSatisfy(\.isRest)
-            {
-                writing = true
-                entryRhythm = EditorRhythm()
+            .onChange(of: state.editorPassageFocus) { _, _ in applyOpeningFocus() }
+            .onChange(of: wholePiece) { _, _ in audio.stop() }
+            .onChange(of: state.pdfReviewPage) { _, _ in focusPDFPage() }
+            .onChange(of: state.pdfImportRevision) { _, _ in
+                session.reset()
+                ensureSelection()
+                clampPassage()
             }
-            if selectedID == nil { select(document.events[0].id) }
-            if state.isPreview {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    titleFocused = false
-                    NSApp.windows.first?.makeFirstResponder(nil)
+            .onChange(of: state.editor) { _, _ in
+                if needsOSMD && state.editor.engine != "OpenSheetMusicDisplay" {
+                    state.editor.engine = "OpenSheetMusicDisplay"
                 }
+                state.saveSoon()
             }
-            if state.isPreview && CommandLine.arguments.contains("--editor-check") { nativeChecks() }
-            if state.isPreview && CommandLine.arguments.contains("--poly-check") { polyChecks() }
-            if state.isPreview && CommandLine.arguments.contains("--harmony-check") { harmonyChecks() }
-            if state.isPreview && CommandLine.arguments.contains("--harmony-sheet") {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                    harmonyID = document.harmonies.dropFirst().first?.id
-                    showHarmony = true
-                }
+    }
+
+    private var playbackLifecycle: some View {
+        documentLifecycle
+            .onChange(of: speed) { _, _ in audio.stop() }
+            .onChange(of: loop) { _, _ in audio.stop() }
+            .onChange(of: click) { _, _ in audio.stop() }
+            .onChange(of: rangeFrom) { _, value in
+                audio.stop()
+                rangeThrough = min(document.barCount - 1, max(value, min(rangeThrough, value + 15)))
             }
-            if state.isPreview && CommandLine.arguments.contains("--editor-page-two") {
-                wholePiece = false
-                selectBar(4)
-                rangeFrom = 4
-                rangeThrough = min(7, document.barCount - 1)
-            }
-            if state.isPreview && CommandLine.arguments.contains("--editor-writing") { writing = true }
-            if state.isPreview && CommandLine.arguments.contains("--tension-editor-guard") {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    audio.stop()
-                    showMIDI = false
-                    showTheory = true
-                    let before = document
-                    let wrote = enterMIDI([60])
-                    TensionDiagnostics.checks["analysisBlocksMIDI"] = !wrote && document == before
-                    enterLetter(0)
-                    TensionDiagnostics.checks["analysisBlocksNoteKeys"] = document == before
-                }
-            }
-            focusPDFPage()
-            applyOpeningFocus()
-            if state.isPreview && CommandLine.arguments.contains("--editor-live-edit") {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                    let first = document.events[0]
-                    select(first.id)
-                    let rhythm =
-                        CommandLine.arguments.contains("--editor-triplet")
-                        ? EditorRhythm(240, triplet: true) : EditorRhythm(240)
-                    edit {
-                        try $0.setPitch(first.id, midi: first.pitches[0].midi + 1)
-                        try $0.setRhythm(first.id, rhythm)
+            .onChange(of: rangeThrough) { _, _ in audio.stop() }
+            .onChange(of: document.meter) { _, _ in if !rhythms.contains(entryRhythm) { entryRhythm = EditorRhythm() } }
+            .onChange(of: audio.studyPlayhead) { _, head in
+                if !wholePiece, let head, !head.isCountIn {
+                    let bar = min(document.barCount - 1, Int(head.sourceBeat * 480) / document.meter.ticks)
+                    if bar < (reviewSource ? reviewStart : pageStart) || bar > (reviewSource ? reviewEnd : pageEnd) {
+                        selectBar(bar)
                     }
-                    EditorDiagnostics.native["liveEdit"] =
-                        document.events[0].rhythm == rhythm
-                        && document.events[0].pitches[0].midi == first.pitches[0].midi + 1
                 }
             }
+            .onChange(of: countIn) { _, _ in audio.stop() }
+            .onDisappear { audio.stop() }
+    }
+
+    private func prepareEditorAppearance() {
+        reviewSource = document.pdfSource != nil
+        if state.isPreview && CommandLine.arguments.contains("--pdf-review-check") {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1) { pdfReviewChecks() }
         }
-        .onChange(of: state.editor.active.id) { _, _ in
-            audio.stop()
-            reviewSource = document.pdfSource != nil
-            session.reset()
-            wholePiece = true
-            rangeFrom = 0
-            rangeThrough = min(3, document.barCount - 1)
-            entryOctave = document.instrument == .guitar ? 3 : 4
-            select(document.events[0].id)
-            applyOpeningFocus()
+        if needsOSMD { state.editor.engine = "OpenSheetMusicDisplay" }
+        if state.isPreview && CommandLine.arguments.contains("--midi-entry-check") { showMIDI = true }
+        entryOctave = document.instrument == .guitar ? 3 : 4
+        if (document.responseSource != nil || document.triadSource != nil || document.tensionSource != nil)
+            && document.events.allSatisfy(\.isRest)
+        {
+            writing = true
+            entryRhythm = EditorRhythm()
         }
-        .onChange(of: state.editorPassageFocus) { _, _ in applyOpeningFocus() }
-        .onChange(of: wholePiece) { _, _ in audio.stop() }
-        .onChange(of: state.pdfReviewPage) { _, _ in focusPDFPage() }
-        .onChange(of: state.pdfImportRevision) { _, _ in
-            session.reset()
-            ensureSelection()
-            clampPassage()
-        }
-        .onChange(of: state.editor) { _, _ in
-            if needsOSMD && state.editor.engine != "OpenSheetMusicDisplay" {
-                state.editor.engine = "OpenSheetMusicDisplay"
-            }
-            state.saveSoon()
-        }
-        .onChange(of: speed) { _, _ in audio.stop() }
-        .onChange(of: loop) { _, _ in audio.stop() }
-        .onChange(of: click) { _, _ in audio.stop() }
-        .onChange(of: rangeFrom) { _, value in
-            audio.stop()
-            rangeThrough = min(document.barCount - 1, max(value, min(rangeThrough, value + 15)))
-        }
-        .onChange(of: rangeThrough) { _, _ in audio.stop() }
-        .onChange(of: document.meter) { _, _ in if !rhythms.contains(entryRhythm) { entryRhythm = EditorRhythm() } }
-        .onChange(of: audio.studyPlayhead) { _, head in
-            if !wholePiece, let head, !head.isCountIn {
-                let bar = min(document.barCount - 1, Int(head.sourceBeat * 480) / document.meter.ticks)
-                if bar < (reviewSource ? reviewStart : pageStart) || bar > (reviewSource ? reviewEnd : pageEnd) {
-                    selectBar(bar)
-                }
+        if selectedID == nil { select(document.events[0].id) }
+        if state.isPreview {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                titleFocused = false
+                NSApp.windows.first?.makeFirstResponder(nil)
             }
         }
-        .onChange(of: countIn) { _, _ in audio.stop() }
-        .onDisappear { audio.stop() }
-        .sheet(isPresented: $showTheory) {
-            VStack(alignment: .leading, spacing: 16) {
-                HStack {
-                    Text("Score analysis").font(.title2)
-                    Spacer()
-                    Button("Done") { showTheory = false }
-                }
-                ScrollView {
-                    ScoreAnalysisPanel(
-                        piece: .init(source: .score(document)),
-                        scope: .init(partID: "P1", staff: 1, from: pageStart, through: pageEnd))
-                }
-            }.padding(24).frame(width: 940, height: 780).background(Color.paper)
+        if state.isPreview && CommandLine.arguments.contains("--editor-check") { nativeChecks() }
+        if state.isPreview && CommandLine.arguments.contains("--poly-check") { polyChecks() }
+        if state.isPreview && CommandLine.arguments.contains("--harmony-check") { harmonyChecks() }
+        if state.isPreview && CommandLine.arguments.contains("--harmony-sheet") {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                harmonyID = document.harmonies.dropFirst().first?.id
+                showHarmony = true
+            }
         }
-        .sheet(isPresented: $showHarmony) {
-            EditorHarmonyView(
-                document: document, selected: selected, harmony: document.harmonies.first { $0.id == harmonyID },
-                save: { item in try apply { try $0.setHarmony(item) } },
-                remove: { id in try apply { $0.removeHarmony(id) } })
+        if state.isPreview && CommandLine.arguments.contains("--editor-page-two") {
+            wholePiece = false
+            selectBar(4)
+            rangeFrom = 4
+            rangeThrough = min(7, document.barCount - 1)
         }
-        .alert("Compose", isPresented: Binding(get: { message != nil }, set: { if !$0 { message = nil } })) {
-            Button("OK") { message = nil }
-        } message: {
-            Text(message ?? "")
+        if state.isPreview && CommandLine.arguments.contains("--editor-writing") { writing = true }
+        if state.isPreview && CommandLine.arguments.contains("--tension-editor-guard") {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                audio.stop()
+                showMIDI = false
+                showTheory = true
+                let before = document
+                let wrote = enterMIDI([60])
+                TensionDiagnostics.checks["analysisBlocksMIDI"] = !wrote && document == before
+                enterLetter(0)
+                TensionDiagnostics.checks["analysisBlocksNoteKeys"] = document == before
+            }
+        }
+        focusPDFPage()
+        applyOpeningFocus()
+        if state.isPreview && CommandLine.arguments.contains("--editor-live-edit") {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                let first = document.events[0]
+                select(first.id)
+                let rhythm =
+                    CommandLine.arguments.contains("--editor-triplet")
+                    ? EditorRhythm(240, triplet: true) : EditorRhythm(240)
+                edit {
+                    try $0.setPitch(first.id, midi: first.pitches[0].midi + 1)
+                    try $0.setRhythm(first.id, rhythm)
+                }
+                EditorDiagnostics.native["liveEdit"] =
+                    document.events[0].rhythm == rhythm
+                    && document.events[0].pitches[0].midi == first.pitches[0].midi + 1
+            }
         }
     }
+
     private func applyOpeningFocus() {
         guard let focus = state.editorPassageFocus, focus.documentID == document.id else { return }
         wholePiece = focus.wholePiece
@@ -242,7 +256,7 @@ struct EditorView: View {
         VStack(alignment: .leading, spacing: 16) {
             Card(
                 title: "Your score",
-                subtitle: "\(document.instrument.rawValue) · \(document.barCount) bars · saved on this Mac",
+                subtitle: "\(document.instrument.rawValue) · \(document.barCount) bars · \(state.storageStatus)",
                 padding: 18, spacing: 12
             ) {
                 HStack(spacing: 10) {
@@ -1374,12 +1388,12 @@ struct EditorView: View {
     }
     private func enterLetter(_ letter: Int) {
         guard !scoreInputBlocked, let selected else { return }
-        let octave =
+        let entryPitchOctave =
             writing
             ? entryOctave
             : pitch.map { octave($0) } ?? (document.instrument == .guitar ? 3 : selected.staff == 2 ? 3 : 4)
         let spelling = Scale.major.notes(keyRoots[document.fifths + 7]).first { $0.letter == letter } ?? Pitch(letter)
-        write(midi: (octave + 1) * 12 + Pitch.naturals[letter] + spelling.accidental, spelling: spelling)
+        write(midi: (entryPitchOctave + 1) * 12 + Pitch.naturals[letter] + spelling.accidental, spelling: spelling)
     }
     private func enterMidi(_ midi: Int) { write(midi: midi) }
     private func shift(_ value: Int) {
