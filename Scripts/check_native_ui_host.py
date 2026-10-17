@@ -27,7 +27,10 @@ subprocess.run(['xcrun', 'swiftc', '-swift-version', '6', '-warnings-as-errors',
 subprocess.run(['codesign', '--force', '--sign', '-', str(app)], check=True, capture_output=True)
 # The control records the old fixed geometry; it may succeed on a large display.
 # Only the actual screen-fitting policy is required to pass on every GUI host.
-for name, flags in [('legacy-geometry', ['--legacy-minimum']), ('gui-host', [])]:
+for name, flags in [('legacy-geometry', ['--legacy-minimum']),
+                    ('workspace-without-inspector', ['--workspace-minimum']),
+                    ('workspace-with-inspector', ['--workspace-minimum', '--inspector']),
+                    ('gui-host', [])]:
     result = subprocess.run([str(macos / 'Cadence'), *flags, '--snapshot', str(output / (name + '.json'))],
                             env=env, capture_output=True, text=True, timeout=15)
     print(name + ':\n' + result.stderr, flush=True)

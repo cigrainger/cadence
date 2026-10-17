@@ -171,6 +171,7 @@ struct ContentView: View {
             state.stopAllPlayback(keepingMetronome: true)
         }
         .task {
+            AppDelegate.snapshotEvent("workspace task started")
             if state.isPreview && CommandLine.arguments.contains("--settings") { openSettings() }
             if state.isPreview && CommandLine.arguments.contains("--pdf-import-wizard") { state.showPDFImport = true }
             await state.runDiagnosticCommands()

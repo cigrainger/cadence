@@ -413,6 +413,11 @@ def main():
             require_clean_swift((output / "release-build.log").read_text())
             run(["codesign", "--verify", "--deep", "--strict", app], output / "signature.log", env, 30)
             executable = app / "Contents/MacOS/Cadence"
+            # Exercise the real scene before accessory self-checks can save any
+            # launch state. Keep the full post-selfcheck suite below as well.
+            first_launch = output / "first-launch"
+            first_launch.mkdir(exist_ok=True)
+            report["firstLaunchPreview"] = run_preview(executable, first_launch, env, native_scenarios()[0])
             collection = NativeCoverage.prepare(ROOT, output, coverage_path, app, env, run)
             instrumented_env = collection.environment(env)
             native_path = output / "native.json"

@@ -13,7 +13,11 @@ import WebKit
     )
     @NSApplicationDelegateAdaptor(AppDelegate.self) var delegate
     private var windowLayout: WorkspaceWindowLayout {
-        .fitting((NSScreen.main ?? NSScreen.screens.first)?.visibleFrame.size)
+        let screen = (NSScreen.main ?? NSScreen.screens.first)?.visibleFrame.size
+        let layout = WorkspaceWindowLayout.fitting(screen)
+        AppDelegate.snapshotEvent(
+            "scene layout: screen=\(String(describing: screen)), minimum=\(layout.minimum), initial=\(layout.initial)")
+        return layout
     }
     var body: some Scene {
         WindowGroup {

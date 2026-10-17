@@ -66,6 +66,8 @@ jobs:
             .verification/ui-host/*.json
             .verification/ui-host/*.log
             .verification/*.log
+            .verification/first-launch/*.json
+            .verification/first-launch/*.log
             .verification/native-coverage/**/manifest.json
             .verification/native-coverage/**/combined.json
             .verification/native-coverage/**/html/**

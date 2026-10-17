@@ -6,7 +6,13 @@ import SwiftUI
 import WebKit
 
 @MainActor final class AppDelegate: NSObject, NSApplicationDelegate {
+    static func snapshotEvent(_ message: String) {
+        guard CommandLine.arguments.contains("--snapshot") else { return }
+        FileHandle.standardError.write(Data("Snapshot lifecycle: \(message)\n".utf8))
+    }
+
     func applicationDidFinishLaunching(_ notification: Notification) {
+        Self.snapshotEvent("application launched; screens=\(NSScreen.screens.map(\.visibleFrame))")
         NSApp.appearance = NSAppearance(named: .aqua)
         let preview =
             CommandLine.arguments.contains("--snapshot") || CommandLine.arguments.contains("--selfcheck")

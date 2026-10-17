@@ -21,7 +21,12 @@ import SwiftUI
                 "visibleWindows": NSApp.windows.filter(\.isVisible).count,
                 "active": NSApp.isActive,
                 "legacyMinimum": CommandLine.arguments.contains("--legacy-minimum"),
+                "inspector": CommandLine.arguments.contains("--inspector"),
+                "workspaceMinimum": CommandLine.arguments.contains("--workspace-minimum"),
                 "screens": NSScreen.screens.map { ["width": $0.frame.width, "height": $0.frame.height] },
+                "visibleScreens": NSScreen.screens.map {
+                    ["width": $0.visibleFrame.width, "height": $0.visibleFrame.height]
+                },
             ]
             let data =
                 (try? JSONSerialization.data(withJSONObject: report, options: [.prettyPrinted, .sortedKeys])) ?? Data()
@@ -45,7 +50,20 @@ import SwiftUI
     }
     var body: some Scene {
         WindowGroup {
-            Text("Cadence native verification").frame(minWidth: layout.minimum.width, minHeight: layout.minimum.height)
+            Group {
+                if CommandLine.arguments.contains("--inspector") {
+                    workspace.inspector(isPresented: .constant(false)) {
+                        Text("Coach").inspectorColumnWidth(min: 330, ideal: 380, max: 460)
+                    }
+                } else {
+                    workspace
+                }
+            }.frame(minWidth: layout.minimum.width, minHeight: layout.minimum.height)
         }.defaultSize(width: layout.initial.width, height: layout.initial.height).windowStyle(.hiddenTitleBar)
+    }
+    private var workspace: some View {
+        Text("Cadence native verification").frame(
+            minWidth: CommandLine.arguments.contains("--workspace-minimum") ? 780 : 0,
+            minHeight: CommandLine.arguments.contains("--workspace-minimum") ? 600 : 0)
     }
 }
