@@ -20,6 +20,7 @@ import SwiftUI
                 "windows": NSApp.windows.count,
                 "visibleWindows": NSApp.windows.filter(\.isVisible).count,
                 "active": NSApp.isActive,
+                "legacyMinimum": CommandLine.arguments.contains("--legacy-minimum"),
                 "screens": NSScreen.screens.map { ["width": $0.frame.width, "height": $0.frame.height] },
             ]
             let data =
@@ -28,7 +29,7 @@ import SwiftUI
             let passed = NSApp.windows.contains { $0.contentView != nil }
             var log = data
             log.append(Data((passed ? "\nSnapshot: complete\n" : "\nSwiftUI GUI host has no window\n").utf8))
-            try? log.write(to: output.deletingPathExtension().appendingPathExtension("capture.log"))
+            FileHandle.standardError.write(log)
             exit(passed ? 0 : 1)
         }
     }
@@ -36,9 +37,15 @@ import SwiftUI
 
 @main struct NativeUIProbe: App {
     @NSApplicationDelegateAdaptor(ProbeDelegate.self) private var delegate
+    private var layout: WorkspaceWindowLayout {
+        CommandLine.arguments.contains("--legacy-minimum")
+            ? WorkspaceWindowLayout(
+                minimum: WorkspaceWindowLayout.preferredMinimum, initial: WorkspaceWindowLayout.preferredInitial)
+            : .fitting((NSScreen.main ?? NSScreen.screens.first)?.visibleFrame.size)
+    }
     var body: some Scene {
         WindowGroup {
-            Text("Cadence native verification").frame(width: 400, height: 240)
-        }
+            Text("Cadence native verification").frame(minWidth: layout.minimum.width, minHeight: layout.minimum.height)
+        }.defaultSize(width: layout.initial.width, height: layout.initial.height).windowStyle(.hiddenTitleBar)
     }
 }

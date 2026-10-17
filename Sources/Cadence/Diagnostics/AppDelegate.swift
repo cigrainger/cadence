@@ -37,23 +37,10 @@ import WebKit
     private var snapshotPhase = "launch"
     private func snapshotProgress(_ phase: String) {
         snapshotPhase = phase
-        snapshotLog("Snapshot: \(phase)\n")
-    }
-    private lazy var snapshotLogFile: FileHandle? = {
-        guard let index = CommandLine.arguments.firstIndex(of: "--snapshot"), index + 1 < CommandLine.arguments.count
-        else { return nil }
-        let path = URL(fileURLWithPath: CommandLine.arguments[index + 1]).deletingPathExtension()
-            .appendingPathExtension("capture.log")
-        FileManager.default.createFile(atPath: path.path, contents: nil)
-        return try? FileHandle(forWritingTo: path)
-    }()
-    private func snapshotLog(_ text: String) {
-        let data = Data(text.utf8)
-        FileHandle.standardError.write(data)
-        snapshotLogFile?.write(data)
+        FileHandle.standardError.write(Data("Snapshot: \(phase)\n".utf8))
     }
     private func snapshotFailure(_ message: String) -> Never {
-        snapshotLog("Snapshot failed during \(snapshotPhase): \(message)\n")
+        FileHandle.standardError.write(Data("Snapshot failed during \(snapshotPhase): \(message)\n".utf8))
         Darwin.exit(1)
     }
     private func scheduleSnapshot(_ launchWindow: NSWindow) {

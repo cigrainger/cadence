@@ -110,7 +110,7 @@ class NativeCoverageTests(unittest.TestCase):
             (root / "fixture.json").write_text(json.dumps({"passed": True}))
             with patch("verify.run"):
                 with self.assertRaisesRegex(RuntimeError, "Missing fixture image"):
-                    run_preview(Path("Cadence"), root, {"CADENCE_PREVIEW_RUNNER": "native-preview"}, ("fixture", [], [], None, []))
+                    run_preview(Path("Cadence"), root, {}, ("fixture", [], [], None, []))
 
     def test_renderer_flags_cannot_substitute_for_a_ready_score(self):
         with tempfile.TemporaryDirectory() as folder:
@@ -120,7 +120,7 @@ class NativeCoverageTests(unittest.TestCase):
                 (root / "fixture.json").write_text(json.dumps({"offline": True, "kind": "error", "svgCount": 0}))
             with patch("verify.run", side_effect=fake_run):
                 with self.assertRaisesRegex(RuntimeError, "did not render"):
-                    run_preview(Path("Cadence"), root, {"CADENCE_PREVIEW_RUNNER": "native-preview"}, ("fixture", [], ["offline"], None, []))
+                    run_preview(Path("Cadence"), root, {}, ("fixture", [], ["offline"], None, []))
 
 
 if __name__ == "__main__":
