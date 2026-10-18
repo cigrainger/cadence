@@ -115,7 +115,6 @@ struct EarDailyView: View {
                         ))
                 } else {
                     Card(title: invitation(session), padding: 24, spacing: 18) {
-                        activity(session)
                         if session.revealed, let study {
                             Text(
                                 "Movable Do · " + EarPhrase(material: session.material).solfege.joined(separator: "  ")
@@ -132,6 +131,7 @@ struct EarDailyView: View {
                             .frame(height: min(360, max(220, height)))
                             .background(.white, in: RoundedRectangle(cornerRadius: 10))
                         }
+                        activity(session)
                         if [.imagine, .play, .review].contains(session.stage) {
                             HStack(spacing: 14) {
                                 Button("Hear it again", systemImage: "speaker.wave.2") {
@@ -385,6 +385,25 @@ struct EarDailyView: View {
 
     private func guitar(_ session: EarDailySession) -> some View {
         VStack(alignment: .leading, spacing: 12) {
+            guitarSetup(session)
+            if acoustic.busy {
+                guitarListening
+            } else if let take = acoustic.pending {
+                pendingGuitarTake(take)
+            } else {
+                Button("Count in & listen", systemImage: "mic.fill") {
+                    perform { try state.startEarDailyMicrophone(session.id) }
+                }.buttonStyle(.cadencePrimary).accessibilityIdentifier("daily-ear.microphone")
+            }
+        }
+    }
+
+    private func guitarSetup(_ session: EarDailySession) -> some View {
+        let bars: Int =
+            session.focusBar == nil ? session.material.scope.throughBar - session.material.scope.fromBar + 1 : 1
+        let description: String =
+            "\(bars) \(bars == 1 ? "bar" : "bars") · \(session.invitationTempo) bpm · capture stops at the end of the phrase."
+        return VStack(alignment: .leading, spacing: 12) {
             Stepper("Input channel \(acoustic.inputChannel + 1)", value: $acoustic.inputChannel, in: 0...63)
                 .frame(width: 195).disabled(locked)
             DisclosureGroup("Mac microphone or USB interface setup") {
@@ -393,50 +412,40 @@ struct EarDailyView: View {
                 )
                 .font(.caption).foregroundStyle(.secondary)
             }.font(.caption)
-            let bars =
-                session.focusBar == nil ? session.material.scope.throughBar - session.material.scope.fromBar + 1 : 1
-            Text(
-                "\(bars) \(bars == 1 ? "bar" : "bars") · \(session.invitationTempo) bpm · capture stops at the end of the phrase."
-            )
-            .font(.caption).foregroundStyle(.secondary)
-            if acoustic.busy {
-                HStack {
-                    ProgressView().controlSize(.small)
-                    Text(
-                        acoustic.phase == .countIn
-                            ? "Count in · the final beat is silent" : "Listening through the phrase…")
-                    Button("Cancel take") { acoustic.cancel() }
-                }.font(.callout)
-            } else if let take = acoustic.pending {
-                Text("Take captured · inspect it before keeping").font(.headline)
-                Text(
-                    "Heard: "
-                        + take.attacks.compactMap(\.midi).map { Pitch.chromatic($0) + String($0 / 12 - 1) }.joined(
-                            separator: " · ")
-                )
-                .font(.callout)
-                ForEach(take.report.notes, id: \.index) { note in
-                    Toggle(
-                        "Uncertain match · note \(note.index + 1)",
-                        isOn: Binding(
-                            get: { take.disputedTargets.contains(note.index) },
-                            set: { acoustic.dispute(note.index, uncertain: $0) })
-                    )
-                    .toggleStyle(.checkbox).font(.caption)
-                }
-                HStack {
-                    Button("Keep take", systemImage: "checkmark") { acoustic.save(using: state.saveEarDailyMicrophone) }
-                        .buttonStyle(.cadencePrimary).accessibilityIdentifier("daily-ear.keep")
-                    Button("Discard take", role: .destructive) { perform { try state.discardEarDailyMicrophone() } }
-                }
-                if let issue = take.signalIssue { Text(issue).font(.caption).foregroundStyle(Color.clay) }
-            } else {
-                Button("Count in & listen", systemImage: "mic.fill") {
-                    perform { try state.startEarDailyMicrophone(session.id) }
-                }
-                .buttonStyle(.cadencePrimary).accessibilityIdentifier("daily-ear.microphone")
-            }
+            Text(description).font(.caption).foregroundStyle(.secondary)
         }
+    }
+
+    private var guitarListening: some View {
+        HStack {
+            ProgressView().controlSize(.small)
+            Text(acoustic.phase == .countIn ? "Count in · the final beat is silent" : "Listening through the phrase…")
+            Button("Cancel take") { acoustic.cancel() }
+        }.font(.callout)
+    }
+
+    private func pendingGuitarTake(_ take: MicrophonePhraseTake) -> some View {
+        let pitches: String = take.attacks.compactMap(\.midi).map { Pitch.chromatic($0) + String($0 / 12 - 1) }.joined(
+            separator: " · ")
+        return VStack(alignment: .leading, spacing: 12) {
+            Text("Take captured · inspect it before keeping").font(.headline)
+            Text("Heard: " + pitches).font(.callout)
+            ForEach(take.report.notes, id: \.index) { note in
+                uncertainPitchToggle(take, index: note.index)
+            }
+            HStack {
+                Button("Keep take", systemImage: "checkmark") { acoustic.save(using: state.saveEarDailyMicrophone) }
+                    .buttonStyle(.cadencePrimary).accessibilityIdentifier("daily-ear.keep")
+                Button("Discard take", role: .destructive) { perform { try state.discardEarDailyMicrophone() } }
+            }
+            if let issue = take.signalIssue { Text(issue).font(.caption).foregroundStyle(Color.clay) }
+        }
+    }
+
+    private func uncertainPitchToggle(_ take: MicrophonePhraseTake, index: Int) -> some View {
+        let disputed = Binding<Bool>(
+            get: { take.disputedTargets.contains(index) }, set: { acoustic.dispute(index, uncertain: $0) })
+        return Toggle("Uncertain match · note \(index + 1)", isOn: disputed).toggleStyle(.checkbox).font(.caption)
     }
 
     private func answerFinished(_ session: EarDailySession) -> Bool {
