@@ -50,6 +50,11 @@ import Foundation
         }
     }
 }
+@MainActor func closeCoach(_ root: AXUIElement) -> Bool {
+    // AXPress acknowledges dispatch before the inspector transition completes.
+    // Observe its disappearance before toggling it again or leaving the section.
+    press(root, "coach.close") && wait { find(root, identifier: "coach.question") == nil }
+}
 
 let arguments = CommandLine.arguments
 let daily = arguments.count == 4 && arguments[3] == "--daily-ear"
@@ -171,17 +176,23 @@ if daily {
         guard let field = find(application, identifier: "coach.question") else { return false }
         return AXUIElementSetAttributeValue(field, kAXValueAttribute as CFString, question as CFString) == .success
     }
-    _ = press(application, "coach.close")
-    _ = press(application, "workspace.coach")
-    checks["coachDraftSurvivesClosure"] =
+    let written =
         entered
         && wait {
             find(application, identifier: "coach.question").flatMap { value($0, kAXValueAttribute) as? String }
                 == question
         }
-    _ = press(application, "coach.close")
+    let closed = closeCoach(application)
+    let reopened = closed && press(application, "workspace.coach")
+    checks["coachDraftSurvivesClosure"] =
+        written && reopened
+        && wait {
+            find(application, identifier: "coach.question").flatMap { value($0, kAXValueAttribute) as? String }
+                == question
+        }
+    let closedBeforeNavigation = closeCoach(application)
     let library =
-        press(application, "workspace.library")
+        closedBeforeNavigation && press(application, "workspace.library")
         && wait {
             find(application, identifier: "workspace.content.library") != nil
         }
@@ -204,9 +215,9 @@ if daily {
             find(application, identifier: "coach.question").flatMap { value($0, kAXValueAttribute) as? String }
                 == question
         }
-    _ = press(application, "coach.close")
+    let closedBeforeLearn = closeCoach(application)
     let learn =
-        press(application, "workspace.learn")
+        closedBeforeLearn && press(application, "workspace.learn")
         && wait {
             find(application, identifier: "journey.full-score") != nil
         }
