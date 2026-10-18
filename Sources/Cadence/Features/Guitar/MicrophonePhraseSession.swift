@@ -350,10 +350,11 @@ extension TimedAudio: AcousticCountInOutput {
         displayedTake = take
     }
 
-    func save(using commit: (MicrophonePhraseTake) throws -> Void) {
+    func save(using commit: (MicrophonePhraseTake) throws -> MicrophonePhraseTake) {
         guard let take = pending else { return }
         do {
-            try commit(take)
+            let saved = try commit(take)
+            displayedTake = saved
             pending = nil
             error = nil
         } catch { self.error = error.localizedDescription }

@@ -79,7 +79,8 @@ import XCTest
         let origin = output.origin
         let onsets = AcousticCalibration.pulseOffsets.map { (origin - clock.value + $0 + offset, 1000.0) }
         let signal = AcousticTestAudio.signal(duration: onsets.last!.0 + 0.35, onsets: onsets, gain: 0.18, length: 0.1)
-        try await AcousticTestAudio.feed(handler, samples: signal, host: clock.value)
+        try await AcousticTestAudio.feed(
+            handler, samples: signal, host: clock.value, analyzed: { self.microphone.phraseAnalyzedBlocks })
         clock.value = origin + AcousticCalibration.pulseOffsets.last! + 1.1
         try await wait { !session.busy }
         guard session.calibration != nil else {
@@ -106,7 +107,8 @@ import XCTest
         }
         let duration = origin - clock.value + plan.timed.countIn + plan.timed.duration + 1.4
         let signal = AcousticTestAudio.signal(duration: duration, onsets: onsets, length: 0.25)
-        try await AcousticTestAudio.feed(handler, samples: signal, host: clock.value)
+        try await AcousticTestAudio.feed(
+            handler, samples: signal, host: clock.value, analyzed: { self.microphone.phraseAnalyzedBlocks })
         clock.value = origin + plan.timed.countIn + plan.timed.duration + 1.5
         try await wait { !session.busy }
     }
@@ -202,6 +204,8 @@ final class MicrophonePhraseIntegrationTests: XCTestCase {
         XCTAssertEqual(archived.attacks, take.attacks)
         XCTAssertEqual(archived.plan, take.plan)
         XCTAssertFalse(archived.report.conclusive)
+        XCTAssertEqual(h.session.displayedTake, archived)
+        XCTAssertFalse(h.session.displayedTake?.report.conclusive ?? true)
         XCTAssertNil(state.microphonePhrases.active?.baseline)
         XCTAssertTrue(state.journal.attempts.isEmpty)
         XCTAssertEqual(state.microphonePhrases.active?.review, ReviewSchedule())

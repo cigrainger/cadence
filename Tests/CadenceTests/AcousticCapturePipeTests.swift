@@ -47,16 +47,28 @@ enum AcousticTestAudio {
 
     static func feed(
         _ handler: @escaping MicrophoneBufferHandler, samples: [Float], rate: Double = 12000,
-        host: Double = 100, jitter: @Sendable (Int) -> Double = { _ in 0 }
+        host: Double = 100, jitter: @Sendable (Int) -> Double = { _ in 0 }, analyzed: (@MainActor () -> Int)? = nil
     ) async throws {
         for (block, start) in stride(from: 0, to: samples.count, by: 2048).enumerated() {
             let end = min(samples.count, start + 2048)
             await emit(
                 handler, samples: Array(samples[start..<end]), rate: rate,
                 host: host + Double(start) / rate + jitter(block), sample: Int64(start))
-            // Let the single analysis consumer run; this tests timestamp jitter,
-            // not deliberate FIFO overload (covered separately below).
-            try await Task.sleep(nanoseconds: 2_000_000)
+            if let analyzed {
+                // Tests inject PCM faster than a device. Await explicit consumer
+                // progress instead of relying on scheduler speed or wall time.
+                var complete = false
+                for _ in 0..<1000 {
+                    if await analyzed() >= block + 1 {
+                        complete = true
+                        break
+                    }
+                    try await Task.sleep(nanoseconds: 1_000_000)
+                }
+                guard complete else { throw MusicError.invalid("Synthetic audio consumer did not drain its block") }
+            } else {
+                try await Task.sleep(nanoseconds: 2_000_000)
+            }
         }
     }
 }
@@ -66,7 +78,8 @@ final class AcousticCapturePipeTests: XCTestCase {
         let signal = AcousticTestAudio.signal(duration: 1.2, onsets: [(0.20, 110), (0.68, 220)])
         let pipe = AcousticCapturePipe()
         try await AcousticTestAudio.feed(
-            pipe.handler, samples: signal, jitter: { $0 == 0 ? 0 : $0.isMultiple(of: 2) ? 0.004 : -0.004 })
+            pipe.handler, samples: signal, jitter: { $0 == 0 ? 0 : $0.isMultiple(of: 2) ? 0.004 : -0.004 },
+            analyzed: { pipe.analyzedBlocks })
         let result = await pipe.finish()
         XCTAssertNil(result.issue)
         XCTAssertEqual(result.attacks.count, 2)
@@ -84,7 +97,8 @@ final class AcousticCapturePipeTests: XCTestCase {
     @MainActor func testCumulativeDriftIsStickyEvenWhenAdjacentDifferencesAreSmall() async throws {
         let pipe = AcousticCapturePipe()
         let signal = AcousticTestAudio.signal(duration: 1.5, onsets: [(0.2, 110), (0.8, 220)])
-        try await AcousticTestAudio.feed(pipe.handler, samples: signal, jitter: { Double($0) * 0.001 })
+        try await AcousticTestAudio.feed(
+            pipe.handler, samples: signal, jitter: { Double($0) * 0.001 }, analyzed: { pipe.analyzedBlocks })
         let result = await pipe.finish()
         XCTAssertTrue(result.issue?.contains("drifted") == true)
         XCTAssertGreaterThan(result.clockEvidence?.maximumHostResidualMS ?? 0, 5)
@@ -117,7 +131,7 @@ final class AcousticCapturePipeTests: XCTestCase {
         let signal = AcousticTestAudio.signal(duration: 0.6, onsets: [(0.2, 110)], gain: 1.4).map {
             min(1, max(-1, $0))
         }
-        try await AcousticTestAudio.feed(clipped.handler, samples: signal)
+        try await AcousticTestAudio.feed(clipped.handler, samples: signal, analyzed: { clipped.analyzedBlocks })
         let result = await clipped.finish()
         XCTAssertTrue(result.issue?.contains("clipped") == true)
     }
@@ -169,14 +183,15 @@ final class AcousticCapturePipeTests: XCTestCase {
         pipe.requireQuiet(before: 100.5)
         let signal = AcousticTestAudio.signal(
             duration: 1.3, onsets: [(0.3, 1000), (0.51, 110), (0.9, 220)], gain: 0.08, length: 0.25)
-        try await AcousticTestAudio.feed(pipe.handler, samples: signal)
+        try await AcousticTestAudio.feed(pipe.handler, samples: signal, analyzed: { pipe.analyzedBlocks })
         let result = await pipe.finish()
         XCTAssertTrue(result.issue?.contains("had not cleared") == true)
         XCTAssertFalse(result.attacks.isEmpty, "Later reliable notes do not erase count-in contamination")
         let quiet = AcousticCapturePipe()
         quiet.requireQuiet(before: 100.5)
         try await AcousticTestAudio.feed(
-            quiet.handler, samples: AcousticTestAudio.signal(duration: 1, onsets: [(0.51, 110)]))
+            quiet.handler, samples: AcousticTestAudio.signal(duration: 1, onsets: [(0.51, 110)]),
+            analyzed: { quiet.analyzedBlocks })
         let cleared = await quiet.finish()
         XCTAssertNil(cleared.issue)
     }

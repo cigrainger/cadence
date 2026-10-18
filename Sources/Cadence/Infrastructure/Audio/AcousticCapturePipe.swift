@@ -25,6 +25,7 @@ private struct AcousticInputHealth: Sendable {
     var rate = 0.0
     var frames = 0
     var blocks = 0
+    var analyzedBlocks = 0
     var maximumResidual = 0.0
     var firstHost: Double?
     var firstSample: Int64?
@@ -99,6 +100,7 @@ private struct AcousticInputHealth: Sendable {
                 attacks += annotate(
                     analyzer.append(samples: block.samples, sampleRate: block.rate, hostSeconds: block.host),
                     block: block)
+                health.withLock { $0.analyzedBlocks += 1 }
                 if attacks.count > 128 {
                     health.withLock {
                         $0.issue = "Too many attacks for a short single-note phrase. Try a quieter input."
@@ -112,6 +114,8 @@ private struct AcousticInputHealth: Sendable {
             return Array(attacks.prefix(128))
         }
     }
+
+    var analyzedBlocks: Int { health.withLock { $0.analyzedBlocks } }
 
     var handler: MicrophoneBufferHandler {
         let health = health
@@ -183,8 +187,14 @@ private struct AcousticInputHealth: Sendable {
                 health.withLock { $0.issue = "The input exceeded its usable range. Reduce gain and try again." }
                 return
             }
-            if case .dropped = continuation.yield(.init(samples: samples, rate: rate, host: mapped, sample: sample)) {
+            switch continuation.yield(.init(samples: samples, rate: rate, host: mapped, sample: sample)) {
+            case .dropped:
                 health.withLock { $0.issue = "Audio analysis fell behind. Close other audio work and try again." }
+            case .terminated:
+                health.withLock { $0.issue = "Input arrived after capture ended. This take cannot establish timing." }
+            case .enqueued: break
+            @unknown default:
+                health.withLock { $0.issue = "The audio queue could not retain this input." }
             }
         }
     }
@@ -204,6 +214,9 @@ private struct AcousticInputHealth: Sendable {
         continuation.finish()
         let attacks = await task.value
         let state = health.withLock { state in
+            if state.analyzedBlocks != state.blocks {
+                state.issue = state.issue ?? "Audio blocks were not completely analysed. Start a new pass."
+            }
             if state.quietBefore != nil,
                 state.prerollFrames < Int(state.rate * 0.070)
                     || sqrt(state.prerollEnergy / Double(max(1, state.prerollFrames))) > 0.004

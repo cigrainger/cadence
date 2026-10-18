@@ -98,6 +98,8 @@ import MusicCore
         }
     }
 
+    var phraseAnalyzedBlocks: Int { acousticPipe?.analyzedBlocks ?? 0 }
+
     func requirePhrasePreroll(before host: Double) { acousticPipe?.requireQuiet(before: host) }
 
     func finishPhrase() async -> AcousticCaptureResult? {

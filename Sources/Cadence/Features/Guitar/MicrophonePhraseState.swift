@@ -74,7 +74,8 @@ extension AppState {
         destination = .practice
     }
 
-    func saveMicrophoneTake(_ take: MicrophonePhraseTake) throws {
+    @discardableResult func saveMicrophoneTake(_ take: MicrophonePhraseTake) throws -> MicrophonePhraseTake {
+        var saved = take
         var copy = practiceState
         var book = microphonePhrases
         if (try? validateMicrophonePhrase(take.plan)) != nil, !take.isArchivalOnly {
@@ -84,9 +85,11 @@ extension AppState {
             var archived = take
             archived.archivalOnly = true
             try book.archive(archived)
+            saved = archived
         }
         copy.microphonePhrases = book
         try commitPractice(copy)
+        return saved
     }
 
     func noteMicrophonePractice(_ plan: MicrophonePhrasePlan, at date: Date) throws {
