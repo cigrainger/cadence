@@ -173,6 +173,12 @@ def native_scenarios():
     smooth = ["twoSources", "fiveSteps", "fourStudies", "epubReadable", "unreviewedBlocked", "midiEvidence", "spacedReview", "sessionBudget"]
     song = ["sourceLinked", "eightBarSource", "openMilestones", "noPaidRequests"]
     return [
+        ("microphone-phrase", ["--microphone-phrase-preview", "--width", "1350", "--height", "1100"], ["offline", "linkedTab", "focusMapped"], "microphonePhraseChecks", ["sourceLinked", "validState", "clockProvenance", "calibrationSeparate", "noLiveInput", "savedEvidence", "perNoteCoachData", "pitchTimingSeparate", "finalNoteUnaffected"]),
+        ("microphone-focus", ["--microphone-phrase-preview", "--microphone-focus"], ["offline", "linkedTab", "focusMapped"], "microphonePhraseChecks", ["sourceLinked", "validState", "savedEvidence", "focusedContextRetained"]),
+        ("microphone-uncertain", ["--microphone-phrase-preview", "--microphone-uncertain"], ["offline", "linkedTab"], "microphonePhraseChecks", ["sourceLinked", "validState", "uncertaintyAbstains"]),
+        ("microphone-independent", ["--microphone-phrase-preview", "--microphone-independent"], ["offline", "linkedTab"], "microphonePhraseChecks", ["sourceLinked", "validState", "independentReturn"]),
+        ("microphone-coach", ["--microphone-phrase-preview", "--microphone-coach", "--coach-panel"], ["offline"], "microphonePhraseChecks", ["sourceLinked", "validState", "coachPinsSelectedTake", "perNoteCoachData", "noLiveInput"]),
+        ("microphone-small", ["--microphone-phrase-preview", "--width", "1120", "--height", "800"], ["offline", "linkedTab"], "microphonePhraseChecks", ["sourceLinked", "validState", "noLiveInput"]),
         ("picking-travis", ["--picking-preview", "--width", "1350", "--height", "1100"], ["offline", "linkedTab", "allEventsMapped"], "pickingChecks", ["sourceLinked", "validState", "playableTab", "separateEvidence", "localOnly"]),
         ("picking-classical", ["--picking-preview", "--picking-classical"], ["offline", "linkedTab"], "pickingChecks", ["sourceLinked", "validState", "playableTab"]),
         ("picking-strumming", ["--picking-preview", "--picking-strumming"], ["offline", "linkedTab"], "pickingChecks", ["sourceLinked", "validState", "playableTab"]),

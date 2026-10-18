@@ -8,6 +8,8 @@ struct PracticeWorkspaceView: View {
     @EnvironmentObject private var state: AppState
     var body: some View {
         switch state.practicePage {
+        case .microphonePhrase:
+            MicrophonePhraseView(session: state.microphonePhraseSession, microphone: state.microphone)
         case .picking: PickingPathwayView(input: state.pickingInput, audio: state.audio, microphone: state.microphone)
         case .home: PracticeHomeView(input: state.adaptiveInput)
         case .songJourney: SongJourneyView(input: state.songInput, midi: state.midi)
@@ -64,6 +66,7 @@ struct PracticeHomeView: View {
                 ReharmHomeCard()
                 TriadHomeCard()
                 PickingHomeCard()
+                MicrophonePhraseHomeCard(session: state.microphonePhraseSession)
                 if let pathway = state.homePathway { session(pathway) } else { firstSession }
                 HStack(alignment: .top, spacing: 22) {
                     VStack(alignment: .leading, spacing: 12) {

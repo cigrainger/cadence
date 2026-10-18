@@ -7,7 +7,8 @@ import MusicCore
 /// Navigation is transient. Practice results and resumable sessions remain in
 /// their existing stores; the home screen never creates a second progress model.
 enum PracticePage {
-    case picking, home, exercises, adaptive, ear, scoreEar, groove, playAlong, rehearsal, triads, tension, reharm,
+    case microphonePhrase, picking, home, exercises, adaptive, ear, scoreEar, groove, playAlong, rehearsal, triads,
+        tension, reharm,
         songJourney
 }
 
@@ -17,6 +18,7 @@ struct PracticeReviewItem: Identifiable {
         case tension(UUID, TheorySkill)
         case triads(UUID)
         case picking(UUID)
+        case microphonePhrase(String)
         case rehearsal(String)
         case playAlong(
             PlayAlongResult)
@@ -166,6 +168,16 @@ extension AppState {
                 context: (libraryPieces.first { $0.id == material.pieceID }?.title ?? material.title) + " · "
                     + material.label, review: scoreEarReview(material), target: .scoreEar(material))
         }
+        items += microphonePhrases.sessions.filter {
+            $0.baseline != nil && (try? validateMicrophonePhrase($0.sourcePlan)) != nil
+        }.map { progress in
+            var review = progress.review
+            if let available = microphonePhrases.returnDate(progress.id) { review.due = available }
+            return .init(
+                id: "microphone:" + progress.id, title: "Bring the guitar phrase back",
+                context: progress.material.title + " · Microphone", review: review,
+                target: .microphonePhrase(progress.id))
+        }
         items += pickingPractice.sessions.filter { $0.stage == .complete && pickingCurrent($0.material) }.map {
             .init(
                 id: $0.key, title: $0.style.rawValue, context: $0.material.title + " · Picking return",
@@ -215,6 +227,8 @@ extension AppState {
             do { try resumeReharm(id, skill: skill) } catch { message = error.localizedDescription }
         case .tension(let id, let skill):
             do { try resumeTension(id, skill: skill) } catch { message = error.localizedDescription }
+        case .microphonePhrase(let id):
+            do { try resumeMicrophonePhrase(id, independent: true) } catch { message = error.localizedDescription }
         case .picking(let id):
             do { try resumePicking(id, independent: true) } catch { message = error.localizedDescription }
         case .triads(let id): do { try resumeTriads(id, restart: true) } catch { message = error.localizedDescription }

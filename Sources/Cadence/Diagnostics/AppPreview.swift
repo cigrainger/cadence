@@ -181,6 +181,12 @@ extension AppState {
                 message = error.localizedDescription
             }
         }
+        if preview && CommandLine.arguments.contains("--microphone-phrase-preview") {
+            do { try MicrophonePhraseChecks.preview(self) } catch {
+                MicrophonePhraseDiagnostics.checks["built"] = false
+                message = error.localizedDescription
+            }
+        }
         if preview && CommandLine.arguments.contains("--picking-preview") {
             do { try PickingChecks.preview(self) } catch {
                 PickingDiagnostics.checks["built"] = false

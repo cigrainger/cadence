@@ -16,6 +16,7 @@ extension AppState {
         tensionInput.pause()
         triadInput.pause()
         pickingInput.pause()
+        microphonePhraseSession.cancel()
         earInput.pause()
         scoreEarInput.pause()
         adaptiveInput.pause(held: midi.keyboard.downNotes)
@@ -38,6 +39,7 @@ struct PlaybackBar: View {
     @ObservedObject var rehearsal: TimedPracticeSession
     @ObservedObject var take: PianoTakePlayer
     @ObservedObject var reharm: ReharmTransport
+    @ObservedObject var acoustic: MicrophonePhraseSession
 
     init(state: AppState) {
         stop = { state.stopAllPlayback() }
@@ -49,11 +51,12 @@ struct PlaybackBar: View {
         rehearsal = state.rehearsalSession.timing
         take = state.rehearsalSession.takePlayer
         reharm = state.reharmTransport
+        acoustic = state.microphonePhraseSession
     }
 
     private var active: Bool {
         microphone.listening || audio.isPlaying || timed.busy || changes.busy || playAlong.busy || rehearsal.busy
-            || take.busy || reharm.busy
+            || take.busy || reharm.busy || acoustic.busy
     }
     private var status: String {
         if let error = audio.error { return error }

@@ -80,6 +80,7 @@ struct Preferences: Codable, Equatable {
     @Published var songLesson: SongLesson?
     let songInput = SongOpeningInput()
     let pickingInput = PickingInput()
+    let microphonePhraseSession = MicrophonePhraseSession()
     @Published var practiceMIDIExercise = false
     @Published var adaptiveFromPractice = false
     @Published var root = Pitch(0)

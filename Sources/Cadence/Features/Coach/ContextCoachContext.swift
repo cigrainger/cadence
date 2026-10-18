@@ -112,6 +112,32 @@ extension AppState {
                 let scope = rehearsalSession.sourcePlan?.source?.scope
                 source = (id, scope?.from ?? 0, scope?.through ?? 3, scope?.partID, "Practise this piece")
             }
+        case .microphonePhrase:
+            if let plan = microphonePhraseSession.plan {
+                let take = microphonePhraseSession.displayedTake
+                let suffix = take?.id.uuidString ?? "no-take"
+                if let piece = libraryPieces.first(where: { $0.id == plan.material.pieceID }), plan.isCurrent(in: piece)
+                {
+                    var context = pieceCoachContext(
+                        piece, from: plan.material.scope.fromBar - 1,
+                        through: plan.material.scope.throughBar - 1,
+                        partID: plan.material.scope.partID)
+                    context.id = "microphone:" + plan.key + ":" + suffix
+                    context.subtitle = "Single-note guitar · " + plan.mode.rawValue
+                    context.reference +=
+                        "\nSelected microphone evidence: "
+                        + (take?.evidence
+                            ?? "No completed take. Ask what the learner wants to try; do not invent observations.")
+                    context.reference +=
+                        "\nOnly the selected structured evidence is provided, not raw audio. Separate pitch, timing and uncertainty. Suggest one focused experiment. Do not infer physical causes, picking mechanics, polyphonic accuracy, expressive intent or proficiency. Do not award practice credit."
+                    return context
+                }
+                return CoachContext(
+                    id: "microphone:earlier:" + suffix, title: plan.material.title,
+                    subtitle: "Microphone take · earlier score version",
+                    reference: "This saved take belongs to an earlier source revision. "
+                        + (take?.evidence ?? "No completed take."))
+            }
         case .picking:
             if let session = pickingPractice.active {
                 var value = libraryPieces.first(where: { $0.id == session.material.pieceID }).map {
@@ -188,6 +214,26 @@ extension AppState {
         return value
     }
     func openContextCoach() {
+        if destination == .practice, practicePage == .microphonePhrase {
+            guard !microphonePhraseSession.hasUnsavedTake else {
+                message = "Keep or discard the take before opening coaching. Your unsaved observations remain here."
+                return
+            }
+            stopAllPlayback()
+            if let plan = microphonePhraseSession.plan, (try? validateMicrophonePhrase(plan)) != nil {
+                do {
+                    var snapshot = practiceState
+                    var book = microphonePhrases
+                    try book.noteDemonstration(materialID: plan.key)
+                    snapshot.microphonePhrases = book
+                    try commitPractice(snapshot)
+                    try microphonePhraseSession.useGuidance()
+                } catch {
+                    message = error.localizedDescription
+                    return
+                }
+            }
+        }
         stopAllPlayback()
         contextCoach.open(currentCoachContext)
     }

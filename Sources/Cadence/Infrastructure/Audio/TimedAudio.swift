@@ -10,6 +10,8 @@ enum PracticeClock {
     static func seconds(_ host: UInt64) -> Double { AVAudioTime.seconds(forHostTime: host) }
 }
 
+enum AudioClockReference { case estimatedAudible, scheduledRender }
+
 /// Independent of display refresh. The returned origin is the estimated audible
 /// output start, on the same host clock as CoreMIDI and AppKit event timestamps.
 @MainActor final class TimedAudio {
@@ -38,6 +40,7 @@ enum PracticeClock {
     }
     func start(
         render: @escaping @Sendable () throws -> [Float], silent: Bool = false,
+        reference: AudioClockReference = .estimatedAudible,
         ready: @escaping (Result<Double, Error>) -> Void
     ) {
         stop()
@@ -55,7 +58,9 @@ enum PracticeClock {
                 buffer.frameLength = AVAudioFrameCount(samples.count)
                 samples.withUnsafeBufferPointer { channel.update(from: $0.baseAddress!, count: samples.count) }
                 if !engine.isRunning { try engine.start() }
-                let latency = player.outputPresentationLatency
+                // Acoustic calibration measures the complete scheduled-render/input
+                // relationship. Adding presentation latency there would correct twice.
+                let latency = reference == .estimatedAudible ? player.outputPresentationLatency : 0
                 guard latency.isFinite, (0...2).contains(latency) else {
                     throw MusicError.invalid("The audio output did not provide a usable timing reference.")
                 }

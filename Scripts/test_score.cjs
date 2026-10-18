@@ -7,13 +7,13 @@ const vm = require('node:vm');
 
 // Exercise the real render/ready orchestration; native previews separately
 // check OSMD's actual cursor geometry in WKWebView.
-function fixture() {
+function fixture(tabNotes = 0) {
   const messages = [], pending = [], checks = [];
   const bounds = {left: 0, top: 0, width: 700, height: 200};
   const score = {replaceChildren(){}, append(){}, scrollHeight: 220, getBoundingClientRect: () => bounds};
   const document = {
     getElementById: () => score,
-    querySelectorAll: () => [{}],
+    querySelectorAll: selector => selector === '.vf-tabnote' ? Array(tabNotes).fill({}) : [{}],
     createElement: () => ({setAttribute(){}}),
   };
   class OSMD {
@@ -76,4 +76,13 @@ test('a cursor-check error stays visible rather than emitting incomplete ready d
   assert.equal(f.ready().length, 0);
   assert.equal(f.messages.at(-1).kind, 'error');
   assert.equal(f.messages.at(-1).message, 'cursor unavailable');
+});
+
+test('linked tab requires both the source staff and actual rendered tab notes', async () => {
+  for (const [xml, notes, expected] of [['<sign>TAB</sign>', 8, true], ['<sign>TAB</sign>', 0, false], ['<sign>G</sign>', 8, false]]) {
+    const f = fixture(notes), render = f.window.loadStudy(xml, 'P1', 0, 0);
+    f.pending.shift()(); await render;
+    assert.equal(f.ready()[0].linkedTab, expected);
+    assert.equal(f.ready()[0].tabNoteCount, notes);
+  }
 });

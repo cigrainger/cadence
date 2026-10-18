@@ -75,7 +75,9 @@ window.loadStudy = async function(xml,partID,from,through,durations=[],feedbackR
     // callback can race a resize and lose its results to the next ready report.
     const cursorChecks=verifyCursor?window.verifyStudyCursor():{};
     post({...feedbackChecks,...focusChecks,...cursorChecks,kind:'ready',height,svgCount:document.querySelectorAll('svg').length,bars:through-from+1,
-      cursorPositions:positions.map(p=>({bar:p.bar,offset:p.offset})),offline:true});
+      cursorPositions:positions.map(p=>({bar:p.bar,offset:p.offset})),offline:true,
+      linkedTab:/<sign>\s*TAB\s*<\/sign>/.test(excerpt)&&document.querySelectorAll('.vf-tabnote').length>0,
+      tabNoteCount:document.querySelectorAll('.vf-tabnote').length});
     if(pendingPosition) window.positionStudy(...pendingPosition);
   } catch(error) { post({kind:'error',message:String(error.message||error)}); }
 };

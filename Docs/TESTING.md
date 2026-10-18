@@ -75,3 +75,10 @@ SnapshotFraming separates scheduled UI actions from readiness. Static verified v
 `--preview-jobs 4` overlaps two static scenario pairs, with at most four app processes. `1` retains fully serial captures; `2` retains one production/instrumented pair at a time. Accessibility actions and the editor navigation round trip drain previous work and run alone. Device self-checks, first-launch checks and Settings remain outside outer batching; Settings keeps its existing maximum of two processes. Every capture has its own app process, logs, sidecar, storage and profile path. A failed batch joins its other bounded children before returning an error.
 
 The matrix still runs every production and instrumented scenario and the same source/profile inventory and coverage gates. `previewMatrixSeconds` is the matrix's wall time; overlapping `previewPairSeconds` values must not be summed as wall time in four-process mode. Use full local and hosted runs to choose concurrency; injected tests establish barriers, failure cleanup and result separation, not graphical-host capacity.
+
+
+## Acoustic phrase regression boundary
+
+Synthetic tests feed AVAudioPCMBuffer and AVAudioTime through the same input callback used by phrase capture. They cover loopback estimation and one offset correction, channel selection, sample/host agreement, cumulative drift, missing samples, overflow, clipping and sparse out-of-range PCM, count-in contamination, truncated input, permission failure, configuration changes, interrupted encounters and save-only recovery. Core tests separately cover window ownership, uncertain/disputed matches, stale source archival, independent-return eligibility and original timestamp provenance. No actual microphone permission, acoustic accuracy or USB-interface compatibility is inferred from these fixtures.
+
+Six native phrase previews exercise linked notation/tab, focused context, uncertainty, independent recall, contextual coaching and a compact window in both builds. Their fixtures are original synthetic evidence and never open an input device or issue an AI request. Follow the manual device matrix before a hardware-support claim.
