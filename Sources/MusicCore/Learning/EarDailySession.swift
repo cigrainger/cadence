@@ -210,7 +210,11 @@ public struct EarDailySession: Codable, Equatable, Identifiable, Sendable {
     }
 
     public mutating func retry(bar: Int? = nil, now: Date = Date()) throws {
-        try check(now: now, stages: [.review])
+        try check(now: now, stages: [.review, .play])
+        guard stage == .review || (focusBar != nil && bar == nil) else {
+            throw MusicError.invalid(
+                "Keep the current take before choosing another focus; the whole phrase stays available.")
+        }
         guard bar.map({ (material.scope.fromBar...material.scope.throughBar).contains($0) }) ?? true else {
             throw MusicError.invalid("Choose a focus bar inside the complete ear phrase.")
         }

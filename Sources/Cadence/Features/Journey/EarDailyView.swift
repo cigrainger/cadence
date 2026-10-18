@@ -258,6 +258,11 @@ struct EarDailyView: View {
             )
             .foregroundStyle(.secondary)
             if session.instrument == .piano { piano(session) } else { guitar(session) }
+            if session.focusBar != nil {
+                Button("Return to the whole phrase", systemImage: "arrow.uturn.backward") {
+                    perform { try state.updateEarDaily(session.id) { try $0.retry(now: Date()) } }
+                }.disabled(locked).accessibilityIdentifier("daily-ear.leave-focus")
+            }
             if !locked {
                 Button("Skip the playing check") {
                     perform { try state.updateEarDaily(session.id) { try $0.skip(now: Date()) } }

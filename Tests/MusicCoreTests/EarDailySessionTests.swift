@@ -6,6 +6,19 @@ import XCTest
 @testable import MusicCore
 
 final class EarDailySessionTests: XCTestCase {
+    func testFocusCanReturnToWholeBeforeCapturingAnotherTake() throws {
+        var session = try reviewing(self.session())
+        try session.retry(bar: 2, now: date)
+        let ids = session.attemptIDs
+        XCTAssertNotNil(session.focusBar)
+        try session.retry(now: date)
+        XCTAssertEqual(session.stage, .play)
+        XCTAssertNil(session.focusBar)
+        XCTAssertEqual(session.attemptIDs, ids)
+        XCTAssertTrue(session.assisted)
+        XCTAssertThrowsError(try session.retry(bar: 3, now: date))
+    }
+
     func testDailyRecommendationOffersDueRecallThenTransferWithoutTurningEarlyPracticeIntoReview() {
         func choose(_ completed: Bool, _ independent: Bool, _ familiar: Date?, _ transfer: Date?, now: Date? = nil)
             -> EarDailyMode
