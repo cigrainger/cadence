@@ -98,6 +98,9 @@ jobs:
             .verification/ui-host/*.json
             .verification/ui-host/*.log
             .verification/*.log
+            .verification/microphone-phrase.png
+            .verification/microphone-score-focus.png
+            .verification/microphone-small.png
             .verification/first-launch/*.json
             .verification/first-launch/*.log
             .verification/native-coverage/**/manifest.json

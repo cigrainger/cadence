@@ -148,8 +148,9 @@ final class AcousticCapturePipeTests: XCTestCase {
                         commonFormat: .pcmFormatFloat32, sampleRate: 12000, channels: 2, interleaved: interleaved)!
                     let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: AVAudioFrameCount(chunk.count))!
                     buffer.frameLength = AVAudioFrameCount(chunk.count)
+                    // The other channel must not influence the capture.
                     for i in chunk.indices {
-                        buffer.floatChannelData![0][i * buffer.stride] = 0.9  // other channel must not influence the capture
+                        buffer.floatChannelData![0][i * buffer.stride] = 0.9
                         buffer.floatChannelData![1][i * buffer.stride] = chunk[i]
                     }
                     handler(
