@@ -648,9 +648,13 @@ public struct MicrophonePhrasePractice: Codable, Equatable, Sendable {
     /// offset, mode or focus as a way to obtain another independent encounter.
     public func returnDate(_ materialID: String) -> Date? {
         guard let progress = sessions.first(where: { $0.id == materialID }) else { return nil }
-        return sessions.filter { Self.related($0.material, progress.material) }.flatMap {
-            $0.takes.map(\.date) + $0.demonstrations + $0.unkeptPracticeDates
-        }.max()?.addingTimeInterval(20 * 3600)
+        var encounters: [Date] = []
+        for session in sessions where Self.related(session.material, progress.material) {
+            encounters.append(contentsOf: session.takes.map(\.date))
+            encounters.append(contentsOf: session.demonstrations)
+            encounters.append(contentsOf: session.unkeptPracticeDates)
+        }
+        return encounters.max()?.addingTimeInterval(20 * 3600)
     }
 
     @discardableResult
@@ -819,11 +823,13 @@ public struct MicrophonePhrasePractice: Codable, Equatable, Sendable {
                 && $0.plan.isFullPhrase
                 && $0.report.conclusive
         }
-        let previous = sessions.filter { Self.related($0.material, take.plan.material) }.flatMap {
-            $0.takes.filter { $0.id != take.id && $0.date <= take.date }.map(\.date)
-                + $0.demonstrations.filter { $0 <= take.date }
-                + $0.unkeptPracticeDates.filter { $0 <= take.date }
-        }.max()
+        var encounters: [Date] = []
+        for session in sessions where Self.related(session.material, take.plan.material) {
+            encounters.append(contentsOf: session.takes.filter { $0.id != take.id && $0.date <= take.date }.map(\.date))
+            encounters.append(contentsOf: session.demonstrations.filter { $0 <= take.date })
+            encounters.append(contentsOf: session.unkeptPracticeDates.filter { $0 <= take.date })
+        }
+        let previous = encounters.max()
         guard take.plan.isFullPhrase, !take.usedHint, let baseline, take.plan.tempo == baseline.plan.tempo,
             let previous, take.date.timeIntervalSince(previous) >= 20 * 3600
         else {
