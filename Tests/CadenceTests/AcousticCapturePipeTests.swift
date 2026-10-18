@@ -137,31 +137,34 @@ final class AcousticCapturePipeTests: XCTestCase {
     }
 
     @MainActor func testSelectedUSBChannelDoesNotDownmixAndMissingChannelAbstains() async throws {
-        let pipe = AcousticCapturePipe(channel: 1)
-        let handler = pipe.handler
-        let samples = AcousticTestAudio.signal(duration: 0.8, onsets: [(0.2, 220)])
-        for start in stride(from: 0, to: samples.count, by: 2048) {
-            let chunk = Array(samples[start..<min(samples.count, start + 2048)])
-            await Task.detached {
-                let format = AVAudioFormat(standardFormatWithSampleRate: 12000, channels: 2)!
-                let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: AVAudioFrameCount(chunk.count))!
-                buffer.frameLength = AVAudioFrameCount(chunk.count)
-                for i in chunk.indices {
-                    buffer.floatChannelData![0][i] = 0.9  // other channel must not influence the capture
-                    buffer.floatChannelData![1][i] = chunk[i]
-                }
-                handler(
-                    buffer,
-                    AVAudioTime(
-                        hostTime: AVAudioTime.hostTime(forSeconds: 100 + Double(start) / 12000),
-                        sampleTime: Int64(start), atRate: 12000))
-            }.value
-            try await Task.sleep(nanoseconds: 2_000_000)
+        for interleaved in [false, true] {
+            let pipe = AcousticCapturePipe(channel: 1)
+            let handler = pipe.handler
+            let samples = AcousticTestAudio.signal(duration: 0.8, onsets: [(0.2, 220)])
+            for start in stride(from: 0, to: samples.count, by: 2048) {
+                let chunk = Array(samples[start..<min(samples.count, start + 2048)])
+                await Task.detached {
+                    let format = AVAudioFormat(
+                        commonFormat: .pcmFormatFloat32, sampleRate: 12000, channels: 2, interleaved: interleaved)!
+                    let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: AVAudioFrameCount(chunk.count))!
+                    buffer.frameLength = AVAudioFrameCount(chunk.count)
+                    for i in chunk.indices {
+                        buffer.floatChannelData![0][i * buffer.stride] = 0.9  // other channel must not influence the capture
+                        buffer.floatChannelData![1][i * buffer.stride] = chunk[i]
+                    }
+                    handler(
+                        buffer,
+                        AVAudioTime(
+                            hostTime: AVAudioTime.hostTime(forSeconds: 100 + Double(start) / 12000),
+                            sampleTime: Int64(start), atRate: 12000))
+                }.value
+                try await Task.sleep(nanoseconds: 2_000_000)
+            }
+            let result = await pipe.finish()
+            XCTAssertNil(result.issue)
+            XCTAssertEqual(result.attacks.compactMap(\.midi), [57])
+            XCTAssertEqual(result.clockEvidence?.inputChannel, 1)
         }
-        let result = await pipe.finish()
-        XCTAssertNil(result.issue)
-        XCTAssertEqual(result.attacks.compactMap(\.midi), [57])
-        XCTAssertEqual(result.clockEvidence?.inputChannel, 1)
         let absent = AcousticCapturePipe(channel: 2)
         await AcousticTestAudio.emit(absent.handler, samples: [Float](repeating: 0, count: 100), host: 100, sample: 0)
         let unavailable = await absent.finish()

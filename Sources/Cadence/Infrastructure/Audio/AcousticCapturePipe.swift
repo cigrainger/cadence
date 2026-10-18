@@ -182,7 +182,17 @@ private struct AcousticInputHealth: Sendable {
                 return mappedHost
             }
             guard let mapped else { return }
-            let samples = Array(UnsafeBufferPointer(start: channel, count: count))
+            // AVAudioPCMBuffer exposes one pointer per channel in both layouts;
+            // interleaved frames are separated by its documented sample stride.
+            let sampleStride = Int(buffer.stride)
+            guard (1...256).contains(sampleStride) else {
+                health.withLock { $0.issue = "The input channel layout is unsupported. Choose a standard audio input." }
+                return
+            }
+            let samples =
+                sampleStride == 1
+                ? Array(UnsafeBufferPointer(start: channel, count: count))
+                : (0..<count).map { channel[$0 * sampleStride] }
             guard samples.allSatisfy({ $0.isFinite && abs($0) <= 1 }) else {
                 health.withLock { $0.issue = "The input exceeded its usable range. Reduce gain and try again." }
                 return
