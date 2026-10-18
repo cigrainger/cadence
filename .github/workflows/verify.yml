@@ -6,6 +6,7 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+  actions: read
 concurrency:
   group: verify-${{ github.ref }}
   cancel-in-progress: true
@@ -41,13 +42,15 @@ jobs:
         run: Scripts/scan_secrets.sh
       - name: Check known dependency advisories
         run: python3 Scripts/check_advisories.py
-  tests:
+  unit:
     needs: repository
     if: needs.repository.outputs.native == 'true'
     runs-on: macos-15
     env:
       DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
-    timeout-minutes: 60
+    outputs:
+      archive_sha: ${{ steps.package.outputs.sha256 }}
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
@@ -59,42 +62,161 @@ jobs:
           package-manager-cache: false
       - name: Check Swift formatting
         run: xcrun swift-format lint --strict --configuration .swift-format --recursive Sources Tests
-      - name: Verify the native graphical host
-        run: python3 Scripts/check_native_ui_host.py
       - name: Identify compatible Swift build cache
         id: cache-key
         run: echo "key=$(python3 Scripts/swift_build_cache.py fingerprint)" >> "$GITHUB_OUTPUT"
-      - name: Restore compiler work
+      - name: Restore unit compiler work
         id: swift-cache
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: .verification/build
-          key: swift-v2-${{ steps.cache-key.outputs.key }}-${{ github.sha }}
-          restore-keys: swift-v2-${{ steps.cache-key.outputs.key }}-
-      - name: Restore byte-identical source timestamps
-        run: python3 Scripts/swift_build_cache.py restore
-      - name: Test Swift 6, native workflows and whole-app coverage
-        id: verification
-        run: ./verify.sh --skip-accessibility --skip-audio-output --preview-jobs 4
-      # A native failure need not throw away successful compilation. Caches
-      # never replace fresh tests, profiles, source inventories or native gates.
+          key: swift-unit-v2-${{ steps.cache-key.outputs.key }}-${{ github.sha }}
+          restore-keys: |
+            swift-unit-v2-${{ steps.cache-key.outputs.key }}-
+            swift-v2-${{ steps.cache-key.outputs.key }}-
+      - run: python3 Scripts/swift_build_cache.py restore
+      - name: Run all Swift tests and unit coverage gates
+        run: ./verify.sh --tests-only --output .verification/unit --scratch .verification/build
+      - name: Seal fresh unit evidence
+        id: package
+        run: python3 Scripts/ci_stages.py unit --report .verification/unit/summary.json --archive .verification/unit-stage.tar.gz
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: unit-stage-${{ github.run_attempt }}
+          path: .verification/unit-stage.tar.gz
+          compression-level: 0
+          retention-days: 1
+          if-no-files-found: error
+          include-hidden-files: true
       - name: Prepare compiler cache without coverage results
         id: prepare-cache
-        if: always() && !cancelled() && steps.swift-cache.outputs.cache-hit != 'true' && hashFiles('.verification/unit-coverage-summary.json') != ''
+        if: always() && !cancelled() && steps.swift-cache.outputs.cache-hit != 'true' && hashFiles('.verification/unit/unit-coverage-summary.json') != ''
         run: python3 Scripts/swift_build_cache.py record
-      - name: Save compiler work
+      - name: Save unit compiler work
         if: always() && !cancelled() && steps.prepare-cache.outcome == 'success'
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: .verification/build
           key: ${{ steps.swift-cache.outputs.cache-primary-key }}
+      - name: Keep unit evidence even on failure
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: unit-evidence-${{ github.run_attempt }}
+          path: |
+            .verification/unit/*.json
+            .verification/unit/*.jsonl
+            .verification/unit/*.log
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 14
+  production:
+    needs: repository
+    if: needs.repository.outputs.native == 'true'
+    runs-on: macos-15
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
+    outputs:
+      archive_sha: ${{ steps.package.outputs.sha256 }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.13'
+      - name: Identify compatible Swift build cache
+        id: cache-key
+        run: echo "key=$(python3 Scripts/swift_build_cache.py fingerprint)" >> "$GITHUB_OUTPUT"
+      - name: Restore production compiler work
+        id: swift-cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .verification/build
+          key: swift-release-v2-${{ steps.cache-key.outputs.key }}-${{ github.sha }}
+          restore-keys: |
+            swift-release-v2-${{ steps.cache-key.outputs.key }}-
+            swift-v2-${{ steps.cache-key.outputs.key }}-
+      - run: python3 Scripts/swift_build_cache.py restore
+      - name: Build and seal production app
+        id: package
+        run: python3 Scripts/ci_stages.py release --archive .verification/release-stage.tar.gz --scratch .verification/build
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-stage-${{ github.run_attempt }}
+          path: .verification/release-stage.tar.gz
+          compression-level: 0
+          retention-days: 1
+          if-no-files-found: error
+          include-hidden-files: true
+      - name: Prepare production compiler cache
+        id: prepare-cache
+        if: success() && steps.swift-cache.outputs.cache-hit != 'true'
+        run: python3 Scripts/swift_build_cache.py record
+      - name: Save production compiler work
+        if: steps.prepare-cache.outcome == 'success'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .verification/build
+          key: ${{ steps.swift-cache.outputs.cache-primary-key }}
+      - name: Keep production evidence even on failure
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: production-evidence-${{ github.run_attempt }}
+          path: |
+            .verification/release-*.log
+            .verification/release-*.jsonl
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 14
+  tests:
+    needs: [repository, unit, production]
+    # Preserve the protected check: a failed/skipped producer must fail tests,
+    # rather than turn the required check into a successful dependency skip.
+    if: always() && needs.repository.result == 'success' && needs.repository.outputs.native == 'true'
+    runs-on: macos-15
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
+    timeout-minutes: 30
+    steps:
+      - name: Require both fresh producer jobs
+        env:
+          UNIT_RESULT: ${{ needs.unit.result }}
+          PRODUCTION_RESULT: ${{ needs.production.result }}
+        run: test "$UNIT_RESULT" = success && test "$PRODUCTION_RESULT" = success
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.13'
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Verify the native graphical host
+        run: python3 Scripts/check_native_ui_host.py
+      - name: Download current-attempt outputs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run download "$GITHUB_RUN_ID" --name "unit-stage-$GITHUB_RUN_ATTEMPT" --dir .verification/incoming/unit
+          gh run download "$GITHUB_RUN_ID" --name "release-stage-$GITHUB_RUN_ATTEMPT" --dir .verification/incoming/release
+      - name: Verify archive digests and extract safely
+        env:
+          UNIT_SHA: ${{ needs.unit.outputs.archive_sha }}
+          RELEASE_SHA: ${{ needs.production.outputs.archive_sha }}
+        run: |
+          python3 Scripts/ci_stages.py unpack --archive .verification/incoming/unit/unit-stage.tar.gz --destination .verification/prepared-unit --expected "$UNIT_SHA"
+          python3 Scripts/ci_stages.py unpack --archive .verification/incoming/release/release-stage.tar.gz --destination .verification/prepared-release --expected "$RELEASE_SHA"
+      - name: Test both builds, all native workflows and whole-app coverage
+        run: ./verify.sh --skip-accessibility --skip-audio-output --preview-jobs 4 --prepared-unit .verification/prepared-unit --prepared-release .verification/prepared-release
       - name: Keep verification evidence
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: cadence-verification
+          name: cadence-verification-${{ github.run_attempt }}
           path: |
             .verification/*.json
+            .verification/*.jsonl
             .verification/ui-host/*.json
             .verification/ui-host/*.log
             .verification/*.log
@@ -109,7 +231,6 @@ jobs:
             .verification/native-coverage/**/manifest.json
             .verification/native-coverage/**/*.log
             .verification/native-coverage/**/*.json
-            .verification/native-coverage/**/combined.json
             .verification/native-coverage/**/html/**
           if-no-files-found: error
           include-hidden-files: true

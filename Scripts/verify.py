@@ -3,7 +3,6 @@
 import argparse
 from concurrent.futures import ThreadPoolExecutor
 import datetime
-import hashlib
 import json
 import os
 from pathlib import Path
@@ -12,8 +11,9 @@ import shutil
 import signal
 import subprocess
 import sys
+import threading
 import time
-from build_inputs import source_digest
+from build_inputs import source_digest, test_inputs_digest
 from native_arguments import native_arguments
 from native_coverage import NativeCoverage, check_source_inventory, reset_unit_coverage
 from swift_build_config import SWIFT_TEST_FLAGS
@@ -100,14 +100,6 @@ def require_clean_swift(log, root=ROOT):
     require(not warnings, "First-party Swift warnings remain:\n" + "\n".join(warnings))
 
 
-def test_inputs_digest(root=ROOT):
-    digest = hashlib.sha256()
-    for path in sorted((root / "Tests").rglob("*.swift")):
-        digest.update(str(path.relative_to(root)).encode() + b"\0")
-        digest.update(hashlib.sha256(path.read_bytes()).digest())
-    return digest.hexdigest()
-
-
 def summarize_coverage(document):
     result = {}
     for module in ("MusicCore", "Cadence"):
@@ -145,7 +137,25 @@ def record_combined_coverage(report, combined):
     report["combinedCoverage"] = combined
 
 
+_timing_lock = threading.Lock()
+
+
 def run(command, log, env, timeout):
+    started = time.time()
+    clock = time.monotonic()
+    passed = False
+    try:
+        _run_command(command, log, env, timeout)
+        passed = True
+    finally:
+        if env.get('CADENCE_TIMINGS_PATH'):
+            entry = {'log': str(log), 'command': [str(arg) for arg in command], 'passed': passed,
+                     'startedAtUnix': started, 'seconds': round(time.monotonic() - clock, 3)}
+            with _timing_lock, Path(env['CADENCE_TIMINGS_PATH']).open('a') as stream:
+                stream.write(json.dumps(entry) + '\n')
+
+
+def _run_command(command, log, env, timeout):
     print(f"Running {log.stem}…", flush=True)
     with log.open("w") as output:
         process = subprocess.Popen([str(arg) for arg in command], cwd=ROOT, env=env,
@@ -489,13 +499,20 @@ def main():
     parser.add_argument("--skip-audio-output", action="store_true", help="Record live output-device checks as skipped on CI; still render audio offline and test virtual MIDI")
     parser.add_argument("--output", type=Path, default=ROOT / ".verification", help="Logs, reports, previews and staged app")
     parser.add_argument("--scratch", type=Path, help="Reusable Swift build cache (defaults to OUTPUT/build)")
+    parser.add_argument("--prepared-unit", type=Path, help="Fresh unit evidence from this same CI run/attempt")
+    parser.add_argument("--prepared-release", type=Path, help="Production app from this same CI run/attempt")
     parser.add_argument("--preview-jobs", type=int, choices=(1, 2, 4), default=1,
                         help="Maximum isolated app captures: 4 overlaps two static pairs; device and focus-sensitive checks stay serial")
     args = parser.parse_args()
+    require(bool(args.prepared_unit) == bool(args.prepared_release) and not
+            (args.tests_only and args.prepared_unit), 'Prepared stages must be paired and require full native verification')
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=True)
     scratch = args.scratch.resolve() if args.scratch else output / "build"
     env = dict(os.environ)
+    timing_path = output / 'timings.jsonl'
+    timing_path.unlink(missing_ok=True)
+    env['CADENCE_TIMINGS_PATH'] = str(timing_path)
     env["CLANG_MODULE_CACHE_PATH"] = str(scratch / "module-cache")
     env["SWIFTPM_MODULECACHE_OVERRIDE"] = str(scratch / "module-cache")
     if "DEVELOPER_DIR" not in env and Path("/Applications/Xcode.app/Contents/Developer").is_dir():
@@ -504,11 +521,21 @@ def main():
               "startedAt": datetime.datetime.now(datetime.timezone.utc).isoformat(),
               "paidRequests": 0, "physicalMIDI": False, "microphone": False}
     report["previewJobs"] = args.preview_jobs
+    from ci_stages import context, identity, validate
+    report['verificationContext'] = context(env) if env.get('GITHUB_ACTIONS') == 'true' or env.get('CADENCE_VERIFICATION_ID') else None
     (output / "summary.json").write_text(json.dumps(report, indent=2) + "\n")
     started = time.time()
     inputs = source_digest()
     test_inputs = test_inputs_digest()
     try:
+        unit_report = None
+        if args.prepared_unit:
+            expected = identity()
+            report['preparedStages'] = {
+                'unit': validate(args.prepared_unit, 'unit', expected),
+                'release': validate(args.prepared_release, 'release', expected),
+            }
+            unit_report = json.loads((args.prepared_unit / 'summary.json').read_text())
         run([sys.executable, "-m", "unittest", "discover", "-s", ROOT / "Scripts", "-p", "test_*.py"],
             output / "workflow-tests.log", env, 30)
         run(["node", "--test", "Scripts/test_site.cjs", "Scripts/test_score.cjs", "Scripts/test_editor.cjs"], output / "site-tests.log", env, 30)
@@ -517,15 +544,22 @@ def main():
         report["swiftLanguageMode"] = 6
         run(["xcrun", "swiftc", "-swift-version", "6", "-warnings-as-errors", "-module-cache-path", scratch / "module-cache",
              "-typecheck", ROOT / "Scripts/native_accessibility.swift"], output / "accessibility-typecheck.log", env, 60)
-        reset_unit_coverage(scratch)
-        run(["swift", "test", "--package-path", ROOT, "--scratch-path", scratch,
-             "--disable-sandbox", *SWIFT_TEST_FLAGS], output / "tests.log", env, 900)
+        if args.prepared_unit:
+            shutil.copy2(args.prepared_unit / 'tests.log', output / 'tests.log')
+            coverage_path = args.prepared_unit / 'products/codecov/Cadence.json'
+            coverage_started = datetime.datetime.fromisoformat(unit_report['startedAt']).timestamp()
+        else:
+            reset_unit_coverage(scratch)
+            run(["swift", "test", "--package-path", ROOT, "--scratch-path", scratch,
+                 "--disable-sandbox", *SWIFT_TEST_FLAGS], output / "tests.log", env, 900)
+            exports = list(scratch.glob("**/codecov/Cadence.json"))
+            require(exports, "Swift did not produce a coverage report")
+            coverage_path = max(exports, key=lambda path: path.stat().st_mtime)
+            coverage_started = started
         report["tests"] = test_counts((output / "tests.log").read_text())
         require_clean_swift((output / "tests.log").read_text())
-        exports = list(scratch.glob("**/codecov/Cadence.json"))
-        require(exports, "Swift did not produce a coverage report")
-        coverage_path = max(exports, key=lambda path: path.stat().st_mtime)
-        require(coverage_path.stat().st_mtime >= started, "Coverage report is stale")
+        require(coverage_path.stat().st_mtime >= coverage_started, "Coverage report is stale")
+        report['unitCoverageExport'] = str(coverage_path)
         coverage = json.loads(coverage_path.read_text())
         check_source_inventory(coverage, ROOT)
         report["coverage"] = summarize_coverage(coverage)
@@ -547,8 +581,11 @@ def main():
             if app.exists():
                 shutil.rmtree(app)
             env.update(CADENCE_BUILD_DIR=str(scratch), CADENCE_APP_PATH=str(app))
-            run([ROOT / "build.sh"], output / "release-build.log", env, 900)
-            require_clean_swift((output / "release-build.log").read_text())
+            if args.prepared_release:
+                shutil.copytree(args.prepared_release / 'Cadence.app', app)
+            else:
+                run([ROOT / "build.sh"], output / "release-build.log", env, 900)
+                require_clean_swift((output / "release-build.log").read_text())
             run(["codesign", "--verify", "--deep", "--strict", app], output / "signature.log", env, 30)
             executable = app / "Contents/MacOS/Cadence"
             # Exercise the real scene before accessory self-checks can save any
@@ -614,6 +651,10 @@ def main():
         require(source_digest() == inputs, "Build inputs changed during verification; rerun against a frozen source tree")
         require(test_inputs_digest() == test_inputs,
                 "Test inputs changed during verification; rerun the full suite")
+        if args.prepared_unit:
+            require(report['tests'] == unit_report['tests'], 'Transferred test counts disagree with their log')
+            validate(args.prepared_unit, 'unit', expected)
+            validate(args.prepared_release, 'release', expected)
         report["sourceInputsSHA256"] = inputs
         report["testInputsSHA256"] = test_inputs
         report["passed"] = True

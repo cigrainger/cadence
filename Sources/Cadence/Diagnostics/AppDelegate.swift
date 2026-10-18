@@ -43,6 +43,7 @@ import WebKit
     private var snapshotPhase = "launch"
     private func snapshotProgress(_ phase: String) {
         snapshotPhase = phase
+        SnapshotDiagnostics.mark(phase)
         FileHandle.standardError.write(Data("Snapshot: \(phase)\n".utf8))
     }
     private func snapshotFailure(_ message: String) -> Never {
