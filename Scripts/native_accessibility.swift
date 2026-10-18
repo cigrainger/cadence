@@ -50,9 +50,17 @@ import Foundation
         }
     }
 }
+@MainActor func closeCoach(_ root: AXUIElement) -> Bool {
+    // AXPress acknowledges dispatch before the inspector transition completes.
+    // Observe its disappearance before toggling it again or leaving the section.
+    press(root, "coach.close") && wait { find(root, identifier: "coach.question") == nil }
+}
 
 let arguments = CommandLine.arguments
-guard arguments.count == 3 else { fatalError("Usage: native_accessibility.swift CADENCE_EXECUTABLE SNAPSHOT.png") }
+let daily = arguments.count == 4 && arguments[3] == "--daily-ear"
+guard arguments.count == 3 || daily else {
+    fatalError("Usage: native_accessibility.swift CADENCE_EXECUTABLE SNAPSHOT.png [--daily-ear]")
+}
 guard AXIsProcessTrusted() else {
     fputs(
         "Native accessibility verification requires a trusted developer terminal. No system permission was changed.\n",
@@ -66,96 +74,165 @@ guard executable.lastPathComponent == "Cadence", FileManager.default.isExecutabl
 }
 let process = Process()
 process.executableURL = executable
-process.arguments = ["--song-preview", "YES", "--song-ax", "YES", "--snapshot", snapshot.path, "--width", "1350", "--height", "1050"]
+process.arguments =
+    daily
+    ? [
+        "--ear-daily-preview", "YES", "--daily-ax", "YES", "--snapshot", snapshot.path, "--width", "1350", "--height",
+        "1050",
+    ]
+    : ["--song-preview", "YES", "--song-ax", "YES", "--snapshot", snapshot.path, "--width", "1350", "--height", "1050"]
 try process.run()
 // An accessory preview can render while its AX tree is not registered. Activate
 // only our own child; never send input to the user's running Cadence or other apps.
-_ = wait({ NSRunningApplication(processIdentifier: process.processIdentifier)?.activate(options: []) == true }, seconds: 2)
+_ = wait(
+    { NSRunningApplication(processIdentifier: process.processIdentifier)?.activate(options: []) == true }, seconds: 2)
 let application = AXUIElementCreateApplication(process.processIdentifier)
 AXUIElementSetMessagingTimeout(application, 1)
 var checks: [String: Bool] = [:]
-let ready = wait({ find(application, identifier: "journey.full-score") != nil }, seconds: 4)
-if !ready {
-    fputs("Cannot connect to Cadence's accessibility controls. Use an unlocked macOS session and a trusted developer terminal.\n", stderr)
-}
-checks["accessibleFullScore"] = ready
-checks["accessibleMilestones"] = ["hear", "changes", "groove", "arrange", "independent"].allSatisfy {
-    find(application, identifier: "journey.lesson." + $0) != nil
-}
-let wrong = ready && press(application, "journey.theory.4")
-checks["theoryMissOffersRetry"] = wrong && wait {
-    find(application, containing: "Compare the two sets of chord tones, then try again.") != nil
-}
-let corrected = wrong && press(application, "journey.theory.0")
-checks["theoryRetryKeepsSupportVisible"] = corrected && wait {
-    find(application, containing: "C can stay.") != nil && find(application, containing: "With support") != nil
-}
-let chapter = ready && press(application, "journey.lesson.arrange")
-let arrangement = chapter && wait { find(application, containing: "Open my eight bars") != nil }
-let opened = arrangement && press(application, "journey.open-activity")
-checks["opensEightBarArrangement"] =
-    opened && wait { find(application, containing: "Save finished arrangement") != nil }
-let finishButtons = descendants(application).filter {
-    value($0, kAXRoleAttribute) as? String == kAXButtonRole && text($0).contains("Save finished arrangement")
-}
-checks["unfinishedArrangementCannotFinish"] = !finishButtons.isEmpty && finishButtons.allSatisfy {
-    value($0, kAXEnabledAttribute) as? Bool == false
-}
-let returned = press(application, "journey.return")
-checks["returnsToMap"] = returned && wait { find(application, identifier: "journey.full-score") != nil }
-let fullScore = press(application, "journey.full-score")
-checks["opensFullPiece"] =
-    fullScore
-    && wait {
-        find(application, containing: "A small beginning") != nil && find(application, containing: "8 bars") != nil
-            && find(application, identifier: "journey.return") != nil
+if daily {
+    let ready = wait({ find(application, identifier: "daily-ear.hear") != nil }, seconds: 4)
+    checks["dailyReady"] = ready
+    checks["dailyHearImagine"] =
+        ready && press(application, "daily-ear.hear") && press(application, "daily-ear.imagine")
+    checks["dailyMIDICheck"] = press(application, "daily-ear.midi") && press(application, "daily-ear.check")
+    checks["dailyFocusedRetry"] =
+        press(application, "daily-ear.focus") && press(application, "daily-ear.midi")
+        && press(application, "daily-ear.check")
+    checks["dailyWholeReturn"] =
+        press(application, "daily-ear.reconnect") && press(application, "daily-ear.midi")
+        && press(application, "daily-ear.check")
+    checks["dailyAnswerInStudio"] =
+        press(application, "daily-ear.answer")
+        && wait { find(application, identifier: "workspace.content.editor") != nil }
+    checks["dailyAnswerReturns"] =
+        press(application, "daily-ear.return-from-answer")
+        && wait { find(application, identifier: "daily-ear.finish") != nil }
+    checks["dailyFullScore"] =
+        press(application, "daily-ear.full-score")
+        && wait {
+            find(application, containing: "8 bars") != nil
+                && find(application, identifier: "workspace.content.editor") != nil
+        }
+    checks["dailyMapResume"] =
+        press(application, "journey.return") && press(application, "daily-ear.begin")
+        && wait {
+            find(application, identifier: "daily-ear.finish") != nil
+        }
+} else {
+    let ready = wait({ find(application, identifier: "journey.full-score") != nil }, seconds: 4)
+    if !ready {
+        fputs(
+            "Cannot connect to Cadence's accessibility controls. Use an unlocked macOS session and a trusted developer terminal.\n",
+            stderr)
     }
-let studio = fullScore && find(application, identifier: "workspace.content.editor") != nil
-let openedCoach = studio && press(application, "workspace.coach")
-checks["coachAlongsideFullScore"] = openedCoach && wait {
-    find(application, identifier: "coach.question") != nil
-        && find(application, identifier: "workspace.content.editor") != nil
+    checks["accessibleFullScore"] = ready
+    checks["accessibleMilestones"] = ["hear", "changes", "groove", "arrange", "independent"].allSatisfy {
+        find(application, identifier: "journey.lesson." + $0) != nil
+    }
+    let wrong = ready && press(application, "journey.theory.4")
+    checks["theoryMissOffersRetry"] =
+        wrong
+        && wait {
+            find(application, containing: "Compare the two sets of chord tones, then try again.") != nil
+        }
+    let corrected = wrong && press(application, "journey.theory.0")
+    checks["theoryRetryKeepsSupportVisible"] =
+        corrected
+        && wait {
+            find(application, containing: "C can stay.") != nil && find(application, containing: "With support") != nil
+        }
+    let chapter = ready && press(application, "journey.lesson.arrange")
+    let arrangement = chapter && wait { find(application, containing: "Open my eight bars") != nil }
+    let opened = arrangement && press(application, "journey.open-activity")
+    checks["opensEightBarArrangement"] =
+        opened && wait { find(application, containing: "Save finished arrangement") != nil }
+    let finishButtons = descendants(application).filter {
+        value($0, kAXRoleAttribute) as? String == kAXButtonRole && text($0).contains("Save finished arrangement")
+    }
+    checks["unfinishedArrangementCannotFinish"] =
+        !finishButtons.isEmpty
+        && finishButtons.allSatisfy {
+            value($0, kAXEnabledAttribute) as? Bool == false
+        }
+    let returned = press(application, "journey.return")
+    checks["returnsToMap"] = returned && wait { find(application, identifier: "journey.full-score") != nil }
+    let fullScore = press(application, "journey.full-score")
+    checks["opensFullPiece"] =
+        fullScore
+        && wait {
+            find(application, containing: "A small beginning") != nil && find(application, containing: "8 bars") != nil
+                && find(application, identifier: "journey.return") != nil
+        }
+    let studio = fullScore && find(application, identifier: "workspace.content.editor") != nil
+    let openedCoach = studio && press(application, "workspace.coach")
+    checks["coachAlongsideFullScore"] =
+        openedCoach
+        && wait {
+            find(application, identifier: "coach.question") != nil
+                && find(application, identifier: "workspace.content.editor") != nil
+        }
+    let question = "How can I shape this phrase?"
+    let entered = wait {
+        guard let field = find(application, identifier: "coach.question") else { return false }
+        return AXUIElementSetAttributeValue(field, kAXValueAttribute as CFString, question as CFString) == .success
+    }
+    let written =
+        entered
+        && wait {
+            find(application, identifier: "coach.question").flatMap { value($0, kAXValueAttribute) as? String }
+                == question
+        }
+    let closed = closeCoach(application)
+    let reopened = closed && press(application, "workspace.coach")
+    checks["coachDraftSurvivesClosure"] =
+        written && reopened
+        && wait {
+            find(application, identifier: "coach.question").flatMap { value($0, kAXValueAttribute) as? String }
+                == question
+        }
+    let closedBeforeNavigation = closeCoach(application)
+    let library =
+        closedBeforeNavigation && press(application, "workspace.library")
+        && wait {
+            find(application, identifier: "workspace.content.library") != nil
+        }
+    let explore =
+        press(application, "workspace.explore")
+        && wait {
+            find(application, identifier: "workspace.content.explore") != nil
+        }
+    let resumed =
+        press(application, "workspace.studio")
+        && wait {
+            find(application, identifier: "workspace.content.editor") != nil
+                && find(application, containing: "A small beginning") != nil
+        }
+    checks["sectionsKeepFullScore"] = library && explore && resumed
+    let coachResumed = press(application, "workspace.coach")
+    checks["coachDraftSurvivesNavigation"] =
+        coachResumed
+        && wait {
+            find(application, identifier: "coach.question").flatMap { value($0, kAXValueAttribute) as? String }
+                == question
+        }
+    let closedBeforeLearn = closeCoach(application)
+    let learn =
+        closedBeforeLearn && press(application, "workspace.learn")
+        && wait {
+            find(application, identifier: "journey.full-score") != nil
+        }
+    checks["learnReturnsToPathway"] = learn
+    _ = press(application, "journey.return")
 }
-let question = "How can I shape this phrase?"
-let entered = wait {
-    guard let field = find(application, identifier: "coach.question") else { return false }
-    return AXUIElementSetAttributeValue(field, kAXValueAttribute as CFString, question as CFString) == .success
-}
-_ = press(application, "coach.close")
-_ = press(application, "workspace.coach")
-checks["coachDraftSurvivesClosure"] = entered && wait {
-    find(application, identifier: "coach.question").flatMap { value($0, kAXValueAttribute) as? String } == question
-}
-_ = press(application, "coach.close")
-let library = press(application, "workspace.library") && wait {
-    find(application, identifier: "workspace.content.library") != nil
-}
-let explore = press(application, "workspace.explore") && wait {
-    find(application, identifier: "workspace.content.explore") != nil
-}
-let resumed = press(application, "workspace.studio") && wait {
-    find(application, identifier: "workspace.content.editor") != nil
-        && find(application, containing: "A small beginning") != nil
-}
-checks["sectionsKeepFullScore"] = library && explore && resumed
-let coachResumed = press(application, "workspace.coach")
-checks["coachDraftSurvivesNavigation"] = coachResumed && wait {
-    find(application, identifier: "coach.question").flatMap { value($0, kAXValueAttribute) as? String } == question
-}
-_ = press(application, "coach.close")
-let learn = press(application, "workspace.learn") && wait {
-    find(application, identifier: "journey.full-score") != nil
-}
-checks["learnReturnsToPathway"] = learn
-_ = press(application, "journey.return")
 if !wait({ !process.isRunning }, seconds: 36) { process.terminate() }
 process.waitUntilExit()
 let sidecar = snapshot.deletingPathExtension().appendingPathExtension("json")
 var report =
     (try? Data(contentsOf: sidecar)).flatMap { try? JSONSerialization.jsonObject(with: $0) as? [String: Any] } ?? [:]
-var result = report["songJourneyChecks"] as? [String: Bool] ?? [:]
+let group = daily ? "earDailyChecks" : "songJourneyChecks"
+var result = report[group] as? [String: Bool] ?? [:]
 result.merge(checks) { _, new in new }
-report["songJourneyChecks"] = result
+report[group] = result
 try JSONSerialization.data(withJSONObject: report, options: [.prettyPrinted, .sortedKeys]).write(
     to: sidecar, options: .atomic)
 print("Native accessibility journey:", checks)

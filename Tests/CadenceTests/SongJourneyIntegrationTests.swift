@@ -137,7 +137,7 @@ final class SongJourneyIntegrationTests: XCTestCase {
         try state.startSongJourney(instrument: .guitar)
         let journey = try XCTUnwrap(state.selectedSongJourney)
         try state.openSongActivity(.hear, journey: journey)
-        XCTAssertEqual(state.practicePage, .scoreEar)
+        XCTAssertEqual(state.practicePage, .earDaily)
         try state.openSongActivity(.changes, journey: journey)
         XCTAssertEqual(state.destination, .chords)
         XCTAssertEqual(state.changesPlan.pieceID, journey.material.pieceID)

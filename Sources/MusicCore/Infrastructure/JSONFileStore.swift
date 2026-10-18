@@ -82,7 +82,7 @@ public final class JSONFileStore<Value: Codable> {
 /// The result and the schedule derived from it share one atomic commit.
 /// Older practice.json, attempts.json and learning.json files are read only at migration.
 public struct PracticeState: Codable, Equatable, Sendable {
-    public var schemaVersion = 17
+    public var schemaVersion = 18
     public var history: PracticeProgress
     public var journal: PracticeJournal
     public var learning: LearningLibrary
@@ -94,6 +94,7 @@ public struct PracticeState: Codable, Equatable, Sendable {
     public var triads: TriadPractice?
     public var picking: PickingPractice?
     public var microphonePhrases: MicrophonePhrasePractice?
+    public var earDaily: EarDailyPractice?
     public var tension: TensionPractice?
     public var reharm: ReharmPractice?
     public init(
@@ -115,7 +116,7 @@ public struct PracticeState: Codable, Equatable, Sendable {
         self.reharm = reharm
     }
     public func validated() throws -> Self {
-        guard (1...17).contains(schemaVersion) else {
+        guard (1...18).contains(schemaVersion) else {
             throw MusicError.invalid("This practice data needs a newer Cadence.")
         }
         _ = try history.validated()
@@ -128,15 +129,16 @@ public struct PracticeState: Codable, Equatable, Sendable {
         if let tension { _ = try tension.validated() }
         if let picking { _ = try picking.validated() }
         if let microphonePhrases { _ = try microphonePhrases.validated() }
+        if let earDaily { _ = try earDaily.validated() }
         if let triads { _ = try triads.validated() }
         if let pianoTakes { _ = try pianoTakes.validated() }
         // New snapshots must be complete. Legacy journal cleanup happens only during migration.
         guard try journal.restored() == journal else {
             throw MusicError.invalid("The detailed practice history contains invalid records.")
         }
-        // Version 17 protects calibrated microphone takes from older writers.
+        // Version 18 protects linked daily-session references from older writers.
         var restored = self
-        restored.schemaVersion = 17
+        restored.schemaVersion = 18
         return restored
     }
 }

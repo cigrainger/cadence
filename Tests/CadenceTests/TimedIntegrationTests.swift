@@ -253,7 +253,7 @@ final class TimedIntegrationTests: XCTestCase {
         let result = TimedPracticeResult(plan: plan, conditions: TimedConditions(input: .space), attacks: attacks(plan))
         try state.saveTimedResult(result)
         XCTAssertEqual(try Data(contentsOf: url.appendingPathExtension("previous")), bytes)
-        XCTAssertEqual(AppState(storageOverride: directory).practiceState.schemaVersion, 17)
+        XCTAssertEqual(AppState(storageOverride: directory).practiceState.schemaVersion, 18)
         XCTAssertEqual(AppState(storageOverride: directory).history.timedPassages?[result.practiceID]?.latest, result)
     }
 }

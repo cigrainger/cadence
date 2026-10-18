@@ -21,6 +21,7 @@ extension AppState {
         scoreEarInput.pause()
         adaptiveInput.pause(held: midi.keyboard.downNotes)
         songInput.pause()
+        earDailyInput.pause()
         changesSession.pause(held: midi.keyboard.downNotes)
         if !keepingMetronome || !audio.isMetronome { audio.stop() }
         microphone.stop()

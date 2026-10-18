@@ -249,8 +249,8 @@ final class ReharmonisationTests: XCTestCase {
         json["schemaVersion"] = 14
         let old = try JSONDecoder().decode(PracticeState.self, from: JSONSerialization.data(withJSONObject: json))
         XCTAssertNil(old.reharm)
-        XCTAssertEqual(try old.validated().schemaVersion, 17)
-        state.schemaVersion = 18
+        XCTAssertEqual(try old.validated().schemaVersion, 18)
+        state.schemaVersion = 19
         XCTAssertThrowsError(try state.validated())
         book.sessions.append(s)
         XCTAssertThrowsError(try book.validated())

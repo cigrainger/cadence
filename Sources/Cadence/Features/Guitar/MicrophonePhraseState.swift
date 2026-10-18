@@ -22,7 +22,17 @@ extension AppState {
     }
 
     func showMicrophonePhrases() {
+        if microphonePhraseSession.hasUnsavedTake, let owner = microphonePhraseSession.dailyOwnerID {
+            do { try resumeEarDaily(owner) } catch { message = error.localizedDescription }
+            return
+        }
         stopAllPlayback()
+        if let plan = microphonePhraseSession.plan, microphonePhraseSession.dailyOwnerID != nil {
+            do { try microphonePhraseSession.select(plan) } catch {
+                message = error.localizedDescription
+                return
+            }
+        }
         practicePage = .microphonePhrase
         destination = .practice
     }
@@ -75,10 +85,16 @@ extension AppState {
     }
 
     @discardableResult func saveMicrophoneTake(_ take: MicrophonePhraseTake) throws -> MicrophonePhraseTake {
+        let daily = microphonePhraseSession.dailyOwnerID.flatMap { id in earDailyPractice.sessions.first { $0.id == id }
+        }
+        let currentDaily = daily.map { (try? validateEarDaily($0)) != nil } ?? false
+        if daily != nil, currentDaily, (try? validateMicrophonePhrase(take.plan)) != nil {
+            return try saveEarDailyMicrophone(take)
+        }
         var saved = take
         var copy = practiceState
         var book = microphonePhrases
-        if (try? validateMicrophonePhrase(take.plan)) != nil, !take.isArchivalOnly {
+        if (try? validateMicrophonePhrase(take.plan)) != nil, !take.isArchivalOnly, daily == nil || currentDaily {
             let attempt = try book.record(take)
             if let attempt { copy.journal.append(attempt) }
         } else {
@@ -101,6 +117,10 @@ extension AppState {
     }
 
     func discardMicrophoneTake() throws {
+        if microphonePhraseSession.dailyOwnerID != nil {
+            try discardEarDailyMicrophone()
+            return
+        }
         guard let take = microphonePhraseSession.pending else { return }
         var snapshot = practiceState
         var book = microphonePhrases

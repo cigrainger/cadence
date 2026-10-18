@@ -1,0 +1,67 @@
+CADENCE — PLAY IT BY EAR
+
+Learn → Your pathway → Make a song your own → Begin today’s session.
+The connected session is in current source builds; the 0.36.1 download predates it.
+The pathway card recommends due familiar recall, or transfer after independent
+familiar recall. Before review is due it offers supported practice and explains why.
+Start with an original example or a reviewed library passage. The full piece
+stays in Library, and Your pathway takes you back to the course map.
+
+Hear → imagine → find and refine → make an answer → return later.
+
+1. Hear the phrase before revealing its written notes. Carry its shape silently;
+   sing or hum it to yourself if useful. Imagination is not measured.
+2. Piano: enable MIDI listening, release any previously held keys, then play
+   one note at a time. Release the last key before Check my take. Pauses,
+   articulation, dynamics and tempo are not graded. Reset, disconnection or
+   leaving capture stops it; a fresh capture is a supported retry.
+3. Guitar: choose the Mac microphone or USB interface in System Settings → Sound,
+   then choose the channel carrying the guitar. Count in & listen records a
+   bounded clean single-note phrase. Keep playing through the count-in tempo;
+   capture ends at the phrase boundary. This checks exact sounding pitches and
+   attack order only, without loopback calibration or a timing grade. Mac-mic
+   acoustic and wired-interface accuracy still require hands-on validation.
+4. Inspect a guitar take before keeping it. Dispute an uncertain match. Noise,
+   missing/extra candidates, a truncated take or disputed pitches are inconclusive;
+   no correctness grade or inferred weakness is recorded. Raw audio is not saved
+   or uploaded. A waiting take stays with its daily session, including after a
+   failed save or navigation; retry saving without recording it again.
+5. After a conclusive miss, focus on a suggested source bar. A focused guitar
+   retry uses a slower invitation. Reconnect the whole phrase afterwards.
+   Focused success never becomes independent whole-phrase recall.
+6. Replays, notation/tab, solfège, source views and coaching are available.
+   They count as support before answering. Opening the coach sends nothing;
+   an explicit request shares symbolic music and bounded observations only.
+7. Write a short musical answer in Studio: borrow a rhythm, change the ending
+   or answer its contour. The blank draft shares the source key, meter and chord
+   symbols. Enter notes or use MIDI step entry. Listen to the complete answer
+   and Save finished answer, then Back to today’s session → Finish today’s
+   session. This short answer has its own stable identity and source link; it
+   does not claim completion of the separate eight-bar arrangement chapter.
+8. Independent returns appear in Learn → Practice & review after time away.
+   Familiar recall starts without hearing the melody. Transfer uses another
+   piece, heard once as the new stimulus; another replay counts as support.
+   Both start no earlier than a full day after relevant exposure and honour the
+   activity’s spaced due date. Early guided practice stays open. A correct early
+   supported pass does not erase an earned spaced interval. Later reviews can
+   finish after the take; writing another answer is optional.
+   Leaving an independent session before keeping its take makes its resumed
+   capture supported practice. A received pending take keeps its original status.
+
+The map reads canonical saved observations. Hearing, explaining, playing and
+creating remain separate; neither a coach’s prose nor an inconclusive capture
+awards progress. Saving a composition records creative work, not artistic quality.
+Changed music keeps historical work but cannot receive old-source credit. A
+waiting earlier-version guitar take can be kept as archival evidence or discarded.
+
+This initial version retains up to 32 daily sessions and 16 microphone takes per
+reviewed phrase. Archive completed sessions on the pathway card to free session
+slots; the selected session, unfinished work, journal and compositions stay.
+Clear older detector details in a guitar session explicitly keeps the two newest
+pitch-only takes. Older per-note detector details are removed after confirmation;
+pitch/order results, inconclusive summaries and exposure/review cutoffs stay.
+Calibrated timing takes are protected. No cleanup runs silently.
+Piano needs MIDI for measured playing; guitar requires clean monophonic input.
+Chords, distorted guitar, bends, vibrato and picking-hand mechanics are outside
+this check. VoiceOver, actual permission dialogs and physical-device trials remain
+separate from the automated virtual-MIDI, synthetic-audio and native control tests.

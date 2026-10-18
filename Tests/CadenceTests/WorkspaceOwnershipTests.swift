@@ -107,7 +107,7 @@ final class WorkspaceOwnershipTests: XCTestCase {
         try owner.record(attempt())
         let reopened = PracticeWorkspace(storage: WorkspaceStorage(directory: dir))
         reopened.load()
-        XCTAssertEqual(reopened.state.schemaVersion, 17)
+        XCTAssertEqual(reopened.state.schemaVersion, 18)
         XCTAssertEqual(reopened.state.journal.attempts.map(\.assisted), [true, false])
         XCTAssertEqual(reopened.state.history.xp, 0)  // Recording evidence alone doesn't invent a reward.
         XCTAssertTrue(

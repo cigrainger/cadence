@@ -31,7 +31,7 @@ class VerificationTests(unittest.TestCase):
 
     def test_accessibility_and_editor_navigation_stay_serial(self):
         scenarios = {case[0]: case for case in native_scenarios()}
-        for name in ('song-accessibility', 'workspace-editor-return'):
+        for name in ('song-accessibility', 'daily-ear-accessibility', 'workspace-editor-return'):
             self.assertEqual(preview_parallelism(scenarios[name], 2), 1)
         for name in ('song-pathway', 'flow', 'editor-piano'):
             self.assertEqual(preview_parallelism(scenarios[name], 2), 2)
@@ -222,9 +222,9 @@ class NativeMatrixSchedulingTests(unittest.TestCase):
     def test_static_batches_drain_around_focus_sensitive_scenarios(self):
         from verify import native_scenario_batches
         cases = [self.case('a'), self.case('b'), self.case('navigation', ['--workspace-editor-roundtrip']),
-                 self.case('c'), self.case('d'), self.case('song-accessibility'), self.case('e')]
+                 self.case('c'), self.case('d'), self.case('song-accessibility'), self.case('daily-ear-accessibility'), self.case('e')]
         self.assertEqual([[case[0] for case in batch] for batch in native_scenario_batches(cases, 4)],
-                         [['a', 'b'], ['navigation'], ['c', 'd'], ['song-accessibility'], ['e']])
+                         [['a', 'b'], ['navigation'], ['c', 'd'], ['song-accessibility'], ['daily-ear-accessibility'], ['e']])
         for jobs in (1, 2):
             self.assertTrue(all(len(batch) == 1 for batch in native_scenario_batches(cases, jobs)))
         self.assertEqual(preview_parallelism(cases[0], 4), 2)

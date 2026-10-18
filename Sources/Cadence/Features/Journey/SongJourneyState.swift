@@ -120,7 +120,11 @@ extension AppState {
             $0.pieceID == journey.material.pieceID && $0.scoreFingerprint == journey.material.fingerprint
         }
         let hearingIDs = [PracticeInput.singing, .midi].map { EarPhrase(material: journey.material).activity($0) }
-        let hearing = primary.filter { hearingIDs.contains($0.activityID) }
+        let dailyActivity = journey.material.id + ":daily-ear:" + journey.instrument.rawValue
+        let hearing = primary.filter {
+            hearingIDs.contains($0.activityID)
+                || ($0.activityID == dailyActivity && $0.pathwayID == journey.id && $0.outcome != .skipped)
+        }
         let changesPlan = try? songChanges(journey)
         let prefix = changesPlan.map { $0.id + ":" }
         let changes = primary.filter { attempt in prefix.map { attempt.activityID.hasPrefix($0) } ?? false }
@@ -133,8 +137,11 @@ extension AppState {
                 $0.latest.pass.id
             })
         let earliest = songReturnDate(journey)
+        let transferActivity = journey.transfer.id + ":daily-ear:" + journey.instrument.rawValue
         let independent = journal.attempts.filter {
-            returnIDs.contains($0.id) && $0.pieceID == journey.transfer.pieceID
+            (returnIDs.contains($0.id)
+                || ($0.activityID == transferActivity && $0.pathwayID == journey.id && $0.outcome != .skipped))
+                && $0.pieceID == journey.transfer.pieceID
                 && $0.scoreFingerprint == journey.transfer.fingerprint && $0.date >= earliest
         }
         let composition = editor.documents.first { $0.id == journey.compositionID }
@@ -181,7 +188,10 @@ extension AppState {
         // Keep each activity's schedule, but recommend from the most recent
         // assessment. An old guided card must not override a newer clean return.
         let latestReturn = returns.max { $0.latest.pass.date < $1.latest.pass.date }
-        let next = latestReturn?.review.due ?? songReturnDate(journey)
+        let dailyReview = history.cards[journey.transfer.id + ":daily-ear:" + journey.instrument.rawValue]?.review
+        let next =
+            (dailyReview?.lastReview ?? .distantPast) > (latestReturn?.review.lastReview ?? .distantPast)
+            ? dailyReview?.due ?? songReturnDate(journey) : latestReturn?.review.due ?? songReturnDate(journey)
         let hasPractised =
             [SongLesson.hear, .changes, .groove].contains { lesson in
                 evidence[lesson]?.attempts.contains { $0.input != .selfReport && $0.outcome != .skipped } == true
@@ -204,7 +214,7 @@ extension AppState {
         songJourneyID = journey.id
         songLesson = lesson
         switch lesson {
-        case .hear: try openScoreEar(journey.material)
+        case .hear: try openEarDaily(journey)
         case .changes: openChanges(try songChanges(journey))
         case .groove: openPlayAlong(journey.material)
         case .arrange:
@@ -263,6 +273,12 @@ extension AppState {
     }
     func coachForSong(_ journey: SongJourney, lesson: SongLesson) {
         stopAllPlayback()
+        do {
+            try noteEarDailySourceExposure((lesson == .independent ? journey.transfer : journey.material).pieceID)
+        } catch {
+            message = error.localizedDescription
+            return
+        }
         contextCoach.open(
             songCoachContext(journey, lesson: lesson),
             prompt:

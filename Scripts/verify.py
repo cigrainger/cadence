@@ -19,6 +19,29 @@ from native_coverage import NativeCoverage, check_source_inventory, reset_unit_c
 from swift_build_config import SWIFT_TEST_FLAGS
 
 ROOT = Path(__file__).resolve().parents[1]
+ACCESSIBILITY_SCENARIOS = frozenset(("song-accessibility", "daily-ear-accessibility"))
+
+
+COVERAGE_GROUPS = {
+    "WorkspaceOwners": ["Infrastructure/Storage/PracticeWorkspace.swift",
+                        "Infrastructure/Storage/LibraryWorkspace.swift",
+                        "Infrastructure/Storage/CourseWorkspace.swift"],
+    "LearningWorkflows": ["Infrastructure/Import/PDFImportQueue.swift",
+                          "Infrastructure/AI/SavedRequest.swift",
+                          "Features/Journey/SongJourneyState.swift",
+                          "Features/Journey/EarDailyState.swift",
+                          "Features/Journey/EarDailyRetentionState.swift",
+                          "Features/Journey/EarDailyInput.swift",
+                          "Features/Journey/SongOpeningInput.swift"],
+    "DeviceAndRequestOwners": ["Infrastructure/AI/AISettings.swift", "Infrastructure/AI/AIModelCatalog.swift",
+                               "Infrastructure/AI/ContextCoachSession.swift",
+                               "Infrastructure/AI/SavedRequest.swift", "Infrastructure/AI/PieceCoachSession.swift",
+                               "Infrastructure/Audio/Microphone.swift", "Infrastructure/Audio/MicrophoneInput.swift",
+                               "Infrastructure/Audio/AcousticCapturePipe.swift", "Infrastructure/Audio/MicrophoneAudioRoute.swift",
+                               "Features/Guitar/MicrophonePhraseSession.swift",
+                               "Infrastructure/MIDI/MIDIKeyboard.swift",
+                               "Features/Practice/CalibratedPracticeSession.swift"],
+}
 
 
 def require(condition, message):
@@ -100,24 +123,7 @@ def summarize_coverage(document):
         result[module] = {"files": len(files), **totals}
     # The full Cadence denominator above is retained, including views and diagnostics.
     # These additional gates protect the owners and orchestration changed here.
-    groups = {
-        "WorkspaceOwners": ["Infrastructure/Storage/PracticeWorkspace.swift",
-                            "Infrastructure/Storage/LibraryWorkspace.swift",
-                            "Infrastructure/Storage/CourseWorkspace.swift"],
-        "LearningWorkflows": ["Infrastructure/Import/PDFImportQueue.swift",
-                              "Infrastructure/AI/SavedRequest.swift",
-                              "Features/Journey/SongJourneyState.swift",
-                              "Features/Journey/SongOpeningInput.swift"],
-        "DeviceAndRequestOwners": ["Infrastructure/AI/AISettings.swift", "Infrastructure/AI/AIModelCatalog.swift",
-                                   "Infrastructure/AI/ContextCoachSession.swift",
-                                   "Infrastructure/AI/SavedRequest.swift", "Infrastructure/AI/PieceCoachSession.swift",
-                                   "Infrastructure/Audio/Microphone.swift", "Infrastructure/Audio/MicrophoneInput.swift",
-                                   "Infrastructure/Audio/AcousticCapturePipe.swift", "Infrastructure/Audio/MicrophoneAudioRoute.swift",
-                                   "Features/Guitar/MicrophonePhraseSession.swift",
-                                   "Infrastructure/MIDI/MIDIKeyboard.swift",
-                                   "Features/Practice/CalibratedPracticeSession.swift"],
-    }
-    for label, paths in groups.items():
+    for label, paths in COVERAGE_GROUPS.items():
         files = [file for data in document["data"] for file in data["files"]
                  if any(file["filename"].endswith("/Sources/Cadence/" + path) for path in paths)]
         count = sum(file["summary"]["lines"]["count"] for file in files)
@@ -171,10 +177,21 @@ def run(command, log, env, timeout):
 
 
 def native_scenarios():
+    daily = ["sourceLinked", "validState", "inputSpecific", "noTimingGrade", "fullPieceRetained", "noLiveInput", "noPaidRequests", "referencesCanonical", "independenceSeparate"]
     editor = ["offline", "allEventsMapped", "selectionIDsValid", "selectedFirst", "selectedLast", "playbackHighlight", "distinctVoices", "continuousPlayhead"]
     smooth = ["twoSources", "fiveSteps", "fourStudies", "epubReadable", "unreviewedBlocked", "midiEvidence", "spacedReview", "sessionBudget"]
     song = ["sourceLinked", "eightBarSource", "openMilestones", "noPaidRequests"]
     return [
+        ("daily-ear-accessibility", ["--ear-daily-preview", "--daily-ax"], [], "earDailyChecks", daily + ["dailyReady", "dailyHearImagine", "dailyMIDICheck", "dailyFocusedRetry", "dailyWholeReturn", "dailyAnswerInStudio", "dailyAnswerReturns", "dailyFullScore", "dailyMapResume"]),
+        ("daily-ear-piano", ["--ear-daily-preview", "--daily-play", "--width", "1350", "--height", "1000"], [], "earDailyChecks", daily),
+        ("daily-ear-piano-review", ["--ear-daily-preview", "--daily-miss", "--daily-reveal"], ["offline", "focusMapped", "cursorForward", "cursorRewind"], "earDailyChecks", daily),
+        ("daily-ear-guitar", ["--ear-daily-preview", "--daily-guitar", "--daily-miss", "--daily-reveal"], ["offline", "linkedTab"], "earDailyChecks", daily),
+        ("daily-ear-guitar-focus", ["--ear-daily-preview", "--daily-guitar", "--daily-miss", "--daily-reveal", "--daily-focus", "--width", "1120", "--height", "850"], ["offline", "linkedTab"], "earDailyChecks", daily),
+        ("daily-ear-uncertain", ["--ear-daily-preview", "--daily-guitar", "--daily-uncertain"], [], "earDailyChecks", daily + ["uncertaintyAbstains"]),
+        ("daily-ear-answer", ["--ear-daily-preview", "--daily-answer"], ["offline", "allEventsMapped"], "earDailyChecks", daily + ["stableAnswer"]),
+        ("daily-ear-complete", ["--ear-daily-preview", "--daily-complete"], [], "earDailyChecks", daily + ["stableAnswer"]),
+        ("daily-ear-recall", ["--ear-daily-preview", "--daily-recall"], [], "earDailyChecks", daily),
+        ("daily-ear-transfer", ["--ear-daily-preview", "--daily-guitar", "--daily-transfer"], [], "earDailyChecks", daily),
         ("microphone-phrase", ["--microphone-phrase-preview", "--width", "1350", "--height", "1100"], ["offline", "linkedTab", "focusMapped"], "microphonePhraseChecks", ["sourceLinked", "validState", "clockProvenance", "calibrationSeparate", "noLiveInput", "savedEvidence", "perNoteCoachData", "pitchTimingSeparate", "finalNoteUnaffected"]),
         ("microphone-focus", ["--microphone-phrase-preview", "--microphone-focus"], ["offline", "linkedTab", "focusMapped"], "microphonePhraseChecks", ["sourceLinked", "validState", "savedEvidence", "focusedContextRetained"]),
         ("microphone-uncertain", ["--microphone-phrase-preview", "--microphone-uncertain"], ["offline", "linkedTab"], "microphonePhraseChecks", ["sourceLinked", "validState", "uncertaintyAbstains"]),
@@ -347,8 +364,9 @@ def run_preview(executable, output, env, scenario):
     png, sidecar = output / (name + ".png"), output / (name + ".json")
     png.unlink(missing_ok=True)
     sidecar.unlink(missing_ok=True)
-    if name == "song-accessibility":
-        run(["swift", "-swift-version", "6", ROOT / "Scripts/native_accessibility.swift", executable, png], output / (name + ".log"), env, 60)
+    if name in ACCESSIBILITY_SCENARIOS:
+        extra = ["--daily-ear"] if name == "daily-ear-accessibility" else []
+        run(["swift", "-swift-version", "6", ROOT / "Scripts/native_accessibility.swift", executable, png, *extra], output / (name + ".log"), env, 60)
     else:
         readiness = output / (name + ".requirements.json")
         readiness.write_text(json.dumps({"scenario": name, "rendererFlags": required,
@@ -391,7 +409,7 @@ def paired_native_checks(production, instrumented, jobs):
 def preview_parallelism(scenario, requested):
     # Navigation round trips deliberately tear down and recreate WebKit views.
     # Keep their lifecycle check serial even when static captures overlap.
-    return 1 if scenario[0] == 'song-accessibility' or '--workspace-editor-roundtrip' in scenario[1] else min(requested, 2)
+    return 1 if scenario[0] in ACCESSIBILITY_SCENARIOS or '--workspace-editor-roundtrip' in scenario[1] else min(requested, 2)
 
 
 def native_scenario_batches(scenarios, jobs):
@@ -517,10 +535,10 @@ def main():
         # This is a regression floor for the core, not a claim about the whole UI.
         require(report["coverage"]["MusicCore"]["lines"]["percent"] >= 90, "MusicCore line coverage dropped below 90%")
         owners = report["coverage"].get("WorkspaceOwners", {})
-        require(owners.get("files") == 3 and owners["lines"]["percent"] >= 85,
+        require(owners.get("files") == len(COVERAGE_GROUPS["WorkspaceOwners"]) and owners["lines"]["percent"] >= 85,
                 "Library/practice/course workspace coverage is missing or below 85%")
         workflows = report["coverage"].get("LearningWorkflows", {})
-        require(workflows.get("files") == 4 and workflows["lines"]["percent"] >= 80,
+        require(workflows.get("files") == len(COVERAGE_GROUPS["LearningWorkflows"]) and workflows["lines"]["percent"] >= 80,
                 "Learning/import workflow coverage is missing or below 80%")
         require(report["coverage"]["Cadence"]["lines"]["percent"] >= 12,
                 "Whole-app unit-test line coverage dropped below 12%")
@@ -562,8 +580,8 @@ def main():
             scenarios = native_scenarios()
             report["skippedNativeScenarios"] = []
             if args.skip_accessibility:
-                report["skippedNativeScenarios"] = ["song-accessibility"]
-                scenarios = [case for case in scenarios if case[0] != "song-accessibility"]
+                report["skippedNativeScenarios"] = sorted(ACCESSIBILITY_SCENARIOS)
+                scenarios = [case for case in scenarios if case[0] not in ACCESSIBILITY_SCENARIOS]
             record_native_matrix(
                 report, scenarios, lambda scenario: run_preview(executable, output, env, scenario),
                 lambda scenario: run_preview(collection.executable, collection.folder, instrumented_env, scenario),

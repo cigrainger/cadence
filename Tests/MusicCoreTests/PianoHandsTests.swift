@@ -199,8 +199,8 @@ final class PianoHandsTests: XCTestCase {
         XCTAssertEqual(decoded, plain)
         var state = PracticeState()
         state.schemaVersion = 10
-        XCTAssertEqual(try state.validated().schemaVersion, 17)
-        state.schemaVersion = 18
+        XCTAssertEqual(try state.validated().schemaVersion, 18)
+        state.schemaVersion = 19
         XCTAssertThrowsError(try state.validated())
         XCTAssertFalse(TimedConditions(partnerStaff: 17).valid)
     }

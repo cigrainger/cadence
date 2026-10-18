@@ -10,6 +10,8 @@ Implemented in current source; the 0.36.1 download predates this work. Begin wit
 
 The first policy reads scoped activity results and schedules. It is not a calibrated estimate of general skill. On-screen choices, assisted practice, MIDI checks and finished creative work describe different accomplishments. An early return is still useful practice; it does not establish delayed recall. An external native accessibility runner covers chapter selection, opening an arrangement, returning to the map and opening the full piece.
 
+Play it by ear now connects a saved daily session to this map: reviewed-source listening and imagination, piano MIDI or guitar microphone pitch recall, supported focus/context retries, a source-linked short answer and separate familiar/transfer reviews. The first transfer hearing supplies a new stimulus; familiar recall withholds the melody. Replays and source/coaching views remain support. This reuses canonical evidence and scheduling; acoustic hardware accuracy and educational effectiveness still require learner validation.
+
 Next acceptance: a musician reviews the examples and several learners try the entire journey, including next-day recall and a genuinely unfamiliar library piece. Observe confusing exits, ignored suggestions and unsupported instrument/input combinations. Revise the journey before producing many more courses.
 
 ## Engineering work that supports the journey

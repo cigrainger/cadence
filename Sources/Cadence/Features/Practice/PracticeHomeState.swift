@@ -7,7 +7,8 @@ import MusicCore
 /// Navigation is transient. Practice results and resumable sessions remain in
 /// their existing stores; the home screen never creates a second progress model.
 enum PracticePage {
-    case microphonePhrase, picking, home, exercises, adaptive, ear, scoreEar, groove, playAlong, rehearsal, triads,
+    case earDaily, microphonePhrase, picking, home, exercises, adaptive, ear, scoreEar, groove, playAlong, rehearsal,
+        triads,
         tension, reharm,
         songJourney
 }
@@ -19,6 +20,7 @@ struct PracticeReviewItem: Identifiable {
         case triads(UUID)
         case picking(UUID)
         case microphonePhrase(String)
+        case earDaily(UUID, EarDailyMode)
         case rehearsal(String)
         case playAlong(
             PlayAlongResult)
@@ -168,11 +170,33 @@ extension AppState {
                 context: (libraryPieces.first { $0.id == material.pieceID }?.title ?? material.title) + " · "
                     + material.label, review: scoreEarReview(material), target: .scoreEar(material))
         }
+        for journey in songJourneys where (try? validateSongJourney(journey)) != nil {
+            if hasCompletedEarDaily(journey),
+                let due = earDailyReturnDate(journey.material, instrument: journey.instrument)
+            {
+                var review = ReviewSchedule()
+                review.due = due
+                items.append(
+                    .init(
+                        id: "daily-ear:" + journey.id.uuidString, title: "Play it by ear · bring it back",
+                        context: journey.material.title + " · " + journey.instrument.rawValue,
+                        review: review, target: .earDaily(journey.id, .recall)))
+                let transferDue = earDailyTransferDate(journey) ?? due
+                review.due = transferDue
+                items.append(
+                    .init(
+                        id: "daily-ear-transfer:" + journey.id.uuidString, title: "Play it by ear · another piece",
+                        context: "Independent transfer · " + journey.transfer.title,
+                        review: review, target: .earDaily(journey.id, .transfer)))
+            }
+        }
         items += microphonePhrases.sessions.filter {
             $0.baseline != nil && (try? validateMicrophonePhrase($0.sourcePlan)) != nil
         }.map { progress in
             var review = progress.review
-            if let available = microphonePhrases.returnDate(progress.id) { review.due = available }
+            if let available = microphonePhrases.returnDate(progress.id) {
+                review.due = max(review.due ?? available, available)
+            }
             return .init(
                 id: "microphone:" + progress.id, title: "Bring the guitar phrase back",
                 context: progress.material.title + " · Microphone", review: review,
@@ -223,6 +247,13 @@ extension AppState {
             return
         }
         switch current.target {
+        case .earDaily(let journeyID, let mode):
+            do {
+                guard let journey = songJourneys.first(where: { $0.id == journeyID }) else {
+                    throw MusicError.invalid("This pathway is no longer available.")
+                }
+                try openEarDaily(journey, mode: mode)
+            } catch { message = error.localizedDescription }
         case .reharm(let id, let skill):
             do { try resumeReharm(id, skill: skill) } catch { message = error.localizedDescription }
         case .tension(let id, let skill):

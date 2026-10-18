@@ -8,6 +8,10 @@ struct PracticeWorkspaceView: View {
     @EnvironmentObject private var state: AppState
     var body: some View {
         switch state.practicePage {
+        case .earDaily:
+            EarDailyView(
+                input: state.earDailyInput, acoustic: state.microphonePhraseSession, midi: state.midi,
+                audio: state.audio)
         case .microphonePhrase:
             MicrophonePhraseView(session: state.microphonePhraseSession, microphone: state.microphone)
         case .picking: PickingPathwayView(input: state.pickingInput, audio: state.audio, microphone: state.microphone)
