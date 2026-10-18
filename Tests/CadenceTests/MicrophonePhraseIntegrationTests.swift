@@ -89,15 +89,18 @@ import XCTest
     }
     func play(
         _ plan: MicrophonePhrasePlan, firstDelta: Double = 0,
+        pitchOnly: Bool = false, dailyOwnerID: UUID? = nil,
         interrupted: @escaping @MainActor (Date) throws -> Void = { _ in },
         validate: @escaping @MainActor () throws -> Void = {}
     ) async throws {
         clock.value = 200
-        session.start(plan, microphone: microphone, pitchOnly: false, interrupted: interrupted, validate: validate)
+        session.start(
+            plan, microphone: microphone, pitchOnly: pitchOnly, dailyOwnerID: dailyOwnerID, interrupted: interrupted,
+            validate: validate)
         try await wait { session.phase == .countIn || session.error != nil }
         guard let handler = input.handler else { throw MusicError.invalid(session.error ?? "No phrase handler") }
         let origin = output.origin
-        let offset = session.calibration!.offsetMS / 1000
+        let offset = pitchOnly ? 0 : session.calibration!.offsetMS / 1000
         let onsets = plan.timed.targets.enumerated().map { index, target in
             (
                 origin - clock.value + plan.timed.countIn + target.beat * plan.timed.secondsPerBeat + offset
@@ -115,6 +118,113 @@ import XCTest
 }
 
 final class MicrophonePhraseIntegrationTests: XCTestCase {
+    @MainActor private func daily(_ harness: AcousticTestHarness) throws -> AppState {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        let state = AppState(storageOverride: directory, microphoneSession: harness.session)
+        addTeardownBlock {
+            await MainActor.run {
+                state.stopAllPlayback()
+                state.midi.shutdown()
+            }
+            try? FileManager.default.removeItem(at: directory)
+        }
+        try state.startSongJourney(instrument: .guitar)
+        try state.openEarDaily(XCTUnwrap(state.selectedSongJourney))
+        let id = try XCTUnwrap(state.earDailySession?.id)
+        try state.hearEarDaily(id, play: { _ in })
+        try state.updateEarDaily(id) { try $0.imagined() }
+        var book = state.microphonePhrases
+        try book.open(state.earDailyMicrophonePlan(XCTUnwrap(state.earDailySession)))
+        var snapshot = state.practiceState
+        snapshot.microphonePhrases = book
+        try state.commitPractice(snapshot)
+        return state
+    }
+
+    @MainActor func testDailyPCMOwnerReturnsToDailyAndSavesOnePitchOnlyResult() async throws {
+        let harness = AcousticTestHarness()
+        let state = try daily(harness)
+        let session = try XCTUnwrap(state.earDailySession)
+        let plan = try state.earDailyMicrophonePlan(session)
+        try await harness.play(plan, pitchOnly: true, dailyOwnerID: session.id)
+        XCTAssertTrue(harness.session.hasUnsavedTake)
+        XCTAssertEqual(harness.session.dailyOwnerID, session.id)
+        state.showMicrophonePhrases()
+        XCTAssertEqual(state.practicePage, .earDaily)
+        harness.session.save(using: state.saveMicrophoneTake)
+        XCTAssertNil(harness.session.pending)
+        XCTAssertNil(harness.session.dailyOwnerID)
+        XCTAssertEqual(state.earDailySession?.stage, .review)
+        XCTAssertEqual(state.earDailyLatestAttempt?.input, .microphone)
+        XCTAssertEqual(state.earDailyLatestAttempt?.outcome, .correct)
+        XCTAssertNil(state.earDailyLatestAttempt?.timedPracticeID)
+        XCTAssertEqual(state.journal.checked.count, 1)
+    }
+
+    @MainActor func testCancelledDailyCountInCannotOwnOrdinaryCoachedCapture() async throws {
+        let harness = AcousticTestHarness()
+        let state = try daily(harness)
+        let session = try XCTUnwrap(state.earDailySession)
+        let plan = try state.earDailyMicrophonePlan(session)
+        harness.session.start(
+            plan, microphone: harness.microphone, pitchOnly: true, dailyOwnerID: session.id, validate: {})
+        try await harness.wait { harness.session.phase == .countIn }
+        harness.session.cancel()
+        XCTAssertNil(harness.session.dailyOwnerID)
+        state.showMicrophonePhrases()
+        XCTAssertEqual(state.practicePage, .microphonePhrase)
+        try await harness.play(plan, pitchOnly: true)
+        harness.session.save(using: state.saveMicrophoneTake)
+        XCTAssertEqual(state.earDailySession?.stage, .play)
+        XCTAssertTrue(state.earDailySession!.attemptIDs.isEmpty)
+        XCTAssertNil(state.earDailyLatestAttempt)
+    }
+
+    @MainActor func testDailyPendingTakeArchivesWhenOnlyTransferSourceChanged() async throws {
+        let harness = AcousticTestHarness()
+        let state = try daily(harness)
+        let session = try XCTUnwrap(state.earDailySession)
+        try await harness.play(state.earDailyMicrophonePlan(session), pitchOnly: true, dailyOwnerID: session.id)
+        let take = try XCTUnwrap(harness.session.pending)
+        let journey = try XCTUnwrap(state.selectedSongJourney)
+        var scores = state.editor
+        let index = try XCTUnwrap(
+            scores.documents.firstIndex { "score:" + $0.id.uuidString == journey.transfer.pieceID })
+        let position = Guitar.positions(
+            midi: 55, tuning: scores.documents[index].tuning, capo: scores.documents[index].capo)[0]
+        scores.documents[index].events[0].pitches = [EditorPitch(55, string: position.string, fret: position.fret)]
+        try state.commitScores(scores)
+        XCTAssertNoThrow(try state.validateMicrophonePhrase(take.plan))
+        XCTAssertThrowsError(try state.validateEarDaily(session))
+        try state.resumeEarDaily(session.id)
+        harness.session.save(using: state.saveMicrophoneTake)
+        XCTAssertNil(harness.session.pending)
+        XCTAssertEqual(state.microphonePhrases.active?.latest?.isArchivalOnly, true)
+        XCTAssertTrue(state.journal.checked.isEmpty)
+        XCTAssertTrue(state.earDailySession!.attemptIDs.isEmpty)
+    }
+
+    @MainActor func testDailyTakeSaveFailureRetainsPCMResultWithoutPublishingReferences() async throws {
+        let harness = AcousticTestHarness()
+        let state = try daily(harness)
+        let session = try XCTUnwrap(state.earDailySession)
+        try await harness.play(state.earDailyMicrophonePlan(session), pitchOnly: true, dailyOwnerID: session.id)
+        let take = try XCTUnwrap(harness.session.pending)
+        let url = state.stores.practice.url
+        let bytes = try Data(contentsOf: url)
+        try Data("external conflict".utf8).write(to: url)
+        harness.session.save(using: state.saveMicrophoneTake)
+        XCTAssertEqual(harness.session.pending, take)
+        XCTAssertTrue(state.journal.checked.isEmpty)
+        XCTAssertTrue(state.earDailySession!.attemptIDs.isEmpty)
+        XCTAssertTrue(state.microphonePhrases.active!.takes.isEmpty)
+        try bytes.write(to: url)
+        harness.session.save(using: state.saveMicrophoneTake)
+        XCTAssertNil(harness.session.pending)
+        XCTAssertEqual(state.earDailySession?.attemptIDs, [take.id])
+        XCTAssertEqual(state.journal.checked.count, 1)
+    }
+
     @MainActor private func prepared() throws -> AppState {
         let state = AppState(
             storageOverride: FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString))
@@ -156,7 +266,7 @@ final class MicrophonePhraseIntegrationTests: XCTestCase {
         let restored = AppState(storageOverride: state.storage)
         defer { restored.midi.shutdown() }
         XCTAssertEqual(restored.microphonePhrases, state.microphonePhrases)
-        XCTAssertEqual(restored.practiceState.schemaVersion, 17)
+        XCTAssertEqual(restored.practiceState.schemaVersion, 18)
     }
 
     @MainActor func testFailedAtomicSaveRetainsExactTakeAndRetryDoesNotRecapture() async throws {

@@ -93,6 +93,26 @@ extension AppState {
     private var activityCoachContext: CoachContext? {
         var source: (pieceID: String, from: Int, through: Int, partID: String?, title: String)?
         switch practicePage {
+        case .earDaily:
+            if let session = earDailySession,
+                let piece = libraryPieces.first(where: { $0.id == session.material.pieceID })
+            {
+                var context = pieceCoachContext(
+                    piece, from: session.material.scope.fromBar - 1,
+                    through: session.material.scope.throughBar - 1, partID: session.material.scope.partID)
+                context.id =
+                    "daily-ear:" + session.id.uuidString + ":" + (session.attemptIDs.last?.uuidString ?? "no-take")
+                context.subtitle = "Play it by ear · " + session.stage.rawValue
+                context.reference +=
+                    "\nDaily goal: recall pitch and order, then write a musical answer. Timing, expression and technique are unassessed. "
+                    + (earDailyLatestAttempt.map {
+                        "Latest saved observation: \($0.outcome.rawValue), assisted \($0.assisted). Played MIDI \($0.played), target \($0.target)."
+                    }
+                        ?? "No conclusive saved observation; do not infer a weakness.")
+                context.reference +=
+                    "\nSuggest one small experiment. No raw audio is included. Do not award practice credit or artistic grades."
+                return context
+            }
         case .scoreEar:
             if let material = scoreEarPractice.active?.opening.material {
                 source = (
@@ -214,6 +234,24 @@ extension AppState {
         return value
     }
     func openContextCoach() {
+        if destination == .practice, practicePage == .songJourney, let journey = selectedSongJourney {
+            do {
+                try noteEarDailySourceExposure(
+                    (songLesson == .independent ? journey.transfer : journey.material).pieceID)
+            } catch {
+                message = error.localizedDescription
+                return
+            }
+        }
+        if destination == .practice, practicePage == .earDaily, let session = earDailySession {
+            do {
+                stopAllPlayback()
+                try updateEarDaily(session.id) { try $0.noteExposure(now: Date()) }
+            } catch {
+                message = error.localizedDescription
+                return
+            }
+        }
         if destination == .practice, practicePage == .microphonePhrase {
             guard !microphonePhraseSession.hasUnsavedTake else {
                 message = "Keep or discard the take before opening coaching. Your unsaved observations remain here."

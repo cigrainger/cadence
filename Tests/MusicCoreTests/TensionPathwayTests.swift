@@ -236,7 +236,7 @@ final class TensionPathwayTests: XCTestCase {
         json["schemaVersion"] = 13
         let old = try JSONDecoder().decode(PracticeState.self, from: JSONSerialization.data(withJSONObject: json))
         XCTAssertNil(old.tension)
-        XCTAssertEqual(try old.validated().schemaVersion, 17)
+        XCTAssertEqual(try old.validated().schemaVersion, 18)
         book.sessions.append(s)
         XCTAssertThrowsError(try book.validated())
         book.sessions = [s]

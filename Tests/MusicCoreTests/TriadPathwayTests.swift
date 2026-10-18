@@ -184,11 +184,11 @@ final class TriadPathwayTests: XCTestCase {
         book.sessions = [session]
         book.activeID = session.id
         var state = PracticeState(triads: book)
-        XCTAssertEqual(try state.validated().schemaVersion, 17)
+        XCTAssertEqual(try state.validated().schemaVersion, 18)
         XCTAssertEqual(try JSONDecoder().decode(PracticeState.self, from: JSONEncoder().encode(state)), state)
         state.schemaVersion = 12
-        XCTAssertEqual(try state.validated().schemaVersion, 17)
-        state.schemaVersion = 18
+        XCTAssertEqual(try state.validated().schemaVersion, 18)
+        state.schemaVersion = 19
         XCTAssertThrowsError(try state.validated())
         book.sessions.append(session)
         XCTAssertThrowsError(try book.validated())

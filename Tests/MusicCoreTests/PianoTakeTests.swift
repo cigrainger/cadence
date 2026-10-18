@@ -291,7 +291,7 @@ final class PianoTakeTests: XCTestCase {
         let migrated = try JSONDecoder().decode(
             PracticeState.self, from: JSONSerialization.data(withJSONObject: object)
         ).validated()
-        XCTAssertEqual(migrated.schemaVersion, 17)
+        XCTAssertEqual(migrated.schemaVersion, 18)
         XCTAssertNil(migrated.pianoTakes)
         let rehearsal = try PieceRehearsal(opening: phrase().plan)
         let restored = try JSONDecoder().decode(PieceRehearsal.self, from: JSONEncoder().encode(rehearsal))
@@ -303,7 +303,7 @@ final class PianoTakeTests: XCTestCase {
         XCTAssertEqual(
             try JSONDecoder().decode(PracticeState.self, from: JSONEncoder().encode(state)).validated().pianoTakes, book
         )
-        state.schemaVersion = 18
+        state.schemaVersion = 19
         XCTAssertThrowsError(try state.validated())
     }
     func testRecordingEventBudgetAndIdentityCollisionCannotOverwriteExistingTakes() throws {

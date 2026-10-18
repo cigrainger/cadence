@@ -70,6 +70,7 @@ struct SongJourneyView: View {
                             state.songJourneyID = nil
                         }
                     } else {
+                        EarDailySessionCard(journey: journey)
                         SongOpeningCheckView(journey: journey, input: input, midi: midi)
                         if width >= 780 {
                             HStack(alignment: .top, spacing: 26) {
@@ -306,14 +307,23 @@ struct SongJourneyReturnBar: View {
         if let journey = state.selectedSongJourney, state.songJourneyID != nil,
             !(state.destination == .practice && state.practicePage == .songJourney)
         {
+            let usesDaily =
+                state.practicePage == .earDaily
+                && (state.destination == .practice
+                    || (state.destination == .editor && state.editor.active.id == state.earDailySession?.answerID))
+            let source =
+                usesDaily
+                ? state.earDailySession?.material ?? journey.material : journey.material
             HStack(spacing: 12) {
                 Button("Your pathway", systemImage: "arrow.uturn.backward") { state.openSongJourney(journey.id) }
                     .accessibilityIdentifier("journey.return")
                 Text("Make a song your own · " + (state.songLesson?.title ?? journey.material.title)).font(.caption)
                     .foregroundStyle(.secondary)
                 Spacer()
-                if let piece = state.libraryPieces.first(where: { $0.id == journey.material.pieceID }) {
+                if let piece = state.libraryPieces.first(where: { $0.id == source.pieceID }) {
                     Button("Full score") { state.openLibraryPiece(piece) }
+                        .accessibilityIdentifier(
+                            state.practicePage == .earDaily ? "daily-ear.full-score" : "journey.source")
                 }
             }.font(.caption).padding(.horizontal, 22).padding(.vertical, 9).background(Color.moss.opacity(0.06))
         }

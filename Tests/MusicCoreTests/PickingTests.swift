@@ -155,7 +155,7 @@ extension PickingTests {
         var legacy = PracticeState()
         legacy.schemaVersion = 15
         XCTAssertNil(try legacy.validated().picking)
-        XCTAssertEqual(try legacy.validated().schemaVersion, 17)
+        XCTAssertEqual(try legacy.validated().schemaVersion, 18)
         var document = try material().document(style: .travis)
         var json = try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(document)) as? [String: Any])
         json["schemaVersion"] = 8

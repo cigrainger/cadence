@@ -79,8 +79,9 @@ struct Preferences: Codable, Equatable {
     @Published var songJourneyID: UUID?
     @Published var songLesson: SongLesson?
     let songInput = SongOpeningInput()
+    let earDailyInput = EarDailyInput()
     let pickingInput = PickingInput()
-    let microphonePhraseSession = MicrophonePhraseSession()
+    let microphonePhraseSession: MicrophonePhraseSession
     @Published var practiceMIDIExercise = false
     @Published var adaptiveFromPractice = false
     @Published var root = Pitch(0)
@@ -167,7 +168,8 @@ struct Preferences: Codable, Equatable {
     let isPreview: Bool
     private var pendingSave: Task<Void, Never>?
 
-    init(preview: Bool = false, storageOverride: URL? = nil) {
+    init(preview: Bool = false, storageOverride: URL? = nil, microphoneSession: MicrophonePhraseSession? = nil) {
+        microphonePhraseSession = microphoneSession ?? MicrophonePhraseSession()
         self.isPreview = preview
         let keyboard = MIDIKeyboard(preview: preview || storageOverride != nil)
         // Hold the client before loading music or doing audio work. An idle
@@ -219,6 +221,10 @@ struct Preferences: Codable, Equatable {
     func openLibraryPiece(
         _ piece: LibraryPiece, from: Int = 0, through: Int? = nil, partID: String? = nil, practise: Bool = false
     ) {
+        do { try noteEarDailySourceExposure(piece.id) } catch {
+            message = error.localizedDescription
+            return
+        }
         do { try changePiece(piece.id) { $0.lastOpened = Date() } } catch { message = error.localizedDescription }
         audio.stop()
         microphone.stop()

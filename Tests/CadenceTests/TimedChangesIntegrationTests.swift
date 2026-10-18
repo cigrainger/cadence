@@ -220,7 +220,7 @@ final class TimedChangesIntegrationTests: XCTestCase {
         try state.saveTimedChanges(result)
         XCTAssertEqual(try Data(contentsOf: url.appendingPathExtension("previous")), bytes)
         let restored = AppState(storageOverride: directory)
-        XCTAssertEqual(restored.practiceState.schemaVersion, 17)
+        XCTAssertEqual(restored.practiceState.schemaVersion, 18)
         XCTAssertEqual(restored.history.timedChanges?[result.practiceID]?.latest, result)
     }
 }

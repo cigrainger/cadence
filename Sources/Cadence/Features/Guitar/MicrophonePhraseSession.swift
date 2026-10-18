@@ -27,6 +27,7 @@ extension TimedAudio: AcousticCountInOutput {
     @Published private(set) var elapsed = 0.0
     @Published private(set) var pending: MicrophonePhraseTake?
     @Published private(set) var displayedTake: MicrophonePhraseTake?
+    @Published private(set) var dailyOwnerID: UUID?
     @Published var inputChannel = 0 {
         didSet {
             if inputChannel != oldValue { invalidate("Input channel changed. Measure timing for this channel again.") }
@@ -81,11 +82,12 @@ extension TimedAudio: AcousticCountInOutput {
         return calibration?.usable(routeID: current.id, sampleRate: current.sampleRate, now: date()) == true
     }
 
-    func select(_ plan: MicrophonePhrasePlan) throws {
+    func select(_ plan: MicrophonePhrasePlan, dailyOwnerID: UUID? = nil) throws {
         guard !busy, pending == nil, plan.valid else {
             throw MusicError.invalid("Save or discard the waiting take before changing the phrase.")
         }
         self.plan = plan
+        self.dailyOwnerID = dailyOwnerID
         displayedTake = nil
         elapsed = 0
         error = nil
@@ -101,6 +103,7 @@ extension TimedAudio: AcousticCountInOutput {
     func inspect(_ take: MicrophonePhraseTake) {
         guard !busy, pending == nil, take.valid else { return }
         plan = take.plan
+        dailyOwnerID = nil
         displayedTake = take
     }
 
@@ -119,6 +122,7 @@ extension TimedAudio: AcousticCountInOutput {
         microphone?.stop()
         microphone = nil
         phase = .idle
+        if pending == nil { dailyOwnerID = nil }
         if let reason { error = reason }
         _ = retryExposureSave()
     }
@@ -147,11 +151,13 @@ extension TimedAudio: AcousticCountInOutput {
             return
         }
         calibration = nil
+        dailyOwnerID = nil
         begin(microphone: microphone, route: current, plan: nil, calibration: nil, validate: {})
     }
 
     func start(
         _ plan: MicrophonePhrasePlan, microphone: Microphone, pitchOnly: Bool,
+        dailyOwnerID: UUID? = nil,
         interrupted: @escaping @MainActor (Date) throws -> Void = { _ in },
         validate: @escaping @MainActor () throws -> Void
     ) {
@@ -172,6 +178,7 @@ extension TimedAudio: AcousticCountInOutput {
             return
         }
         guard retryExposureSave() else { return }
+        self.dailyOwnerID = dailyOwnerID
         begin(
             microphone: microphone, route: current, plan: plan, calibration: pitchOnly ? nil : measured,
             interrupted: interrupted, validate: validate)
@@ -182,7 +189,9 @@ extension TimedAudio: AcousticCountInOutput {
         calibration measured: AcousticCalibration?, interrupted: @escaping @MainActor (Date) throws -> Void = { _ in },
         validate: @escaping @MainActor () throws -> Void
     ) {
+        let owner = dailyOwnerID
         cancel()
+        dailyOwnerID = owner
         let captured = token
         self.microphone = microphone
         self.interruption = interrupted
@@ -356,6 +365,7 @@ extension TimedAudio: AcousticCountInOutput {
             let saved = try commit(take)
             displayedTake = saved
             pending = nil
+            dailyOwnerID = nil
             error = nil
         } catch { self.error = error.localizedDescription }
     }
@@ -363,6 +373,7 @@ extension TimedAudio: AcousticCountInOutput {
     func discard() {
         guard !busy else { return }
         pending = nil
+        dailyOwnerID = nil
         displayedTake = nil
         error = nil
     }

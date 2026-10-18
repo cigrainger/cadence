@@ -60,7 +60,11 @@ struct CreativeAnswerBar: View {
                             .secondary)
                     }
                     Spacer()
-                    if let returnSession = state.scoreEarPractice.latest(link.material.id) {
+                    if let daily = state.earDailyPractice.sessions.first(where: { $0.answerID == document.id }) {
+                        Button("Back to today’s session", systemImage: "arrow.uturn.backward") {
+                            do { try state.resumeEarDaily(daily.id) } catch { self.error = error.localizedDescription }
+                        }.controlSize(.small).accessibilityIdentifier("daily-ear.return-from-answer")
+                    } else if let returnSession = state.scoreEarPractice.latest(link.material.id) {
                         Button("Back to practice", systemImage: "arrow.uturn.backward") {
                             do { try state.resumeScoreEarSession(returnSession.id) } catch {
                                 self.error = error.localizedDescription
@@ -75,6 +79,10 @@ struct CreativeAnswerBar: View {
                 ).font(.callout).foregroundStyle(.secondary)
                 HStack(spacing: 12) {
                     Button("Hear original", systemImage: "ear") {
+                        do { try state.noteEarDailySourceExposure(link.material.pieceID) } catch {
+                            self.error = error.localizedDescription
+                            return
+                        }
                         playback = nil
                         var notes = link.material.melody
                         notes.append(ScoreNote(midi: -1, start: 0, duration: link.material.beats))

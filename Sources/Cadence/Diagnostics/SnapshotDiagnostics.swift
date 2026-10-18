@@ -40,6 +40,7 @@ import Foundation
         replace("reharmChecks", ReharmDiagnostics.checks, score)
         replace("tensionChecks", TensionDiagnostics.checks, score)
         replace("microphonePhraseChecks", MicrophonePhraseDiagnostics.checks, score)
+        replace("earDailyChecks", EarDailyDiagnostics.checks, score.isEmpty ? editor : score)
         replace("pickingChecks", PickingDiagnostics.checks, editor)
         replace("triadChecks", TriadDiagnostics.checks, editor)
         replace("flowChecks", FlowPracticeDiagnostics.checks, score)
