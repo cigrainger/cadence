@@ -112,6 +112,8 @@ def summarize_coverage(document):
                                    "Infrastructure/AI/ContextCoachSession.swift",
                                    "Infrastructure/AI/SavedRequest.swift", "Infrastructure/AI/PieceCoachSession.swift",
                                    "Infrastructure/Audio/Microphone.swift", "Infrastructure/Audio/MicrophoneInput.swift",
+                                   "Infrastructure/Audio/AcousticCapturePipe.swift", "Infrastructure/Audio/MicrophoneAudioRoute.swift",
+                                   "Features/Guitar/MicrophonePhraseSession.swift",
                                    "Infrastructure/MIDI/MIDIKeyboard.swift",
                                    "Features/Practice/CalibratedPracticeSession.swift"],
     }
@@ -179,6 +181,7 @@ def native_scenarios():
         ("microphone-independent", ["--microphone-phrase-preview", "--microphone-independent"], ["offline", "linkedTab"], "microphonePhraseChecks", ["sourceLinked", "validState", "independentReturn"]),
         ("microphone-coach", ["--microphone-phrase-preview", "--microphone-coach", "--coach-panel"], ["offline"], "microphonePhraseChecks", ["sourceLinked", "validState", "coachPinsSelectedTake", "perNoteCoachData", "noLiveInput"]),
         ("microphone-small", ["--microphone-phrase-preview", "--width", "1120", "--height", "800"], ["offline", "linkedTab"], "microphonePhraseChecks", ["sourceLinked", "validState", "noLiveInput"]),
+        ("microphone-score-focus", ["--microphone-phrase-preview", "--microphone-score-focus", "--width", "1120", "--height", "800"], ["offline", "linkedTab", "feedbackMapped", "focusMapped"], "microphonePhraseChecks", ["sourceLinked", "validState", "pitchTimingSeparate", "noLiveInput"]),
         ("picking-travis", ["--picking-preview", "--width", "1350", "--height", "1100"], ["offline", "linkedTab", "allEventsMapped"], "pickingChecks", ["sourceLinked", "validState", "playableTab", "separateEvidence", "localOnly"]),
         ("picking-classical", ["--picking-preview", "--picking-classical"], ["offline", "linkedTab"], "pickingChecks", ["sourceLinked", "validState", "playableTab"]),
         ("picking-strumming", ["--picking-preview", "--picking-strumming"], ["offline", "linkedTab"], "pickingChecks", ["sourceLinked", "validState", "playableTab"]),

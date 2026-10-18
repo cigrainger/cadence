@@ -141,12 +141,6 @@ extension TimedAudio: AcousticCountInOutput {
         cancel(reason)
     }
 
-    private func checkRoute() {
-        if calibration != nil, !calibratedForCurrentRoute() {
-            invalidate("The audio route or sample rate changed. Measure loopback timing again.")
-        }
-    }
-
     func calibrate(microphone: Microphone) {
         guard !busy, pending == nil, let current = currentRoute(), current.valid else {
             error = "Save the waiting take and select an available input/output in Sound settings first."

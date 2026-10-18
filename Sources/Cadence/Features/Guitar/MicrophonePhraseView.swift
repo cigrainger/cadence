@@ -34,6 +34,7 @@ struct MicrophonePhraseView: View {
     @ObservedObject var session: MicrophonePhraseSession
     @ObservedObject var microphone: Microphone
     @State private var choosing = false
+    @State private var focusOnMusic = CommandLine.arguments.contains("--microphone-score-focus")
     @State private var pitchOnly = false
     @State private var study: MusicStudy?
     @State private var scoreHeight: CGFloat = 260
@@ -61,15 +62,25 @@ struct MicrophonePhraseView: View {
             HStack {
                 Button("Back to Learn", systemImage: "arrow.left") { state.showPracticeHome() }.buttonStyle(.plain)
                 Spacer()
+                if plan != nil, !choosing {
+                    Button(
+                        focusOnMusic ? "Show setup" : "Focus on the score",
+                        systemImage: focusOnMusic ? "slider.horizontal.3" : "viewfinder"
+                    ) {
+                        focusOnMusic.toggle()
+                    }.disabled(session.busy).accessibilityIdentifier("microphone.score-focus")
+                }
                 Button(choosing ? "Back to phrase" : "Choose a phrase", systemImage: "music.note.list") {
                     state.stopAllPlayback()
                     choosing.toggle()
                 }.disabled(plan == nil || locked)
             }
-            VStack(alignment: .leading, spacing: 7) {
-                Eyebrow(text: "Guitar · listen, play, reshape").foregroundStyle(Color.clay)
-                Text("Let the phrase speak.").font(.system(size: 34, weight: .medium, design: .serif))
-                Text("A short phrase. One useful change. Another chance to hear it.").foregroundStyle(.secondary)
+            if !focusOnMusic && !session.busy {
+                VStack(alignment: .leading, spacing: 7) {
+                    Eyebrow(text: "Guitar · listen, play, reshape").foregroundStyle(Color.clay)
+                    Text("Let the phrase speak.").font(.system(size: 34, weight: .medium, design: .serif))
+                    Text("A short phrase. One useful change. Another chance to hear it.").foregroundStyle(.secondary)
+                }
             }
             if choosing || plan == nil {
                 MicrophonePhraseChooser {
@@ -77,7 +88,16 @@ struct MicrophonePhraseView: View {
                     refresh()
                 }
             } else if let plan {
-                phraseHeader(plan)
+                if !focusOnMusic && !session.busy {
+                    phraseHeader(plan)
+                } else {
+                    HStack {
+                        Text(plan.material.title).font(.title3.weight(.semibold))
+                        Spacer()
+                        Text("Bars \(plan.fromBar)–\(plan.throughBar) · \(plan.mode.rawValue)").font(.callout)
+                            .foregroundStyle(.secondary)
+                    }
+                }
                 if !current {
                     ContentUnavailableView(
                         "Revisit the source", systemImage: "book.closed",
@@ -85,7 +105,7 @@ struct MicrophonePhraseView: View {
                             "Your takes are kept. This music changed or needs review; choose its current phrase before recording."
                         ))
                 }
-                timingSetup
+                if !focusOnMusic && !session.busy { timingSetup }
                 score(plan)
                 if let take = session.displayedTake, let report { feedback(take, report) }
                 savedTakes
@@ -105,6 +125,7 @@ struct MicrophonePhraseView: View {
             refresh()
             refreshFeedback()
         }
+        .onChange(of: session.busy) { _, active in if active { focusOnMusic = true } }
         .onChange(of: session.plan) { _, _ in refresh() }
         .onChange(of: session.displayedTake) { _, _ in refreshFeedback() }
         .onChange(of: state.editor) { _, _ in checkSource() }
