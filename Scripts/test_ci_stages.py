@@ -98,7 +98,8 @@ class CIStageTests(unittest.TestCase):
 
     def test_archive_traversal_links_duplicates_and_excessive_sizes_are_rejected(self):
         for name, kind in [('../escape', 'file'), ('/escape', 'file'), ('link', 'symlink'),
-                           ('link', 'hardlink'), ('duplicate', 'duplicate'), ('large', 'large')]:
+                           ('link', 'hardlink'), ('duplicate', 'duplicate'), ('large', 'large'),
+                           ('negative', 'negative')]:
             with self.subTest(name=name, kind=kind), tempfile.TemporaryDirectory() as directory:
                 root = Path(directory)
                 path = root / 'bad.tar.gz'
@@ -107,9 +108,9 @@ class CIStageTests(unittest.TestCase):
                     if kind in ('symlink', 'hardlink'):
                         entry.type = tarfile.SYMTYPE if kind == 'symlink' else tarfile.LNKTYPE
                         entry.linkname = '../escape'
-                    if kind == 'large':
+                    if kind in ('large', 'negative'):
                         # Declared size is sufficient; no huge fixture is allocated.
-                        entry.size = 2_000_000_001
+                        entry.size = 2_000_000_001 if kind == 'large' else -1
                         output.fileobj.write(entry.tobuf())
                     else:
                         output.addfile(entry, io.BytesIO(b''))

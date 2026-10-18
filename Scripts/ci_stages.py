@@ -94,7 +94,8 @@ def unpack(archive_path, destination, expected_hash):
     require(not destination.exists(), 'Prepared-stage destination must be fresh')
     with tarfile.open(archive_path, 'r:gz') as source:
         members = source.getmembers()
-        require(0 < len(members) <= 10000 and sum(m.size for m in members) <= 2_000_000_000,
+        require(0 < len(members) <= 10000 and all(0 <= m.size <= 2_000_000_000 for m in members)
+                and sum(m.size for m in members) <= 2_000_000_000,
                 'Stage archive exceeds bounds')
         seen = set()
         for member in members:

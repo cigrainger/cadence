@@ -38,6 +38,8 @@ python3 Scripts/profile_ci.py --run RUN_ID --output .verification/profile-RUN_ID
 
 This reads the workflow/job timestamps and downloads only retained diagnostic evidence. `profile.json` records queue-inclusive workflow time, job/step time, Swift compilation, actual XCTest execution and the native matrix's wall time. Overlapping scenario-pair times are not summed as elapsed time. Use a new output directory for every measurement. Source identities must agree across the evidence.
 
+Queue-inclusive workflow time is reported for first attempts. On reruns, GitHub's original creation time includes earlier attempts and operator delay; that span is labelled separately and is never presented as the latest attempt's latency. Skipped job timestamps and missing native evidence stay unavailable.
+
 Every verifier command also writes `timings.jsonl`, including failures and elapsed subprocess time, without environment variables. Snapshot sidecars record callback-relative framing/readiness/capture phases; these do not pretend to measure process startup. Comparing them with external command time helps locate launch/exit and renderer costs.
 
 Published before/after measurements and exact run artifacts belong in the performance pull request. Record changed-source and unchanged-source conditions separately, including cache restoration and toolchain identity. Do not use an unchanged-source cache hit as proof of the changed-source target.

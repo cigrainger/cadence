@@ -10,6 +10,8 @@ import subprocess
 
 
 def seconds(start, end):
+    if not start or not end:
+        return None
     return round((datetime.datetime.fromisoformat(end.replace('Z', '+00:00')) -
                   datetime.datetime.fromisoformat(start.replace('Z', '+00:00'))).total_seconds(), 3)
 
@@ -25,7 +27,7 @@ def evidence_profile(folder):
     reports = [json.loads(path.read_text()) for path in folder.rglob('summary.json')]
     full = next((r for r in reports if r.get('mode') == 'full'), None)
     if full is None:
-        raise ValueError('Missing full native-verification report')
+        return {'available': False, 'reason': 'No full native-verification report was produced'}
     digests = {r.get('sourceInputsSHA256') for r in reports if r.get('passed') is True}
     if len(digests) != 1 or None in digests:
         raise ValueError('Evidence comes from different source inputs')
@@ -69,7 +71,10 @@ def main():
                             '--name', name, '--dir', str(args.output / name)], check=True)
     profile = {'run': args.run, 'attempt': run['run_attempt'], 'commit': run['head_sha'],
                'conclusion': run['conclusion'], 'url': run['html_url'], 'artifacts': selected,
-               'workflowWallSeconds': seconds(run['created_at'], run['updated_at']),
+               # created_at remains the original run's creation on a rerun.
+               # Never report prior attempts or operator delay as this attempt.
+               'workflowWallSeconds': seconds(run['created_at'], run['updated_at']) if run['run_attempt'] == 1 else None,
+               'creationToLatestCompletionSeconds': seconds(run['created_at'], run['updated_at']),
                'jobs': [{'name': j['name'], 'conclusion': j['conclusion'],
                          'seconds': seconds(j['started_at'], j['completed_at']),
                          'steps': [{'name': s['name'], 'seconds': seconds(s['started_at'], s['completed_at'])}

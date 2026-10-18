@@ -3,10 +3,15 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
-from profile_ci import execution_seconds, evidence_profile
+from profile_ci import execution_seconds, evidence_profile, seconds
 
 
 class CIProfileTests(unittest.TestCase):
+    def test_skipped_job_timestamps_and_missing_native_evidence_remain_unavailable(self):
+        self.assertIsNone(seconds(None, None))
+        with tempfile.TemporaryDirectory() as directory:
+            self.assertFalse(evidence_profile(Path(directory))['available'])
+
     def test_test_execution_does_not_double_count_nested_suites_or_separate_bundles(self):
         log = """Test Suite 'A.xctest' passed
 Executed 2 tests in 10.0 (10.0) seconds
