@@ -254,45 +254,14 @@ struct MicrophonePhraseView: View {
 
     private func feedback(_ take: MicrophonePhraseTake, _ report: MicrophonePhraseReport) -> some View {
         Card(title: "What came through", padding: 18, spacing: 14) {
-            HStack(spacing: 22) {
-                Label("\(report.matchedPitch)/\(report.notes.count) pitches matched", systemImage: "music.note")
-                Text(
-                    take.calibration == nil
-                        ? "Timing unassessed" : "\(report.onTime)/\(report.notes.count) entrances in the window")
-                Spacer()
-                Text(
-                    session.hasUnsavedTake
-                        ? "Review before keeping" : (current ? "Saved on this Mac" : "Saved · earlier source version")
-                ).foregroundStyle(.secondary)
-            }.font(.callout)
+            feedbackSummary(take, report)
             Text(report.suggestion).font(.headline).foregroundStyle(Color.moss)
             ForEach(report.notes, id: \.index) { note in
-                HStack(alignment: .firstTextBaseline, spacing: 12) {
-                    Text(
-                        "Bar \(note.target.bar + 1) · \(Pitch.chromatic(note.target.pitch))\(note.target.pitch / 12 - 1)"
-                    )
-                    .font(.callout.weight(.medium)).frame(width: 135, alignment: .leading)
-                    Text(note.pitch.label).frame(width: 105, alignment: .leading)
-                    Text(timingText(note)).foregroundStyle(.secondary)
-                    Spacer(minLength: 4)
-                    Toggle(
-                        "Uncertain match",
-                        isOn: Binding(
-                            get: { take.disputedTargets.contains(note.index) },
-                            set: {
-                                session.dispute(note.index, uncertain: $0)
-                            })
-                    ).toggleStyle(.checkbox).disabled(!session.hasUnsavedTake).font(.caption)
-                }.font(.callout)
+                noteFeedback(take, note)
             }
             if take.calibration == nil {
-                Text(
-                    "Heard pitches: "
-                        + take.attacks.compactMap { $0.midi }.prefix(24).map {
-                            Pitch.chromatic($0) + String($0 / 12 - 1)
-                        }.joined(separator: " · ")
-                )
-                .font(.caption).foregroundStyle(.secondary)
+                Text("Heard pitches: " + heardPitches(take))
+                    .font(.caption).foregroundStyle(.secondary)
             }
             if !report.extras.isEmpty {
                 Text(
@@ -301,40 +270,85 @@ struct MicrophonePhraseView: View {
                 .font(.caption).foregroundStyle(.secondary)
             }
             if let issue = take.signalIssue { Text(issue).foregroundStyle(Color.clay).font(.callout) }
-            if session.hasUnsavedTake {
-                HStack {
-                    Button(current ? "Keep take" : "Keep earlier-version evidence", systemImage: "checkmark") {
-                        session.save(using: state.saveMicrophoneTake)
-                    }
-                    .buttonStyle(.cadencePrimary)
-                    Button("Retry without keeping") {
-                        let retry = try? take.plan.focused(around: report.focusBar ?? take.plan.fromBar)
-                        tryAction {
-                            try state.discardMicrophoneTake()
-                            if let retry { try session.select(retry) }
-                        }
-                    }
-                    Button("Discard take…", role: .destructive) { discarding = true }
-                }
-            } else {
-                HStack {
-                    if let bar = report.focusBar {
-                        Button("Slow retry · bar \(bar)", systemImage: "scope") {
-                            tryAction {
-                                try session.select(
-                                    take.plan.focused(around: bar).configured(
-                                        tempo: max(50, Int(Double(take.plan.tempo) * 0.8))))
-                            }
-                        }.buttonStyle(.cadencePrimary).disabled(!current)
-                    }
-                    Button("Return to the whole phrase") {
-                        tryAction { try session.select(take.plan.whole(mode: .context)) }
-                    }.disabled(!current)
-                    Button("Discuss this take with coach", systemImage: "sparkles") { state.openContextCoach() }
-                }
-            }
+            feedbackActions(take, report)
             DisclosureGroup("Inspect the evidence and its limits") {
                 Text(take.evidence).font(.caption).textSelection(.enabled).foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    private func heardPitches(_ take: MicrophonePhraseTake) -> String {
+        let notes: [Int] = Array(take.attacks.compactMap(\.midi).prefix(24))
+        return notes.map { Pitch.chromatic($0) + String($0 / 12 - 1) }.joined(separator: " · ")
+    }
+
+    private func feedbackSummary(_ take: MicrophonePhraseTake, _ report: MicrophonePhraseReport) -> some View {
+        HStack(spacing: 22) {
+            Label("\(report.matchedPitch)/\(report.notes.count) pitches matched", systemImage: "music.note")
+            Text(
+                take.calibration == nil
+                    ? "Timing unassessed" : "\(report.onTime)/\(report.notes.count) entrances in the window")
+            Spacer()
+            Text(
+                session.hasUnsavedTake
+                    ? "Review before keeping" : (current ? "Saved on this Mac" : "Saved · earlier source version")
+            ).foregroundStyle(.secondary)
+        }.font(.callout)
+    }
+
+    private func noteFeedback(_ take: MicrophonePhraseTake, _ note: MicrophonePhraseNote) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 12) {
+            Text(
+                "Bar \(note.target.bar + 1) · \(Pitch.chromatic(note.target.pitch))\(note.target.pitch / 12 - 1)"
+            )
+            .font(.callout.weight(.medium)).frame(width: 135, alignment: .leading)
+            Text(note.pitch.label).frame(width: 105, alignment: .leading)
+            Text(timingText(note)).foregroundStyle(.secondary)
+            Spacer(minLength: 4)
+            Toggle(
+                "Uncertain match",
+                isOn: Binding(
+                    get: { take.disputedTargets.contains(note.index) },
+                    set: {
+                        session.dispute(note.index, uncertain: $0)
+                    })
+            ).toggleStyle(.checkbox).disabled(!session.hasUnsavedTake).font(.caption)
+        }.font(.callout)
+    }
+
+    @ViewBuilder private func feedbackActions(_ take: MicrophonePhraseTake, _ report: MicrophonePhraseReport)
+        -> some View
+    {
+        if session.hasUnsavedTake {
+            HStack {
+                Button(current ? "Keep take" : "Keep earlier-version evidence", systemImage: "checkmark") {
+                    session.save(using: state.saveMicrophoneTake)
+                }
+                .buttonStyle(.cadencePrimary)
+                Button("Retry without keeping") {
+                    let retry = try? take.plan.focused(around: report.focusBar ?? take.plan.fromBar)
+                    tryAction {
+                        try state.discardMicrophoneTake()
+                        if let retry { try session.select(retry) }
+                    }
+                }
+                Button("Discard take…", role: .destructive) { discarding = true }
+            }
+        } else {
+            HStack {
+                if let bar = report.focusBar {
+                    Button("Slow retry · bar \(bar)", systemImage: "scope") {
+                        tryAction {
+                            try session.select(
+                                take.plan.focused(around: bar).configured(
+                                    tempo: max(50, Int(Double(take.plan.tempo) * 0.8))))
+                        }
+                    }.buttonStyle(.cadencePrimary).disabled(!current)
+                }
+                Button("Return to the whole phrase") {
+                    tryAction { try session.select(take.plan.whole(mode: .context)) }
+                }.disabled(!current)
+                Button("Discuss this take with coach", systemImage: "sparkles") { state.openContextCoach() }
             }
         }
     }
