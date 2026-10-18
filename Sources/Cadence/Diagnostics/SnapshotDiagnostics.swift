@@ -4,6 +4,15 @@
 import Foundation
 
 @MainActor enum SnapshotDiagnostics {
+    private static var timingOrigin: TimeInterval?
+    private static var phases: [String: TimeInterval] = [:]
+
+    static func mark(_ phase: String) {
+        let now = ProcessInfo.processInfo.systemUptime
+        if timingOrigin == nil { timingOrigin = now }
+        phases[phase] = now - (timingOrigin ?? now)
+    }
+
     /// Preserve each preview group's renderer ownership and the existing
     /// overlay order. Readiness and the saved sidecar use this single report.
     static var report: [String: Any] {
@@ -47,6 +56,13 @@ import Foundation
         replace("handsChecks", HandsTogetherDiagnostics.checks, score)
         replace("shapeChecks", ShapePhraseDiagnostics.checks, score)
         if !SongJourneyDiagnostics.checks.isEmpty { report["songJourneyChecks"] = SongJourneyDiagnostics.checks }
+        // Relative to the first snapshot callback, not a claim about process
+        // startup. The external command timer also includes launch and exit.
+        if let timingOrigin {
+            report["snapshotTiming"] = [
+                "elapsedSeconds": ProcessInfo.processInfo.systemUptime - timingOrigin, "phases": phases,
+            ]
+        }
         return report
     }
 

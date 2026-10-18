@@ -9,6 +9,14 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def test_inputs_digest(root=ROOT):
+    digest = hashlib.sha256()
+    for path in sorted((root / 'Tests').rglob('*.swift')):
+        digest.update(str(path.relative_to(root)).encode() + b'\0')
+        digest.update(hashlib.sha256(path.read_bytes()).digest())
+    return digest.hexdigest()
+
+
 def source_digest(root=ROOT):
     files = [root / name for name in ('Package.swift', 'Package.resolved', 'build.sh', 'LICENSE')]
     for folder in ('Sources', 'Resources', 'LICENSES', 'Scripts'):
