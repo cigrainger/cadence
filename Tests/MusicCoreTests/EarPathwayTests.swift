@@ -136,7 +136,7 @@ final class EarPathwayTests: XCTestCase {
         XCTAssertThrowsError(try book.validated())
         var old = PracticeState()
         old.schemaVersion = 5
-        XCTAssertEqual(try old.validated().schemaVersion, 16)
+        XCTAssertEqual(try old.validated().schemaVersion, 17)
     }
     func testSingingStabilityBreathsAndPitchChanges() {
         var c = SungPhraseCapture()

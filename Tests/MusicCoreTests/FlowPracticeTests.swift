@@ -265,8 +265,8 @@ final class FlowPracticeTests: XCTestCase {
         XCTAssertEqual(Set(FlowPulse.allCases.map { plan.identity(.init(click: $0.click, flowPulse: $0)) }).count, 4)
         var snapshot = PracticeState()
         snapshot.schemaVersion = 11
-        XCTAssertEqual(try snapshot.validated().schemaVersion, 16)
-        snapshot.schemaVersion = 17
+        XCTAssertEqual(try snapshot.validated().schemaVersion, 17)
+        snapshot.schemaVersion = 18
         XCTAssertThrowsError(try snapshot.validated())
     }
     func testSparsePulseRejectsPartialBarGeometryAndForgedHistory() throws {

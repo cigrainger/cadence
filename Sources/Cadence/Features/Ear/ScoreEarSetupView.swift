@@ -69,6 +69,9 @@ struct ScoreEarSetupView: View {
                         Button("Play along", systemImage: "pianokeys") { state.openPlayAlong(source) }.disabled(
                             !reviewed)
                     }
+                    Button("Microphone coaching", systemImage: "mic") {
+                        do { try state.openMicrophonePhrase(source) } catch { self.error = error.localizedDescription }
+                    }.disabled(!reviewed)
                     Button("Review score & original", systemImage: "doc.text.magnifyingglass") {
                         state.openLibraryPiece(
                             piece, from: source.scope.fromBar - 1, through: source.scope.throughBar - 1,

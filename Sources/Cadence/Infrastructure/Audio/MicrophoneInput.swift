@@ -9,13 +9,17 @@ typealias MicrophoneBufferHandler = @Sendable (AVAudioPCMBuffer, AVAudioTime) ->
 /// Device ownership stays on the main actor; the buffer callback is explicitly
 /// independent of it. Tests can exercise permission and callback races silently.
 @MainActor protocol MicrophoneInput: AnyObject {
+    var inputChannelCount: Int? { get }
     func start(forTuner: Bool, receive: @escaping MicrophoneBufferHandler) throws
     func stop()
 }
 
+extension MicrophoneInput { var inputChannelCount: Int? { nil } }
+
 @MainActor final class SystemMicrophoneInput: MicrophoneInput {
     private let engine = AVAudioEngine()
     private var tapInstalled = false
+    var inputChannelCount: Int? { Int(engine.inputNode.outputFormat(forBus: 0).channelCount) }
 
     func start(forTuner: Bool, receive: @escaping MicrophoneBufferHandler) throws {
         stop()

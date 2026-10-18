@@ -29,6 +29,8 @@ import MusicCore
     private var heldMidi: Int?
     @Published var heldPitch: Int?
     private var epoch = UUID()
+    private var acousticPipe: AcousticCapturePipe?
+    @Published private(set) var acousticLevel = 0.0
     init(
         input: (any MicrophoneInput)? = nil,
         permission: @escaping @Sendable () async -> Bool = { await AVCaptureDevice.requestAccess(for: .audio) },
@@ -61,6 +63,55 @@ import MusicCore
             stop()
             self.error = "Microphone could not start: \(error.localizedDescription)"
         }
+    }
+
+    /// Phrase capture uses the original PCM/sample clocks, separately from the
+    /// tuner/transcription window stream. Permission still belongs to this owner.
+    func startPhrase(channel: Int = 0) async {
+        stop()
+        error = nil
+        guard !Task.isCancelled else { return }
+        let pending = epoch
+        let allowed = await permission()
+        guard pending == epoch, !Task.isCancelled else { return }
+        guard allowed else {
+            error = "Microphone access is off. Enable Cadence in System Settings → Privacy & Security → Microphone."
+            return
+        }
+        guard (0..<64).contains(channel), input.inputChannelCount.map({ channel < $0 }) ?? true else {
+            error = "Input channel \(channel + 1) is unavailable. Choose the channel carrying your guitar."
+            return
+        }
+        let pipe = AcousticCapturePipe(channel: channel) { @Sendable [weak self] level in
+            Task { @MainActor [weak self] in
+                guard self?.epoch == pending, self?.listening == true else { return }
+                self?.acousticLevel = level
+            }
+        }
+        acousticPipe = pipe
+        do {
+            try input.start(forTuner: false, receive: pipe.handler)
+            listening = true
+        } catch {
+            stop()
+            self.error = "Microphone could not start: \(error.localizedDescription)"
+        }
+    }
+
+    var phraseAnalyzedBlocks: Int { acousticPipe?.analyzedBlocks ?? 0 }
+
+    func requirePhrasePreroll(before host: Double) { acousticPipe?.requireQuiet(before: host) }
+
+    func finishPhrase() async -> AcousticCaptureResult? {
+        guard let pipe = acousticPipe else { return nil }
+        let pending = epoch
+        input.stop()
+        listening = false
+        let result = await pipe.finish()
+        guard pending == epoch else { return nil }
+        acousticPipe = nil
+        acousticLevel = 0
+        return result
     }
 
     private func makeBufferHandler(forTuner: Bool) -> MicrophoneBufferHandler {
@@ -110,6 +161,9 @@ import MusicCore
         }
     }
     func stop() {
+        acousticPipe?.cancel()
+        acousticPipe = nil
+        acousticLevel = 0
         if activeMidi != nil { finishNote(at: now().timeIntervalSince(started) * tempo / 60) }
         epoch = UUID()
         input.stop()
